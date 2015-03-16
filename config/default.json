@@ -1,0 +1,17 @@
+{
+	"knex": {
+		"client": "mysql",
+		"connection": {
+			"host": "localhost",
+			"user": "root",
+			"password": "root",
+			"database": "chequerd"
+		},
+		"migrations": {
+			"directory": "db/migrations"
+		},
+		"seeds": {
+			"directory": "db/seeds"
+		}
+	}
+}
