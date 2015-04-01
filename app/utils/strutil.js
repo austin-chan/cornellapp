@@ -12,8 +12,8 @@ var m = {};
  * @param {string} str The string to check the alphanumeric condition on.
  * @return {boolean} true if alphanumeric or empty. false otherwise.
  */
-m.isAlphaumeric = function(str) {
-	return /^[a-z0-9]+$/i.test(str);
+m.isAlphanumeric = function(str) {
+	return /^[a-z0-9]+$/i.test(str) || str === '';
 }
 
 /**
@@ -21,7 +21,7 @@ m.isAlphaumeric = function(str) {
  * @param {string} str The string to check the condition against.
  * @return {boolean} true if only white-space or empty. false otherwise.
  */
-m.isEmpty = function(str) {
+m.isWhiteEmpty = function(str) {
 	return str.trim() == '';
 }
 

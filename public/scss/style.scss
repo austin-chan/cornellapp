@@ -48,11 +48,47 @@ header {
 
 		.classlist {
 			padding: 0;
-			
+
 			.class {
-				background: #3A3A3C;
+				position: relative;
 				list-style: none;
-				color: white;
+
+				.toggle {
+					position: absolute;
+					height: 35px;
+					width: 30px;
+					top: 0px;
+					left: 0px;
+					color: white;
+					font-size: 18px;
+
+					i {
+						position: absolute;
+						top: 7px;
+						left: 8px;
+					}
+				}
+
+				.close {
+					position: absolute;
+					top: 4px;
+					right: 4px;
+					cursor: pointer;
+					font-size: 22px;
+					color: white;
+				}
+
+				.top-section {
+					background: #3A3A3C;
+					color: white;
+					padding: 10px 32px;
+					font-size: 13px;
+					font-weight: 100;
+				}
+
+				.bottom-section {
+					background: white;
+				}
 			}
 		}
 	}

@@ -24,8 +24,9 @@ var app = require('../../server'),
 m.fetchName = function(netid, callback) {
 	callback = callback || function(){};
 
-	if (!netid.length || !strutil.isAlphaumeric(netid)) {
+	if (!netid.length || !strutil.isAlphanumeric(netid)) {
 		callback(null);
+		return;
 	}
 
 	var endpoint = 'http://www.cornell.edu/search/vcard.cfm?netid=' + netid;
@@ -37,7 +38,7 @@ m.fetchName = function(netid, callback) {
 		});
 
 		response.on('end', function(){
-			if (strutil.isEmpty(data)) {
+			if (strutil.isWhiteEmpty(data)) {
 				callback(null)
 			}
 
