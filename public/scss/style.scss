@@ -1,5 +1,6 @@
 @import "compass/css3";
 @import "normalize";
+@import "fonts";
 
 $scheduleSideWidth: 740px;
 
@@ -44,6 +45,16 @@ header {
 		float: left;
 		width: 1020px - $scheduleSideWidth;
 		height: 100px;
+
+		.classlist {
+			padding: 0;
+			
+			.class {
+				background: #3A3A3C;
+				list-style: none;
+				color: white;
+			}
+		}
 	}
 
 	.scheduleside {
@@ -53,11 +64,17 @@ header {
 		.day-labels {
 			float: right;
 			font-size: 0;
+			padding-top: 30px;
+			padding-bottom: 20px;
 
 			.label {
 				display: inline-block;
+				color: #B6B5B5;
+				color: #C2C2C2;
+				color: #BDBDBD;
 				width: 96px;
-				font-size: 12px;
+				font-size: 16px;
+				font-weight: 100;
 				text-align: center;
 			}
 		}
@@ -75,10 +92,13 @@ header {
 			clear: right;
 
 			span {
-				font-family: 'Roboto Slab';
 				position: absolute;
-				color: #AEADAD;
+				color: #CBCACA;
+				margin-right: 16px;
+				font-size: 18px;
+				font-weight: 100;
 				right: 100%;
+				top: -11px;
 			}
 
 			&.odd {
