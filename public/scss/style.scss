@@ -1,0 +1,89 @@
+@import "compass/css3";
+@import "normalize";
+
+$scheduleSideWidth: 740px;
+
+.cf {
+  overflow: auto;
+  zoom: 1;
+}
+
+body {
+	font-family: 'Roboto';
+	background: #F3F3F4;
+}
+
+header {
+	height: 68px;
+	width: 100%;
+	background: #C1372C;
+	@include background-image(linear-gradient(to right, #C1372C, #CC5835));
+
+	> .inner {
+		font-family: 'Roboto Slab';
+		color: white;
+		font-size: 30px;
+		max-width: 1020px;
+		margin: 0 auto;
+	}
+
+	.name {
+		display: inline-block;
+		margin-top: 12px;
+	}
+}
+
+#main {
+	
+	> .inner {
+		max-width: 1020px;
+		margin:0 auto;
+	}
+
+	.classside {
+		float: left;
+		width: 1020px - $scheduleSideWidth;
+		height: 100px;
+	}
+
+	.scheduleside {
+		float: left;
+		width: $scheduleSideWidth;
+
+		.day-labels {
+			float: right;
+			font-size: 0;
+
+			.label {
+				display: inline-block;
+				width: 96px;
+				font-size: 12px;
+				text-align: center;
+			}
+		}
+
+		.hours {
+
+		}
+
+		.hour {
+			position: relative;
+			width: 672px;
+			height: 64px;
+			background: #E7E8E9;
+			float: right;
+			clear: right;
+
+			span {
+				font-family: 'Roboto Slab';
+				position: absolute;
+				color: #AEADAD;
+				right: 100%;
+			}
+
+			&.odd {
+				background: white;
+			}
+		}
+	}
+}

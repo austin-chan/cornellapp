@@ -18,12 +18,11 @@ var express = require('express'),
 
 
 // App configuration.
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/app/views');
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(express.static(__dirname + '/public'));
-
-// app.set('view engine', 'ejs');
-
 
 
 // Declare all site routes.
