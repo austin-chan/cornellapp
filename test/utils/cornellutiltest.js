@@ -6,6 +6,7 @@ var assert = require('assert'),
 	cornellutil = require('../../app/utils/cornellutil');
 
 describe('cornellutil', function() {
+	// fetchName method
 	it('should have an fetchName method', function() {
 		assert.equal(typeof cornellutil, 'object');
 		assert.equal(typeof cornellutil.fetchName, 'function');
@@ -29,10 +30,10 @@ describe('cornellutil', function() {
 				done();
 			});
 		});
-	it('fetchName(\'jar475\') should equal \'Josh Richardson\'',
+	it('fetchName(\'jar475\') should equal \'Joshua Austin Richardson\'',
 		function(done) {
 			cornellutil.fetchName('jar475', function(name) {
-				assert.equal(name, 'Josh Richardson');
+				assert.equal(name, 'Joshua Austin Richardson');
 				done();
 			});
 		});
