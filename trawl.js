@@ -7,12 +7,13 @@
  */
 
 var async = require('async'),
+	_ = require('underscore'),
 	config = require('config'),
 	knex = require('knex')(config.knex),
 	bookshelf = require('bookshelf')(knex),
 	models = require('./app/models')(bookshelf),
 	cornellutil = require('./app/utils/cornellutil'),
-	courseutil = require('./app/utils/courseutil')(models),
+	courseutil = require('./app/utils/courseutil')(knex, models),
 	semester = process.argv[2];
 
 if (!semester || typeof semester != 'string') {
@@ -107,25 +108,36 @@ async.waterfall([
 
 	// update or save all classes
 	function(semesterEntry, subjectCoursesData, courseEntries, callback) {
-		var courses = subjectCoursesData[0].concat(subjectCoursesData[1]);
+		var courses = _.flatten(subjectCoursesData, true);
 
-		async.each(courses, function(course, callback) {
-			courseutil.saveCourse(course, callback);
-		}, function(err) {
+		console.log('Retrieved ' + courses.length + ' courses to sync with ' +
+			'the database.');
+		courseutil.saveCourses(courses, function(err) {
 			if (err) {
 				callback('An error occurred saving new courses to the ' + 
-					'database.');
+					'database while ' + err);
 			}
 
 			callback(null);
 		});
+		// async.each(courses, callback);
+		// async.each(courses, function(course, callback) {
+		// 	courseutil.saveCourse(course, callback);
+		// }, function(err) {
+		// 	if (err) {
+		// 		callback('An error occurred saving new courses to the ' + 
+		// 			'database while ' + err);
+		// 	}
+
+		// 	callback(null);
+		// });
 	}
 
 ], function(err, result) {
 	if (err) {
 		console.log(err);
 	} else {
-		console.log('here');
+		console.log('Completed database sync for semester ' + semester + '.');
 	}
 
 	process.exit(1);

@@ -43,12 +43,14 @@ exports.up = function(knex, Promise) {
 			table.integer('courseId').unsigned();
 			table.string('componentsOptional');
 			table.string('componentsRequired');
+			table.string('gradingBasis');
 			table.string('gradingBasisLong');
 			table.string('gradingBasisShort');
 			table.string('sessionBeginDt');
 			table.string('sessionEndDt');
 			table.string('sessionCode');
 			table.string('sessionLong');
+			table.string('simpleCombinations');
 			table.integer('unitsMaximum');
 			table.integer('unitsMinimum');
 		}),
@@ -59,23 +61,20 @@ exports.up = function(knex, Promise) {
 			table.string('addConsentDescr');
 			table.string('campus');
 			table.string('campusDescr');
-			table.string('classNbr');
+			table.integer('classNbr');
 			table.string('endDt');
 			table.string('instructionMode');
 			table.string('instrModeDescr');
 			table.string('instrModeDescrshort');
-			table.string('isComponentGraded');
+			table.boolean('isComponentGraded');
 			table.string('location');
 			table.string('locationDescr');
+			table.string('notes');
 			table.string('section');
 			table.string('ssrComponent');
 			table.string('ssrComponentLong');
 			table.string('startDt');
 			table.string('topicDescription');
-		}),
-		knex.schema.createTable('notes', function(table) {
-			table.integer('classNotesSeq');
-			table.string('descrlong');
 		}),
 		knex.schema.createTable('meetings', function(table) {
 			table.integer('sectionId').unsigned();
@@ -109,7 +108,6 @@ exports.down = function(knex, Promise) {
 		knex.schema.dropTable('courses'),
 		knex.schema.dropTable('groups'),
 		knex.schema.dropTable('sections'),
-		knex.schema.dropTable('notes'),
 		knex.schema.dropTable('meetings'),
 		knex.schema.dropTable('meeting_professors'),
 		knex.schema.dropTable('professors')
