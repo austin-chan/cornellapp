@@ -7,11 +7,17 @@ exports.up = function(knex, Promise) {
 			table.string('netid', 16);
 			table.string('name');
 		}),
+		knex.schema.createTable('semesters', function(table) {
+			table.string('descr');
+			table.string('lastModifiedDttm');
+			table.string('slug');
+			table.string('strm');
+		}),
 		knex.schema.createTable('courses', function(table) {
 			table.increments();
 			table.integer('crseId').unsigned();
 			table.integer('crseOfferNbr').unsigned();
-			table.integer('sterm').unsigned();
+			table.integer('strm').unsigned();
 			table.string('subject', 16);
 			table.string('titleLong');
 			table.string('titleShort');
@@ -45,7 +51,7 @@ exports.up = function(knex, Promise) {
 			table.string('sessionLong');
 			table.integer('unitsMaximum');
 			table.integer('unitsMinimum');
-		});
+		}),
 		knex.schema.createTable('sections', function(table) {
 			table.increments();
 			table.integer('groupId').unsigned();
@@ -66,11 +72,11 @@ exports.up = function(knex, Promise) {
 			table.string('ssrComponentLong');
 			table.string('startDt');
 			table.string('topicDescription');
-		});
+		}),
 		knex.schema.createTable('notes', function(table) {
 			table.integer('classNotesSeq');
 			table.string('descrlong');
-		});
+		}),
 		knex.schema.createTable('meetings', function(table) {
 			table.integer('sectionId').unsigned();
 			table.string('bldgDescr');
@@ -83,11 +89,11 @@ exports.up = function(knex, Promise) {
 			table.string('startDt');
 			table.string('endDt');
 			table.string('meetingTopicDescription');
-		});
+		}),
 		knex.schema.createTable('meeting_professors', function(table) {
 			table.integer('meetingId').unsigned();
 			table.string('professorNetid');
-		});
+		}),
 		knex.schema.createTable('professors', function(table) {
 			table.string('netid');
 			table.string('firstName');
@@ -99,6 +105,7 @@ exports.up = function(knex, Promise) {
 exports.down = function(knex, Promise) {
 	return Promise.all([
 		knex.schema.dropTable('users'),
+		knex.schema.dropTable('semesters'),
 		knex.schema.dropTable('courses'),
 		knex.schema.dropTable('groups'),
 		knex.schema.dropTable('sections'),

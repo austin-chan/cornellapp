@@ -13,8 +13,8 @@ var express = require('express'),
 	config = require('config'),
 	knex = require('knex')(config.knex),
 	bookshelf = require('bookshelf')(knex),
-	_ = app.set('bookshelf', bookshelf),
-	models = require('./app/models');
+	models = require('./app/models')(bookshelf),
+	_ = app.set('bookshelf', bookshelf);
 
 
 // App configuration.

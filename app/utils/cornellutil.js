@@ -13,7 +13,7 @@ var strutil = require('./strutil'),
  * The url base of the Cornell Courses API endpoints.
  * @type {string}
  */
-m.apiBase = 'https://classes.cornell.edu/api/2.0/config/';
+m.apiBase = 'https://classes.cornell.edu/api/2.0/';
 
 /**
  * Retrieve all available rosters from the Cornell Class Roster and returns the
@@ -25,47 +25,52 @@ m.apiBase = 'https://classes.cornell.edu/api/2.0/config/';
  *     error occurred.
  */
 m.getRosters = function(callback) {
-	var rostersUrl = m.apiBase + 'rosters.json';
+	var rostersUrl = m.apiBase + 'config/rosters.json';
 	httpGet(rostersUrl, true, function(data) {
-		var rosterInfo = [];
-		var rosterData = JSON.parse(data).data.rosters;
-		for (var i = 0; i < rosterData.length; i++) {
-			var roster = rosterData[i];
+		var rosters = JSON.parse(data).data.rosters;
+		callback(rosters);
 
-			rosterInfo.push({
-				'slug': roster.slug,
-				'descr': roster.descr,
-				'strm': roster.strm,
-				'lastupdated': roster.lastModifiedDttm
-			});
-		}
-
-		callback(rosterInfo);
 	}, function() {
 		callback(null);
 	});
 }
 
 /**
+ * Retrieves the roster object for a semester by its semester slug. This
+ * function determines it by retrieving all available rosters from the Cornell
+ * Course Roster and verifying the availability of the roster from the data
+ * returned from the API.
+ * @param {string} semester String of semester slug to retrieve.
+ * @param {function} callback Function that is called when the operation is
+ *     finished with the first argument equaling the roster object from the
+ *     Cornell Courses API or null otherwise.
+ */
+m.getRoster = function(semester, callback) {
+	m.getRosters(function(rosters) {
+		for (var i = 0; i < rosters.length; i++) {
+			if (rosters[i].slug == semester) {
+				callback(rosters[i]);
+				return;
+			}
+		}
+		callback(null);
+	});
+}
+
+/**
  * Determines if a roster is availble by its semester slug. This is done by
- * retrieving all available rosters from the Cornell Class Roster and verifying
+ * retrieving all available rosters from the Cornell Course Roster and verifying
  * the availability of the roster from the data returned from the API. This
  * method is case-sensitive (e.g. fa15 does not equal FA15).
- * @param {string} semester String of a semester slug to check the availability
+ * @param {string} semester String of semester slug to check the availability
  *     of.
  * @param {function} callback Function that is called when the operation is
  *     finished with the first argument equaling true if the roster slug is
  *     available or false otherwise.
  */
 m.isAvailableRoster = function(semester, callback) {
-	var rosters = m.getRosters(function(rosters) {
-		for (var i = 0; i < rosters.length; i++) {
-			if (rosters[i].slug == semester) {
-				callback(true);
-				return;
-			}
-		}
-		callback(false);
+	m.getRoster(semester, function(roster) {
+		return roster !== null;
 	});
 }
 
@@ -78,7 +83,7 @@ m.isAvailableRoster = function(semester, callback) {
  *    finished with an array of subject tags or null if an error occurred.
  */
 m.getSubjects = function(semester, callback) {
-	var subjectsUrl = m.apiBase + 'subjects.json?roster=' + semester;
+	var subjectsUrl = m.apiBase + 'config/subjects.json?roster=' + semester;
 	httpGet(subjectsUrl, true, function(data) {
 		var subjectData = JSON.parse(data).data.subjects,
 			subjects = [];
@@ -92,6 +97,29 @@ m.getSubjects = function(semester, callback) {
 	}, function() {
 		callback(null);
 	});
+}
+
+/**
+ * Retreives all class data for a subject during a semester. The return value is
+ * an array of objects that is initialized from the JSON from the Cornell
+ * Courses API.
+ * @param {string} semester Semester slug string to retrieve course data for.
+ * @param {string} subject Subject slug string to retrieve course data for.
+ * @param {function} callback Function that is called when the operation is
+ *     finished. The result array is passed as the first argument or null in the
+ *     case of an error.
+ */
+m.getCourses = function(semester, subject, callback) {
+	var coursesUrl = m.apiBase + 'search/classes.json?roster=' + semester +
+		'&subject=' + subject;
+	httpGet(coursesUrl, true, function(data) {
+		var coursesData = JSON.parse(data).data.classes;
+
+		callback(coursesData);
+	}, function() {
+		callback(null);
+	});
+
 }
 
 /**
@@ -125,6 +153,7 @@ m.fetchName = function(netid, callback) {
 		});
 	}, function() {
 		callback(null);
+
 	});
 }
 

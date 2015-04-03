@@ -16,6 +16,7 @@
     "knex": "^0.7.6",
     "mysql": "^2.5.5",
     "node-config": "0.0.2",
+    "underscore": "^1.8.3",
     "vcardparser": "^1.0.3"
   }
 }

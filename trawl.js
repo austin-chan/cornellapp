@@ -1,12 +1,18 @@
 /**
  * @fileoverview Performs the operation of retrieving, storing and updating
  * all course data from the Cornell University Courses API. This file is named
- * after the internal name of Google's web crawler "Trawler". Run trawl in the
+ * after the Google web crawler's internal name "Trawler". Run trawl in the
  * command line with an argument of the semester name to update:
  * 'node trawl FA15'
  */
 
-var cornellutil = require('./app/utils/cornellutil'),
+var async = require('async'),
+	config = require('config'),
+	knex = require('knex')(config.knex),
+	bookshelf = require('bookshelf')(knex),
+	models = require('./app/models')(bookshelf),
+	cornellutil = require('./app/utils/cornellutil'),
+	courseutil = require('./app/utils/courseutil')(models),
 	semester = process.argv[2];
 
 if (!semester || typeof semester != 'string') {
@@ -16,23 +22,111 @@ if (!semester || typeof semester != 'string') {
 
 semester = semester.toUpperCase();
 
-cornellutil.isAvailableRoster(semester, function(available) {
-	if (!available) {
-		console.log('Provide a valid semester to scrape.');
-		process.exit(1);		
+async.waterfall([
+	// check that semester argument is available
+	function(callback) {
+		cornellutil.getRoster(semester, function(roster) {
+			if (!roster) {
+				callback(semester + ' is not an available semester.');
+				return;
+			}
+
+			callback(null, roster);
+		});
+	},
+
+	// fetch an already saved semester entry or save a new semester entry
+	function(roster, callback) {
+		new models.semester({
+			slug: semester
+		}).fetch().then(function(semesterEntry) {
+			// semester entry already exists
+			if (semesterEntry) {
+				callback(null, semesterEntry);
+
+			// save new semester entry
+			} else {
+				new models.semester({
+					descr: roster.descr,
+					lastModifiedDttm: roster.lastModifiedDttm,
+					slug: roster.slug,
+					strm: roster.strm
+				}).save().then(function(semesterEntry) {
+					callback(null, semesterEntry);
+				});
+			}
+		});
+	},
+
+	// get all subjects for semester
+	function(semesterEntry, callback) {
+		cornellutil.getSubjects(semester, function(subjects) {
+			if (!subjects || !subjects.length) {
+				callback(semester + ' is not an available semester.');
+				return;
+			}
+
+			callback(null, semesterEntry, subjects);
+		});
+	},
+
+	// get courses for all subjects
+	function(semesterEntry, subjects, callback) {
+		// TODO: remove this after testing
+		subjects = subjects.slice(0,2);
+
+		async.map(subjects, function(subject, callback) {
+			cornellutil.getCourses(semester, subject, function(coursesData) {
+				if (!coursesData) {
+					callback(subject);
+					return;
+				}
+
+				console.log('Fetched ' + subject + ' courses.');
+				callback(null, coursesData);
+			});
+		}, function(err, subjectCoursesData) {
+			if (err) {
+				callback('An error occurred retrieving courses for subject ' +
+					err);
+				return;
+			}
+
+			callback(null, semesterEntry, subjectCoursesData);
+		});
+	},
+
+	// fetch all course entries for the semester
+	function(semesterEntry, subjectCoursesData, callback) {
+		new models.course({
+			strm: semesterEntry.get('strm')
+		}).fetchAll().then(function(courseEntries) {
+			callback(null, semesterEntry, subjectCoursesData, courseEntries);
+		});
+	},
+
+	// update or save all classes
+	function(semesterEntry, subjectCoursesData, courseEntries, callback) {
+		var courses = subjectCoursesData[0].concat(subjectCoursesData[1]);
+
+		async.each(courses, function(course, callback) {
+			courseutil.saveCourse(course, callback);
+		}, function(err) {
+			if (err) {
+				callback('An error occurred saving new courses to the ' + 
+					'database.');
+			}
+
+			callback(null);
+		});
 	}
 
-	cornellutil.getSubjects(semester, function(subjects) {
-		console.log(subjects);
-	});
+], function(err, result) {
+	if (err) {
+		console.log(err);
+	} else {
+		console.log('here');
+	}
+
+	process.exit(1);
 });
-
-// var fs = require('fs');
-// var obj = JSON.parse(fs.readFileSync('file', 'utf8'));
-
-// var fs = require('fs');
-// var obj;
-// fs.readFile('file', 'utf8', function (err, data) {
-//   if (err) throw err;
-//   obj = JSON.parse(data);
-// });
