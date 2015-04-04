@@ -77,6 +77,7 @@ exports.up = function(knex, Promise) {
 			table.string('topicDescription');
 		}),
 		knex.schema.createTable('meetings', function(table) {
+			table.increments();
 			table.integer('sectionId').unsigned();
 			table.string('bldgDescr');
 			table.string('classMtgNbr');
@@ -96,6 +97,7 @@ exports.up = function(knex, Promise) {
 		knex.schema.createTable('professors', function(table) {
 			table.string('netid');
 			table.string('firstName');
+			table.string('middleName');
 			table.string('lastName');
 		})
 	]);

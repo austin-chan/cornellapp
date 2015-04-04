@@ -9,6 +9,7 @@
     "async": "^0.9.0",
     "body-parser": "^1.12.0",
     "bookshelf": "^0.7.9",
+    "chalk": "^1.0.0",
     "config": "^1.12.0",
     "ejs": "^2.3.1",
     "express": "^4.12.2",

@@ -8,12 +8,13 @@
 
 var async = require('async'),
 	_ = require('underscore'),
+	chalk = require('chalk'),
 	config = require('config'),
 	knex = require('knex')(config.knex),
 	bookshelf = require('bookshelf')(knex),
 	models = require('./app/models')(bookshelf),
 	cornellutil = require('./app/utils/cornellutil'),
-	courseutil = require('./app/utils/courseutil')(knex, models),
+	courseutil = require('./app/utils/courseutil')(models, knex),
 	semester = process.argv[2];
 
 if (!semester || typeof semester != 'string') {
@@ -28,10 +29,11 @@ async.waterfall([
 	function(callback) {
 		cornellutil.getRoster(semester, function(roster) {
 			if (!roster) {
-				callback(semester + ' is not an available semester.');
+				callback(semester + ' is not an available semester');
 				return;
 			}
 
+			printSuccess('Verified semester ' + semester + ' is available');
 			callback(null, roster);
 		});
 	},
@@ -53,6 +55,7 @@ async.waterfall([
 					slug: roster.slug,
 					strm: roster.strm
 				}).save().then(function(semesterEntry) {
+					printSuccess('Inserted semester entry');
 					callback(null, semesterEntry);
 				});
 			}
@@ -67,6 +70,7 @@ async.waterfall([
 				return;
 			}
 
+			printSuccess('Retrieved list of available subjects');
 			callback(null, semesterEntry, subjects);
 		});
 	},
@@ -76,6 +80,8 @@ async.waterfall([
 		// TODO: remove this after testing
 		subjects = subjects.slice(0,2);
 
+		console.log('Retrieving all courses for semester ' + semester + '...');
+
 		async.map(subjects, function(subject, callback) {
 			cornellutil.getCourses(semester, subject, function(coursesData) {
 				if (!coursesData) {
@@ -83,7 +89,7 @@ async.waterfall([
 					return;
 				}
 
-				console.log('Fetched ' + subject + ' courses.');
+				printSuccess('    Retrieved ' + subject + ' courses');
 				callback(null, coursesData);
 			});
 		}, function(err, subjectCoursesData) {
@@ -93,26 +99,100 @@ async.waterfall([
 				return;
 			}
 
-			callback(null, semesterEntry, subjectCoursesData);
+			var courses = _.flatten(subjectCoursesData, true);
+
+			printSuccess('Retrieved ' + courses.length + ' courses to sync ' +
+			'with the database');
+			callback(null, semesterEntry, courses);
 		});
 	},
 
 	// fetch all course entries for the semester
-	function(semesterEntry, subjectCoursesData, callback) {
+	function(semesterEntry, courses, callback) {
 		new models.course({
 			strm: semesterEntry.get('strm')
-		}).fetchAll().then(function(courseEntries) {
-			callback(null, semesterEntry, subjectCoursesData, courseEntries);
+		}).fetchAll({
+			withRelated: ['groups.sections.meetings']
+		}).then(function(courseEntries) {
+			printSuccess('Fetched already saved courses for semester '
+				+ semester);
+			callback(null, courses, courseEntries);
 		});
 	},
 
-	// update or save all classes
-	function(semesterEntry, subjectCoursesData, courseEntries, callback) {
-		var courses = _.flatten(subjectCoursesData, true);
+	// analyze the courses against the course entries
+	function(courses, courseEntries, callback) {
+		var pairsToUpdate = [] // course API object and course entry tuples
 
-		console.log('Retrieved ' + courses.length + ' courses to sync with ' +
-			'the database.');
-		courseutil.saveCourses(courses, function(err) {
+		while (courseEntries.length && courses.length) {
+			var course = courses[0],
+				courseEntry = courseEntries.findWhere({
+					crseId: course.crseId
+				});
+
+			if (courseEntry) {
+				if (!courseutil.isIdenticalCourse(course, courseEntry)) {
+					pairsToUpdate.push([course, courseEntry]);
+				}
+
+				courseEntries.remove(courseEntry);
+				courses.shift();
+			}
+		}
+
+		callback(null, courses, courseEntries, pairsToUpdate);
+	},
+
+	// update existing course entries
+	function(courses, courseEntries, pairsToUpdate, callback) {
+		async.each(pairsToUpdate, function(pairToUpdate, callback) {
+			var course = pairToUpdate[0],
+				courseEntry = pairToUpdate[1];
+
+			courseutil.updateCourse(course, courseEntry, function(err) {
+				if (err) {
+					callback(err);
+					return;
+				}
+
+				callback();
+			});
+		}, function(err) {
+			if (err) {
+				callback('An error occurred during updating of a course entry' +
+					err);
+				return;
+			}
+
+			callback(null, courses, courseEntries);
+		});
+	},
+
+	// delete courses in the database that don't match the Courses API
+	function(courses, courseEntries, callback) {
+		if (!courseEntries.length) {
+			callback(null, courses);
+			return;
+		}
+
+		async.each(courseEntries, courseutil.deleteCourse, function(err) {
+			if (err) {
+				callback('An error occurred deleting course entries in the ' +
+					'database while ' + err);
+			}
+
+			callback(null);
+		});
+	},
+
+	// insert all courses not already in the database
+	function(courses, callback) {
+		if (!courses.length) {
+			callback(null);
+			return;
+		}
+
+		async.each(courses, courseutil.insertCourse, function(err) {
 			if (err) {
 				callback('An error occurred saving new courses to the ' + 
 					'database while ' + err);
@@ -120,25 +200,18 @@ async.waterfall([
 
 			callback(null);
 		});
-		// async.each(courses, callback);
-		// async.each(courses, function(course, callback) {
-		// 	courseutil.saveCourse(course, callback);
-		// }, function(err) {
-		// 	if (err) {
-		// 		callback('An error occurred saving new courses to the ' + 
-		// 			'database while ' + err);
-		// 	}
-
-		// 	callback(null);
-		// });
 	}
 
 ], function(err, result) {
 	if (err) {
 		console.log(err);
 	} else {
-		console.log('Completed database sync for semester ' + semester + '.');
+		console.log('here');
 	}
 
 	process.exit(1);
 });
+
+function printSuccess(message) {
+	console.log(message + '. ' + chalk.green('Success \u2713'));
+}
