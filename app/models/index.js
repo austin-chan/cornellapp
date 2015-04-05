@@ -11,6 +11,8 @@ module.exports = function(bookshelf) {
 	m.group = require('./group.js')(bookshelf, m);
 	m.section = require('./section.js')(bookshelf, m);
 	m.meeting = require('./meeting.js')(bookshelf, m);
+	m.meetingprofessorsjoin =
+		require('./meetingprofessorsjoin.js')(bookshelf, m);
 	m.professor = require('./professor.js')(bookshelf, m);
 
 	return m;

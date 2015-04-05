@@ -13,7 +13,7 @@ module.exports = function(models, knex) {
 	 * Compares a course object from the Cornell Courses API against an existing
 	 * course entry in the database. This function assumes that the course
 	 * entry model instance has preloaded its respective
-	 * groups.sections.meetings relations.
+	 * groups.sections.meetings.professors relations.
 	 * @param {object} course Object representing a course from the Cornell
 	 *     Courses API to compare with.
 	 * @param {object} courseEntry Course model instance of a course entry to
@@ -25,43 +25,94 @@ module.exports = function(models, knex) {
 		var copyCourse = JSON.parse(JSON.stringify(course)),
 			copyCourseEntry = courseEntry.toJSON();
 
-		// delete ids for all entries
+		// delete ids and relation ids for the entry
 		delete copyCourseEntry['id'];
-
-		// sanitize groups level
 		for (var i = 0; i < copyCourseEntry.groups.length; i++) {
 			var group = copyCourseEntry.groups[i];
 			delete group['id'];
 			delete group['courseId'];
 
-			for(var j = 0; j < group.sections; j++) {
+			for(var j = 0; j < group.sections.length; j++) {
 				var section = group.sections[j];
+				section.isComponentGraded = !!section.isComponentGraded;
 				delete section['id'];
 				delete section['groupId'];
 
-				for(var k = 0; k < section.meetings; k++) {
+				for(var k = 0; k < section.meetings.length; k++) {
 					var meeting = section.meetings[k];
 					delete meeting['id'];
-					delete meeting['groupId'];
+					delete meeting['sectionId'];
+
+					for(var l = 0; l < meeting.professors.length; l++) {
+						var professor = meeting.professors[l];
+						delete professor['_pivot_professorNetid'];
+						delete professor['_pivot_meetingId'];
+					}
 				}
 			}
 		}
 
+		// sanitize course API object
 		sanitizeCourseObject(copyCourse);
+		copyCourse.groups = copyCourse.enrollGroups;
+		delete copyCourse['enrollGroups'];
+		for (var i = 0; i < copyCourse.groups.length; i++) {
+			var group = copyCourse.groups[i];
+			sanitizeGroupObject(group);
 
-		// sanitize 
+			group.sections = group.classSections;
+			delete group['classSections'];
 
-		return false;
-		// console.log(copyCourseEntry);
-		// console.log(copyCourse);
-		// console.log(_.isEqual(copyCourse, copyCourseEntry));
-		// process.exit(1);
+			for(var j = 0; j < group.sections.length; j++) {
+				var section = group.sections[j];
+				sanitizeSectionObject(section);
+
+				for(var k = 0; k < section.meetings.length; k++) {
+					var meeting = section.meetings[k];
+
+					meeting.professors = meeting.instructors;
+					delete meeting['instructors'];
+
+					for(var l = 0; l < meeting.professors.length; l++) {
+						var professor = meeting.professors[l];
+						sanitizeProfessorObject(professor);
+					}
+				}
+			}
+		}
+
+		// delete copyCourse.groups[0].sections[0].meetings[0]['professors'];
+		// delete copyCourseEntry.groups[0].sections[0].meetings[0]['professors'];
+
+		// if (!_.isEqual(copyCourseEntry, copyCourse)) {
+		// 	// console.log(_.isEqual(copyCourseEntry, copyCourse));
+		// 	// console.log(copyCourseEntry);
+		// 	// console.log(copyCourse);
+		// 	// console.log(_.isEqual(copyCourseEntry.groups[25], copyCourse.groups[25]));
+		// 	// console.log(_.isEqual(copyCourseEntry.groups[26], copyCourse.groups[26]));
+
+		// 	console.log(_.isEqual(copyCourseEntry, copyCourse));
+		// 	console.log(copyCourseEntry.groups[0].sections);
+		// 	console.log(copyCourse.groups[0].sections);
+		// 	// console.log(copyCourse.subject + ' ' + copyCourse.catalogNbr);
+
+		// 	// _.each(copyCourse.groups, function(el) {
+		// 	// 	console.log(el.sections[0].section);
+		// 	// });
+		// 	// _.each(copyCourseEntry.groups, function(el) {
+		// 	// 	console.log(el.sections[0].section);
+		// 	// });
+		// 	process.exit(1);
+		// }
+
+		return _.isEqual(copyCourseEntry, copyCourse);
 	}
 
 	/**
 	 * Update a course entry in the database to reflect the values in a course
 	 * object from the Cornell Courses API. The update cascades down to the
-	 * course entry's corresponding groups.sections.meetings relations.
+	 * course entry's corresponding groups.sections.meetings.professors 
+	 * relations.
 	 * @param {object} course Object representing a course from the Cornell
 	 *     Courses API to copy values from.
 	 * @param {object} courseEntry Course model instance of a course entry to
@@ -77,7 +128,7 @@ module.exports = function(models, knex) {
 
 	/**
 	 * Delete a course entry from the database and cascade the delete down to
-	 * all of its groups.sections.meetings relation objects.
+	 * all of its groups.sections.meetings.professors relation objects.
 	 * @param {object} courseEntry Course model instance of a course entry to
 	 *     delete.
 	 * @param {function} callback Callback function to call when the operation
@@ -92,8 +143,8 @@ module.exports = function(models, knex) {
 	/**
 	 * Save a course into the database as a new entry. Create the new entry from
 	 * a course object taken from the Cornell Courses API. This function also
-	 * saves the corresponding groups.sections.meetings relations data as new
-	 * entries in the database.
+	 * saves the corresponding groups.sections.meetings.professors relations
+	 * data as new entries in the database.
 	 * @param {string} course Object taken from the Cornell Courses API.
 	 * @param {function} callback Callback function that is run when the
 	 *     operation is finished. No argument is passed if successful and a
@@ -115,7 +166,7 @@ module.exports = function(models, knex) {
 
 			// cascade down to enrollGroups
 			function(savedCourse, callback) {
-				async.map(enrollGroups, function(group, callback) {
+				async.mapSeries(enrollGroups, function(group, callback) {
 					sanitizeGroupObject(group);
 					group.courseId = savedCourse.get('id');
 
@@ -141,12 +192,12 @@ module.exports = function(models, knex) {
 
 			// cascade down to classSections.
 			function(groupSections, callback) {
-				async.map(groupSections, function(groupSection, callback) {
+				async.mapSeries(groupSections, function(groupSection, callback) {
 
 					var savedGroup = groupSection[0],
 						sections = groupSection[1];
 
-					async.map(sections, function(section, callback) {
+					async.mapSeries(sections, function(section, callback) {
 						section.groupId = savedGroup.get('id');
 						sanitizeSectionObject(section);
 
@@ -181,12 +232,12 @@ module.exports = function(models, knex) {
 
 			// cascade down to meetings
 			function(sectionMeetings, callback) {
-				async.map(sectionMeetings, function(sectionMeeting, callback) {
+				async.mapSeries(sectionMeetings, function(sectionMeeting, callback) {
 
 					var savedSection = sectionMeeting[0],
 						meetings = sectionMeeting[1];
 
-					async.map(meetings, function(meeting, callback) {
+					async.mapSeries(meetings, function(meeting, callback) {
 						meeting.sectionId = savedSection.get('id');
 
 						var professors =
@@ -220,13 +271,18 @@ module.exports = function(models, knex) {
 			},
 
 			// cascade down to professors - make sure a professor entry exists
-			// and create meeting_professors table entries
+			// and create meeting_professors_joins table entries
 			function(meetingProfessors, callback) {
-				async.mapSeries(meetingProfessors,
+				async.eachSeries(meetingProfessors,
 					function(meetingProfessor, callback) {
 
 					var meeting = meetingProfessor[0],
 						professors = meetingProfessor[1];
+
+					if (!professors.length) {
+						callback(null);
+						return;
+					}
 
 					async.parallel([
 						function(callback) {
@@ -235,23 +291,24 @@ module.exports = function(models, knex) {
 
 								if (err) {
 									callback('creating professor entries.');
+									return;
 								}
 
 								callback();
 							});
 						},
 						function(callback) {
-							async.each(professors, 
+							async.eachSeries(professors, 
 								function(professor, callback) {
 
-								knex('meeting_professors').insert({
+								knex('meeting_professors_joins').insert({
 									meetingId: meeting.id,
 									professorNetid: professor.netid
 								}).then(function() {
 									callback();
 								}).catch(function(err) {
-									callback('creating meeting_professors ' +
-										'entries');
+									callback('creating ' + 
+										'meeting_professors_joins entries');
 								});
 							}, function(err) {
 								if (err) {
@@ -270,16 +327,15 @@ module.exports = function(models, knex) {
 
 						callback(null);
 					});
-				}, function(err, meetingProfessors) {
+				}, function(err) {
 					if (err) {
 						callback(err);
 						return;
 					}
 
-					callback(null, meetingProfessors);
+					callback(null);
 				});
-			},
-
+			}
 		], function(err) {
 			if (err) {
 				callback(err);
@@ -306,6 +362,8 @@ module.exports = function(models, knex) {
 			return;
 		}
 
+		sanitizeProfessorObject(professor);
+
 		new models.professor({
 			netid: professor.netid
 		}).fetch().then(function(savedProfessor) {
@@ -315,15 +373,16 @@ module.exports = function(models, knex) {
 				return;
 			}
 
-			new models.professor({
-				netid: professor.netid,
-				firstName: professor.firstName,
-				middleName: professor.middleName,
-				lastName: professor.lastName
-			}).save().then(function() {
+			new models.professor(professor).save().then(function() {
 				professorMemo.push(professor.netid);
 				callback();
 			}).catch(function(err) {
+				if (err.code == 'ER_DUP_ENTRY') {
+					// this error is fine, redundant programming
+					callback();
+					return;
+				}
+
 				callback('creating professor entries.');
 			});
 		}).catch(function(err) {
@@ -392,13 +451,22 @@ module.exports = function(models, knex) {
 	}
 
 	/**
-	 * Convenience function to sanitize a section object from the Cornell Courses
-	 * API to prepare it for insertion into the database.
+	 * Convenience function to sanitize a section object from the Cornell
+	 * Courses API to prepare it for insertion into the database.
 	 * @param {object} section Section object to sanitize.
 	 */
 	function sanitizeSectionObject(section) {
 		reduceNotes(section);
 		jsonFlatten(section, 'notes');
+	}
+
+	/**
+	 * Convenience function to sanitize a professor object from the Cornell
+	 * Courses API to prepare it for insertion into the database.
+	 * @param {object} professor Professor object to sanitize.
+	 */
+	function sanitizeProfessorObject(professor) {
+		delete professor['instrAssignSeq'];
 	}
 
 	return m;

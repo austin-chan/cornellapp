@@ -78,7 +78,7 @@ async.waterfall([
 	// get courses for all subjects
 	function(semesterEntry, subjects, callback) {
 		// TODO: remove this after testing
-		subjects = subjects.slice(0,2);
+		// subjects = subjects.slice(0,10);
 
 		console.log('Retrieving all courses for semester ' + semester + '...');
 
@@ -112,7 +112,7 @@ async.waterfall([
 		new models.course({
 			strm: semesterEntry.get('strm')
 		}).fetchAll({
-			withRelated: ['groups.sections.meetings']
+			withRelated: ['groups.sections.meetings.professors']
 		}).then(function(courseEntries) {
 			printSuccess('Fetched already saved courses for semester '
 				+ semester);
@@ -196,13 +196,14 @@ async.waterfall([
 			if (err) {
 				callback('An error occurred saving new courses to the ' + 
 					'database while ' + err);
+				return;
 			}
 
 			callback(null);
 		});
 	}
 
-], function(err, result) {
+], function(err) {
 	if (err) {
 		console.log(err);
 	} else {

@@ -6,9 +6,9 @@ module.exports = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'courses',
 		semester: function() {
-			var related = this.belongsTo(models.semester, 'strm');
+			var relation = this.belongsTo(models.semester, 'strm');
 			relation.relatedData.parentTableName = 'strm';
-			return related;
+			return relation;
 		},
 		groups: function() {
 			return this.hasMany(models.group, 'courseId');
