@@ -2,15 +2,15 @@
 <html>
 <head>
 	<title>Chequerd</title>
-	<link rel="stylesheet" type="text/css" href="/css/style.css">
-	<link href='http://fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+<!-- 	<link href='http://fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Roboto+Slab:400,300,700' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Muli:300,400' rel='stylesheet' type='text/css'>
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
-	<link href='http://fonts.googleapis.com/css?family=Arimo:400,700' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Arimo:400,700' rel='stylesheet' type='text/css'> -->
 </head>
 <body>
 	<header>
@@ -20,10 +20,14 @@
 	</header>
 	<div id="main">
 		<div class="inner">
-			<div class="classside">
-				<ul class="classlist">
+			<div class="class-side">
+				<div class="class-adder">
+					<i class="icon-plus2"></i>
+					<input type="text" class="adder-input" placeholder="type a class name/number">
+				</div>
+				<ul class="class-list">
 					<li class="class">
-						<div class="toggle">
+						<div class="cq-toggle">
 							<i class="icon-check-box on-icon"></i>
 							<i class="icon-check-box-outline-blank off-icon"></i>
 						</div>
@@ -34,12 +38,17 @@
 							INFO 2300: Intermediate Web Dev...
 						</div>
 						<div class="bottom-section">
-							LEC 001
+							<div class="group first">
+								LEC 001
+							</div>
+							<div class="group">
+								
+							</div>
 						</div>
 					</li>
 				</ul>
 			</div>
-			<div class="scheduleside">
+			<div class="schedule-side">
 				<div class="day-labels">
 					<div class="label">Monday</div>
 					<div class="label">Tuesday</div>
@@ -73,5 +82,9 @@
 			</div>
 		</div>
 	</div>
+	<!-- TODO -->
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script> -->
+	<script src="/assets/js/jquery.min.js"></script>
+	<script src="/assets/js/js-built.js"></script>
 </body>
 </html>

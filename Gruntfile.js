@@ -10,8 +10,8 @@ module.exports = function(grunt) {
         banner: '/*! Built by Chequerd at <%= grunt.template.today("yyyy-mm-dd h:MM:ss TT Z") %> */\n'
       },
       build: {
-        src: ['public/js/react.min.js', 'public/js/script.js'],
-        dest: 'public/js/js-built.js'
+        src: ['public/assets/js/global.js', 'public/assets/js/init.js'],
+        dest: 'public/assets/js/js-built.js'
       }
     },
     watch: {

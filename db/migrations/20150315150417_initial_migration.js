@@ -29,13 +29,13 @@ exports.up = function(knex, Promise) {
 			table.string('catalogCourseSubfield');
 			table.string('catalogDistr');
 			table.string('catalogFee');
-			table.string('catalogForbiddenOverlaps');
+			table.string('catalogForbiddenOverlaps', 2048);
 			table.string('catalogLang');
 			table.string('catalogNbr');
 			table.string('catalogOutcomes', 4096);
 			table.string('catalogPermission', 2048);
 			table.string('catalogPrereqCoreq', 2048);
-			table.string('catalogSatisfiesReq');
+			table.string('catalogSatisfiesReq', 2048);
 			table.string('catalogWhenOffered');
 		}),
 		knex.schema.createTable('groups', function(table) {
@@ -95,7 +95,8 @@ exports.up = function(knex, Promise) {
 			table.string('professorNetid');
 		}),
 		knex.schema.createTable('professors', function(table) {
-			table.string('netid').primary();
+			table.string('label', 512).primary();
+			table.string('netid');
 			table.string('firstName');
 			table.string('middleName');
 			table.string('lastName');

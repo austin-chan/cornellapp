@@ -57,8 +57,14 @@ async.waterfall([
 				}).save().then(function(semesterEntry) {
 					printSuccess('Inserted semester entry');
 					callback(null, semesterEntry);
+				}).catch(function(err) {
+					if (err)
+						callback(err);
 				});
 			}
+		}).catch(function(err) {
+			if (err)
+				callback(err);
 		});
 	},
 
@@ -78,7 +84,7 @@ async.waterfall([
 	// get courses for all subjects
 	function(semesterEntry, subjects, callback) {
 		// TODO: remove this after testing
-		// subjects = subjects.slice(0,10);
+		// subjects = subjects.slice(50,100);
 
 		console.log('Retrieving all courses for semester ' + semester + '...');
 
@@ -109,14 +115,20 @@ async.waterfall([
 
 	// fetch all course entries for the semester
 	function(semesterEntry, courses, callback) {
+		console.log(semesterEntry.get('strm'));
 		new models.course({
+			strm: semesterEntry.get('strm')
+		}).where({
 			strm: semesterEntry.get('strm')
 		}).fetchAll({
 			withRelated: ['groups.sections.meetings.professors']
 		}).then(function(courseEntries) {
-			printSuccess('Fetched already saved courses for semester '
-				+ semester);
+			printSuccess('Fetched ' + courseEntries.length +
+				' already saved course entries');
 			callback(null, courses, courseEntries);
+		}).catch(function(err) {
+			if (err)
+				callback(err);
 		});
 	},
 
@@ -127,7 +139,8 @@ async.waterfall([
 		while (courseEntries.length && courses.length) {
 			var course = courses[0],
 				courseEntry = courseEntries.findWhere({
-					crseId: course.crseId
+					crseId: course.crseId,
+					subject: course.subject
 				});
 
 			if (courseEntry) {
@@ -139,6 +152,10 @@ async.waterfall([
 				courses.shift();
 			}
 		}
+
+		console.log('Found ' + pairsToUpdate.length + ' to update.');
+		console.log('Found ' + courseEntries.length + ' to delete.');
+		console.log('Found ' + courses.length + ' to insert.');
 
 		callback(null, courses, courseEntries, pairsToUpdate);
 	},

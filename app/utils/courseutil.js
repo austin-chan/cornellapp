@@ -47,6 +47,7 @@ module.exports = function(models, knex) {
 						var professor = meeting.professors[l];
 						delete professor['_pivot_professorNetid'];
 						delete professor['_pivot_meetingId'];
+						delete professor['label'];
 					}
 				}
 			}
@@ -84,16 +85,36 @@ module.exports = function(models, knex) {
 		// delete copyCourse.groups[0].sections[0].meetings[0]['professors'];
 		// delete copyCourseEntry.groups[0].sections[0].meetings[0]['professors'];
 
-		// if (!_.isEqual(copyCourseEntry, copyCourse)) {
+		//process.stdout.write("hello: ");
+
+		if (!_.isEqual(copyCourseEntry, copyCourse)) {
 		// 	// console.log(_.isEqual(copyCourseEntry, copyCourse));
 		// 	// console.log(copyCourseEntry);
 		// 	// console.log(copyCourse);
 		// 	// console.log(_.isEqual(copyCourseEntry.groups[25], copyCourse.groups[25]));
 		// 	// console.log(_.isEqual(copyCourseEntry.groups[26], copyCourse.groups[26]));
+			// delete copyCourse['groups'];
+			// delete copyCourseEntry['groups'];		
+			// console.log(_.isEqual(copyCourseEntry.groups[0], copyCourse.groups[0]));
+			// console.log(_.isEqual(copyCourseEntry.groups[1], copyCourse.groups[1]));
+			// console.log(_.isEqual(copyCourseEntry.groups[2], copyCourse.groups[2]));
+// 			console.log(_.isEqual(copyCourseEntry.groups[3], copyCourse.groups[3]));
+// 			console.log(_.isEqual(copyCourseEntry.groups[4], copyCourse.groups[4]));
+// 			// console.log(_.isEqual(copyCourseEntry.groups[5], copyCourse.groups[5]));
+// 			console.log(_.isEqual(copyCourseEntry.groups[6], copyCourse.groups[6]));
+// 			console.log(copyCourseEntry.groups[3].sections[0].meetings[0].professors);
+// 			console.log(copyCourse.groups[3].sections[0].meetings[0].professors);
 
-		// 	console.log(_.isEqual(copyCourseEntry, copyCourse));
-		// 	console.log(copyCourseEntry.groups[0].sections);
-		// 	console.log(copyCourse.groups[0].sections);
+
+// console.log(_.isEqual(copyCourse.groups[3].sections[0].meetings[0].professors, copyCourseEntry.groups[3].sections[0].meetings[0].professors));
+
+			// _.map(copyCourse.groups, function(group) {
+			// 	console.log(group.sections[0].section);
+			// });
+
+			// _.map(copyCourseEntry.groups, function(group) {
+			// 	console.log(group.sections[0].section);
+			// });
 		// 	// console.log(copyCourse.subject + ' ' + copyCourse.catalogNbr);
 
 		// 	// _.each(copyCourse.groups, function(el) {
@@ -102,8 +123,8 @@ module.exports = function(models, knex) {
 		// 	// _.each(copyCourseEntry.groups, function(el) {
 		// 	// 	console.log(el.sections[0].section);
 		// 	// });
-		// 	process.exit(1);
-		// }
+			// process.exit(1);
+		}
 
 		return _.isEqual(copyCourseEntry, copyCourse);
 	}
@@ -123,7 +144,21 @@ module.exports = function(models, knex) {
 	 *     error occurs.
 	 */
 	m.updateCourse = function(course, courseEntry, callback) {
-		callback();
+		async.parallel([
+			function(callback) {
+				m.deleteCourse(courseEntry, callback);
+			},
+			function(callback) {
+				m.insertCourse(course, callback);
+			}
+		], function(err) {
+			if (err) {
+				callback(err);
+				return;
+			}
+
+			callback();
+		});
 	}
 
 	/**
@@ -137,7 +172,75 @@ module.exports = function(models, knex) {
 	 *     error occurs.
 	 */
 	m.deleteCourse = function(courseEntry, callback) {
-		callback();
+		var courseJSON = courseEntry.toJSON(),
+			groups = courseJSON.groups,
+			groupIds = _.map(groups, function(group) {
+				return group.id;
+			}),
+			sections = _.reduce(groups, function(acc, el) {
+				return acc.concat(el.sections);
+			}, []),
+			sectionIds = _.map(sections, function(section) {
+				return section.id;
+			}),
+			meetings = _.reduce(sections, function(acc, el) {
+				return acc.concat(el.meetings);
+			}, []),
+			meetingIds = _.map(meetings, function(meeting) {
+				return meeting.id;
+			});
+
+		async.parallel([
+			function(callback) {
+				knex('courses').where({id: courseJSON.id}).del().then(
+					function() {
+
+					callback();
+				}).catch(function(err) {
+					callback(err);
+				});
+			},
+			function(callback) {
+				knex('groups').whereIn('id', groupIds).del().then(function() {
+					callback();
+				}).catch(function(err) {
+					callback(err);
+				});
+			},
+			function(callback) {
+				knex('sections').whereIn('id', sectionIds).del().then(
+					function() {
+
+					callback();
+				}).catch(function(err) {
+					callback(err);
+				});
+			},
+			function(callback) {
+				knex('meetings').whereIn('id', meetingIds).del().then(
+					function() {
+
+					callback();
+				}).catch(function(err) {
+					callback(err);
+				});
+			},
+			function(callback) {
+				knex('meeting_professors_joins')
+					.whereIn('meetingId', meetingIds).del().then(function() {
+						callback();
+					}).catch(function(err) {
+						callback(err);
+					});
+			}
+		], function(err) {
+			if (err) {
+				callback(err);
+				return;
+			}
+
+			callback();
+		});
 	}
 
 	/**
@@ -303,7 +406,8 @@ module.exports = function(models, knex) {
 
 								knex('meeting_professors_joins').insert({
 									meetingId: meeting.id,
-									professorNetid: professor.netid
+									professorLabel:
+										generateProfessorLabel(professor)
 								}).then(function() {
 									callback();
 								}).catch(function(err) {
@@ -364,8 +468,10 @@ module.exports = function(models, knex) {
 
 		sanitizeProfessorObject(professor);
 
+		var label = generateProfessorLabel(professor);
+
 		new models.professor({
-			netid: professor.netid
+			label: professor.label
 		}).fetch().then(function(savedProfessor) {
 			if (savedProfessor) {
 				professorMemo.push(professor.netid);
@@ -388,6 +494,18 @@ module.exports = function(models, knex) {
 		}).catch(function(err) {
 			callback('creating professor entries.');
 		});
+	}
+
+	/**
+	 * Convenience function to generate a professor label from a professor
+	 * object provided by the Cornell Courses API. A professor label is a string
+	 * of its netid, firstName, middleName and lastName concatenated together
+	 * @param {object} professor Professor object to generate a label for.
+	 * @return {string} Label that was generated for the professor.
+	 */
+	function generateProfessorLabel(professor) {
+		return professor.netid + professor.firstName + professor.middleName
+			+ professor.lastName;
 	}
 
 	/**
