@@ -13,8 +13,8 @@ module.exports = function(bookshelf, models) {
 		professors: function() {
 			var relation = this.hasMany(models.professor, 'meetingId')
 				.through(models.meetingprofessorsjoin, 'id', 'meetingId');
-			relation.relatedData.throughIdAttribute = 'professorNetid';
-			relation.relatedData.throughForeignKey = 'netid';
+			relation.relatedData.throughIdAttribute = 'professorLabel';
+			relation.relatedData.throughForeignKey = 'label';
 			return relation;
 		}
 	});

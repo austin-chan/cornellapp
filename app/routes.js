@@ -9,5 +9,5 @@ app.get('/', function(req, res) {
 	res.render('index');
 });
 
-// handles "/signup/*" routes
-require('./routers/signuprouter');
+// "/api"
+require('./routers/apirouter');

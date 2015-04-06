@@ -92,10 +92,10 @@ exports.up = function(knex, Promise) {
 		}),
 		knex.schema.createTable('meeting_professors_joins', function(table) {
 			table.integer('meetingId').unsigned();
-			table.string('professorNetid');
+			table.string('professorLabel');
 		}),
 		knex.schema.createTable('professors', function(table) {
-			table.string('label', 512).primary();
+			table.string('label').primary();
 			table.string('netid');
 			table.string('firstName');
 			table.string('middleName');

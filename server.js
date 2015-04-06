@@ -13,13 +13,14 @@ var express = require('express'),
 	config = require('config'),
 	knex = require('knex')(config.knex),
 	bookshelf = require('bookshelf')(knex),
-	models = require('./app/models')(bookshelf),
-	_ = app.set('bookshelf', bookshelf);
+	models = require('./app/models')(bookshelf);
 
 
 // App configuration.
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/app/views');
+app.set('models', models);
+app.set('knex', knex);
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(express.static(__dirname + '/public'));

@@ -25,4 +25,33 @@ m.isWhiteEmpty = function(str) {
 	return str.trim() == '';
 }
 
+/**
+ * Get the first alphanumeric substring from a string. This function ignores
+ * leading spaces and returns an empty string if the first non white-space
+ * character is not a letter.
+ * @param {string} str String to retrieve the substring from.
+ * @return {string} First alphanumeric substring. An empty string if str is
+ *     empty, contains only white-space or has a first non white-space character
+ *     that is not a letter.
+ */
+m.firstAlphabeticSubstring = function(str) {
+	var match = str.trim().match(/^[a-z]+/i);
+	return match === null ? null : match[0];
+}
+
+/**
+ * Get the first numeric substring from a string. This function ignores
+ * leading spaces and non-numbers. This function is different from
+ * firstAlphabeticSubstring in that it ignores non-numbers in front of the first
+ * numeric substring. This function only returns the first four letters a
+ * numeric substring as a maximum.
+ * @param {string} str String to retrieve the substring from.
+ * @return {string} First alphanumeric substring. An empty string if str is
+ *     empty or contains only white-space.
+ */
+m.firstNumericSubstring = function(str) {
+	var match = str.match(/[0-9]+/);
+	return match === null ? null : match[0].substring(0, 4);
+}
+
 module.exports = m;

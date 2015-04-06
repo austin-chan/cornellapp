@@ -1,0 +1,206 @@
+$fullWidth: 1044px;
+$scheduleSideWidth: 740px;
+$ioseasing: cubic-bezier(.23, 1, .32, 1);
+$ioseasing2: cubic-bezier(.10, .70, .10, 1);
+
+@import "compass/css3";
+@import "normalize";
+@import "fonts";
+@import "global";
+
+.cf {
+  overflow: auto;
+  zoom: 1;
+}
+
+body {
+	font-family: 'Roboto';
+	background: #F3F3F4;
+}
+
+header {
+	height: 68px;
+	width: 100%;
+	background: #C1372C;
+	@include background-image(linear-gradient(to right, #C1372C, #CC5835));
+
+	> .inner {
+		font-family: 'Roboto Slab';
+		color: white;
+		font-size: 30px;
+		max-width: $fullWidth;
+		margin: 0 auto;
+	}
+
+	.name {
+		display: inline-block;
+		margin-top: 12px;
+	}
+}
+
+#main {
+	
+	> .inner {
+		max-width: $fullWidth;
+		margin:0 auto;
+	}
+
+	.class-side {
+		float: left;
+		width: $fullWidth - $scheduleSideWidth;
+		padding-right: 20px;
+		height: 100px;
+		padding-top: 69px;
+		@include box-sizing(border-box);
+
+		.class-adder {
+			position: relative;
+			padding: 5px 0px 8px;
+			background: white;
+			height: 32px;
+			@include box-sizing(border-box);
+
+			i {
+				position: absolute;
+				color: #575757;
+				font-size: 22px;
+				pointer-events: none;
+				left: 7px;
+				top: 5px;
+			}
+
+			input {
+				width: 100%;
+				border: 0px;
+				outline: none;
+				color: #4c4c4c;
+				padding-left: 42px;
+				font-size: 12px;
+				letter-spacing: .3px;
+				font-weight: 300;
+				background: transparent;
+				height: 100%;
+				@include box-sizing(border-box);
+			}
+		}
+
+		.class-list {
+			padding: 0;
+
+			.class {
+				position: relative;
+				list-style: none;
+
+				.close {
+					position: absolute;
+					top: 4px;
+					right: 4px;
+					cursor: pointer;
+					font-size: 22px;
+					color: white;
+					@include transition(all .17s $ioseasing);
+
+					&:hover {
+						opacity: .83;
+					}
+				}
+
+				.top-section {
+					background: #3A3A3C;
+					letter-spacing: .2px;
+					padding: 10px 32px;
+					font-size: 13px;
+					font-weight: 100;
+
+					a {
+						color: white;
+						text-decoration: none;
+
+						&:hover {
+							text-decoration: underline;
+						}
+					}
+				}
+
+				.bottom-section {
+					background: white;
+					padding: 0px 0px 2px 0px;
+
+					.class-section-group {
+						position: relative;
+						padding: 5px 0px;
+						margin: 0 5px;
+						border-top: 1px solid #dcdcdc;
+
+						&.first {
+							border-top: none;
+						}
+
+						.expand-icon {
+							position: absolute;
+							left: 241px;
+							font-size: 31px;
+							top: 2px;
+						}
+
+						.class-section-option {
+							font-size: 13px;
+							font-weight: 300;
+							padding: 5px 0px 5px 27px;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.schedule-side {
+		float: left;
+		width: $scheduleSideWidth;
+
+		.day-labels {
+			float: right;
+			font-size: 0;
+			padding-top: 30px;
+			padding-bottom: 20px;
+
+			.label {
+				display: inline-block;
+				color: #B6B5B5;
+				color: #C2C2C2;
+				color: #BDBDBD;
+				width: 96px;
+				font-size: 16px;
+				font-weight: 100;
+				text-align: center;
+			}
+		}
+
+		.hours {
+
+		}
+
+		.hour {
+			position: relative;
+			width: 672px;
+			height: 64px;
+			background: #E7E8E9;
+			float: right;
+			clear: right;
+
+			span {
+				position: absolute;
+				color: #CBCACA;
+				margin-right: 16px;
+				font-size: 18px;
+				font-weight: 100;
+				right: 100%;
+				top: -11px;
+			}
+
+			&.odd {
+				background: white;
+			}
+		}
+	}
+}

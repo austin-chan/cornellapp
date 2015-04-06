@@ -45,7 +45,7 @@ module.exports = function(models, knex) {
 
 					for(var l = 0; l < meeting.professors.length; l++) {
 						var professor = meeting.professors[l];
-						delete professor['_pivot_professorNetid'];
+						delete professor['_pivot_professorLabel'];
 						delete professor['_pivot_meetingId'];
 						delete professor['label'];
 					}
@@ -80,50 +80,6 @@ module.exports = function(models, knex) {
 					}
 				}
 			}
-		}
-
-		// delete copyCourse.groups[0].sections[0].meetings[0]['professors'];
-		// delete copyCourseEntry.groups[0].sections[0].meetings[0]['professors'];
-
-		//process.stdout.write("hello: ");
-
-		if (!_.isEqual(copyCourseEntry, copyCourse)) {
-		// 	// console.log(_.isEqual(copyCourseEntry, copyCourse));
-		// 	// console.log(copyCourseEntry);
-		// 	// console.log(copyCourse);
-		// 	// console.log(_.isEqual(copyCourseEntry.groups[25], copyCourse.groups[25]));
-		// 	// console.log(_.isEqual(copyCourseEntry.groups[26], copyCourse.groups[26]));
-			// delete copyCourse['groups'];
-			// delete copyCourseEntry['groups'];		
-			// console.log(_.isEqual(copyCourseEntry.groups[0], copyCourse.groups[0]));
-			// console.log(_.isEqual(copyCourseEntry.groups[1], copyCourse.groups[1]));
-			// console.log(_.isEqual(copyCourseEntry.groups[2], copyCourse.groups[2]));
-// 			console.log(_.isEqual(copyCourseEntry.groups[3], copyCourse.groups[3]));
-// 			console.log(_.isEqual(copyCourseEntry.groups[4], copyCourse.groups[4]));
-// 			// console.log(_.isEqual(copyCourseEntry.groups[5], copyCourse.groups[5]));
-// 			console.log(_.isEqual(copyCourseEntry.groups[6], copyCourse.groups[6]));
-// 			console.log(copyCourseEntry.groups[3].sections[0].meetings[0].professors);
-// 			console.log(copyCourse.groups[3].sections[0].meetings[0].professors);
-
-
-// console.log(_.isEqual(copyCourse.groups[3].sections[0].meetings[0].professors, copyCourseEntry.groups[3].sections[0].meetings[0].professors));
-
-			// _.map(copyCourse.groups, function(group) {
-			// 	console.log(group.sections[0].section);
-			// });
-
-			// _.map(copyCourseEntry.groups, function(group) {
-			// 	console.log(group.sections[0].section);
-			// });
-		// 	// console.log(copyCourse.subject + ' ' + copyCourse.catalogNbr);
-
-		// 	// _.each(copyCourse.groups, function(el) {
-		// 	// 	console.log(el.sections[0].section);
-		// 	// });
-		// 	// _.each(copyCourseEntry.groups, function(el) {
-		// 	// 	console.log(el.sections[0].section);
-		// 	// });
-			// process.exit(1);
 		}
 
 		return _.isEqual(copyCourseEntry, copyCourse);
@@ -468,7 +424,7 @@ module.exports = function(models, knex) {
 
 		sanitizeProfessorObject(professor);
 
-		var label = generateProfessorLabel(professor);
+		professor.label = generateProfessorLabel(professor);
 
 		new models.professor({
 			label: professor.label
