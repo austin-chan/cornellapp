@@ -7,7 +7,7 @@
 	color: white;
 	cursor: pointer;
 	font-size: 18px;
-	@include transition(.17s all $ioseasing);
+	@include transition(.17s all $ios-easing);
 
 	&:hover {
 		opacity: .83;
@@ -17,7 +17,7 @@
 		position: absolute;
 		top: 7px;
 		left: 8px;
-		@include transition(.17s all $ioseasing);
+		@include transition(.17s all $ios-easing);
 	}
 
 	.off-icon {

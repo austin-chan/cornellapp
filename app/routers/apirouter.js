@@ -8,12 +8,12 @@ var app = module.exports = require('../routes'),
 	strutil = require('../utils/strutil'),
 	apiutil = require('../utils/apiutil')(models)
 
-app.get('/api/courses', function(req, res) {
+app.get('/api/search/courses', function(req, res) {
 	var params = req.query;
 
 	if (!params.semester || !params.query) {
 		res.status(400);
-		res.send('Provide semester and query paramters with this route.');
+		res.send('Provide semester and query parameters with this route.');
 	}
 
 	apiutil.searchCourses(params.semester.toUpperCase(), params.query.trim(),

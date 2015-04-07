@@ -1,12 +1,8 @@
-$fullWidth: 1044px;
-$scheduleSideWidth: 740px;
-$ioseasing: cubic-bezier(.23, 1, .32, 1);
-$ioseasing2: cubic-bezier(.10, .70, .10, 1);
-
 @import "compass/css3";
+@import "variables";
 @import "normalize";
 @import "fonts";
-@import "global";
+@import "components";
 
 .cf {
   overflow: auto;
@@ -28,26 +24,26 @@ header {
 		font-family: 'Roboto Slab';
 		color: white;
 		font-size: 30px;
-		max-width: $fullWidth;
+		max-width: $full-width;
 		margin: 0 auto;
 	}
 
 	.name {
 		display: inline-block;
-		margin-top: 12px;
+		margin-top: 13px;
 	}
 }
 
 #main {
 	
 	> .inner {
-		max-width: $fullWidth;
+		max-width: $full-width;
 		margin:0 auto;
 	}
 
 	.class-side {
 		float: left;
-		width: $fullWidth - $scheduleSideWidth;
+		width: $full-width - $schedule-side-width;
 		padding-right: 20px;
 		height: 100px;
 		padding-top: 69px;
@@ -58,7 +54,10 @@ header {
 			padding: 5px 0px 8px;
 			background: white;
 			height: 32px;
+			z-index: 10;
 			@include box-sizing(border-box);
+			@include border-radius(2px);
+			@include tiny-shadow();
 
 			i {
 				position: absolute;
@@ -90,15 +89,16 @@ header {
 			.class {
 				position: relative;
 				list-style: none;
+				@include tiny-shadow();
 
 				.close {
 					position: absolute;
-					top: 4px;
-					right: 4px;
+					top: 5px;
+					right: 5px;
 					cursor: pointer;
 					font-size: 22px;
 					color: white;
-					@include transition(all .17s $ioseasing);
+					@include transition(all .17s $ios-easing);
 
 					&:hover {
 						opacity: .83;
@@ -156,7 +156,8 @@ header {
 
 	.schedule-side {
 		float: left;
-		width: $scheduleSideWidth;
+		width: $schedule-side-width;
+		text-align: right;
 
 		.day-labels {
 			float: right;
@@ -177,7 +178,9 @@ header {
 		}
 
 		.hours {
-
+			width: 672px;
+			display: inline-block;
+			@include tiny-shadow();
 		}
 
 		.hour {
@@ -201,6 +204,37 @@ header {
 			&.odd {
 				background: white;
 			}
+		}
+	}
+}
+
+// Autocompletion styling for adding courses.
+.autocomplete-suggestions {
+	background: white;
+	max-height: none !important;
+	margin-top: 11px;
+	width: 454px !important;
+	@include border-radius(2px);
+	@include small-shadow();
+
+	.autocomplete-suggestion {
+		font-size: 13px;
+		padding: 7px 12px;
+		font-weight: 300;
+		@include transition(all .17s $ios-easing);
+
+		&:first-child {
+			padding-top: 9px;
+			@include border-radius(2px 2px 0px 0px);
+		}
+
+		&:last-child {
+			padding-bottom: 9px;
+			@include border-radius(0px 0px 2px 2px);
+		}
+
+		&.autocomplete-selected {
+			background: #cdcdcd;
 		}
 	}
 }

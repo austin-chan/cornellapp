@@ -55,6 +55,7 @@ module.exports = function(models) {
 			firstQuery.then(function(courses) {
 				var firstQueryLength = 0,
 					firstQueryIds;
+
 				if (courses) {
 					firstQueryLength = courses.length;
 					firstQueryIds = courses.map(function(course) {
@@ -64,12 +65,13 @@ module.exports = function(models) {
 
 				if (firstQueryLength < limit) {
 					new models.course().query(function(qb) {
-						qb.where('description', 'LIKE', query)
-							.orWhere('titleLong', 'LIKE', query)
+						qb.where('description', 'LIKE', '%' + query + '%')
+							.orWhere('titleLong', 'LIKE', '%' + query + '%')
 							.limit(limit - firstQueryLength);
 
 						if (firstQueryLength)
 							qb.whereNotIn('id', firstQueryIds);
+
 					}).fetchAll().then(function(additionalCourses) {
 						if (additionalCourses == null) {
 							if (courses == null) {

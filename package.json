@@ -21,5 +21,8 @@
     "passport-local": "^1.0.0",
     "underscore": "^1.8.3",
     "vcardparser": "^1.0.3"
+  },
+  "devDependencies": {
+    "grunt-contrib-jst": "^0.6.0"
   }
 }
