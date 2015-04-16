@@ -5,17 +5,49 @@
 (function() {
 	var adderInput = $('.class-side .adder-input');
 	adderInput.autocomplete({
+
+		// Request parameters sent to the server
 		params: {
 			semester: 'FA15'
 		},
+
+		// Search request endpoint
 	    serviceUrl: '/api/search/courses',
+
+	    // Event fired on selection of a suggestion
 	    onSelect: function (suggestion) {
 	    	adderInput.val('').focus();
 	    	console.log(suggestion.data);
 	    },
-	    // formatResult: function(suggestion, currentValue) {
-	    // 	console.log('hi');
-	    // },
+
+	    // Customize highlighting of suggestions
+	    formatResult: function(suggestion, currentValue) {
+	    	// Highlight 'CS3410' with no space
+	    	var isLetter = true;
+	    	for (var i = 0; i < currentValue.length && i < 6; i++) {
+	    		if (isLetter && currentValue[i].match(/[a-z]/i)) {
+	    			isLetter = false;
+	    		} else {
+	    			if (currentValue[i].match(/[0-9]/i)) {
+	    				currentValue = currentValue.splice(i, 0, ' ');
+	    			}
+	    		}
+	    	}
+
+	    	var cleanTerm = suggestion.value
+		    		.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'),
+				htmlSafeString = cleanTerm
+		            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+		            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+        	currentValue = $.trim(currentValue).replace('  ', ' ')
+        		.split(' ').join('|');
+
+        	var regex = new RegExp('(' + currentValue + ')', 'gi');
+			return htmlSafeString.replace(regex, '<strong>$1<\/strong>');
+	    },
+
+	    // Properly prepare data received from the server
 	    transformResult: function(response, originalQuery) {
 	        return {
 	            suggestions: _.map(JSON.parse(response), function(course) {
@@ -28,22 +60,4 @@
 	        };
 	    }
     });
-
-	// $('.class-side .adder-input').on('keydown', function(e) {
-	// 	var input = $(this),
-	// 		suggestions = input.siblings('add-suggestions');
-
-	// 	setTimeout($.proxy(function() {
-	// 		var value = $.trim($(this).val()),
-	// 			jqXHR = $(this).data('jqXHR');
-
-	// 		if (!value) {
-	// 			if (jqXHR && jqXHR.state() == 'pending') {
-	// 				jqXHR.abort();
-	// 			}
-
-
-	// 		}
-	// 	}, this), 0);
-	// });
 })();

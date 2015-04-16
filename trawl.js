@@ -142,8 +142,11 @@ async.waterfall([
 
 		var pairsToUpdate = []; // course API object and course entry tuples
 
-		while (courseEntries.length && courses.length) {
-			var course = courses[0],
+		var count = 0,
+			index = 0,
+			totalCourseLength = courses.length;
+		while (courseEntries.length && index < courses.length) {
+			var course = courses[index],
 				courseEntry = courseEntries.findWhere({
 					crseId: course.crseId,
 					subject: course.subject
@@ -155,7 +158,14 @@ async.waterfall([
 				}
 
 				courseEntries.remove(courseEntry);
-				courses.shift();
+				courses.splice(index, 1);
+			} else {
+				index++;
+			}
+
+			if (++count % 100 == 0) {
+				console.log('Analyzed ' + count + ' of ' + totalCourseLength +
+					' courses');
 			}
 		}
 
@@ -229,7 +239,7 @@ async.waterfall([
 			}
 
 			printSuccess('Deleted all courses');
-			callback(null);
+			callback(null, courses);
 		});
 	},
 

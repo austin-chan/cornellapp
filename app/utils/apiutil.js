@@ -4,7 +4,8 @@
  */
 
 module.exports = function(models) {
-	var strutil = require('./strutil'),
+	var async = require('async'),
+		strutil = require('./strutil'),
 		m = {};
 
 	/**
@@ -37,7 +38,7 @@ module.exports = function(models) {
 			if (firstAlphabetic && firstNumeric) {
 				firstQuery = new models.course().query(function(qb) {
 					qb.where('subject', 'LIKE', '%' + firstAlphabetic + '%')
-						.orWhere('catalogNbr', 'LIKE', '%' + firstNumeric + '%')
+						.where('catalogNbr', 'LIKE', '%' + firstNumeric + '%')
 						.limit(limit);
 				}).fetchAll();
 			} else if (firstNumeric) {
@@ -52,47 +53,134 @@ module.exports = function(models) {
 				}).fetchAll();
 			}
 
-			firstQuery.then(function(courses) {
-				var firstQueryLength = 0,
-					firstQueryIds;
+			async.waterfall([
+				function(callback) {
+					firstQuery.then(function(courses) {
+						if (courses == null)
+							courses = [];
 
-				if (courses) {
-					firstQueryLength = courses.length;
-					firstQueryIds = courses.map(function(course) {
-						return course.get('id');
-					});
-				}
+						var queryIds = !courses.length ? [] :
+							courses.map(function(course) {
+								return course.get('id');
+							});
 
-				if (firstQueryLength < limit) {
-					new models.course().query(function(qb) {
-						qb.where('description', 'LIKE', '%' + query + '%')
-							.orWhere('titleLong', 'LIKE', '%' + query + '%')
-							.limit(limit - firstQueryLength);
-
-						if (firstQueryLength)
-							qb.whereNotIn('id', firstQueryIds);
-
-					}).fetchAll().then(function(additionalCourses) {
-						if (additionalCourses == null) {
-							if (courses == null) {
-								callback(null, []);
-							} else {
-								callback(null, courses);
-							}
-						} else {
-							if (courses == null) {
-								callback(null, additionalCourses);
-							} else {
-								courses.add(additionalCourses.models);
-								callback(null, courses);
-							}
-						}
+						callback(null, courses, queryIds);
 					}).catch(function(err) {
 						callback(err);
-					})
-				} else {
-					callback(null, courses);
+					});
+				},
+				function(courses, queryIds, callback) {
+					if (courses.length < limit) {
+						new models.course().query(function(qb) {
+							qb.where('titleLong', 'LIKE', '%' + query + '%')
+								.limit(limit - courses.length);
+
+							if (courses.length)
+								qb.whereNotIn('id', queryIds);
+
+						}).fetchAll().then(function(additionalCourses) {
+							if (additionalCourses == null) {
+								if (!courses.length)
+									courses = [];
+							} else {
+								if (!courses.length) {
+									courses = additionalCourses;
+								} else {
+									courses.add(additionalCourses.models);
+								}
+							}
+
+							queryIds = !courses.length ? [] :
+								courses.map(function(course) {
+									return course.get('id');
+								});
+
+							callback(null, courses, queryIds);
+						}).catch(function(err) {
+							callback(err);
+						});
+					} else {
+						callback(null, courses, queryIds);
+					}
+				},
+				function(courses, queryIds, callback) {
+					if (courses.length < limit) {
+						new models.course().query(function(qb) {
+							var qbs = query.replace('  ', ' ').split(' ');
+							for (var i = 0; i < qbs.length; i++) {
+								var q = qbs[i];
+								qb.where('titleLong', 'LIKE', '%' + q + '%')
+									.limit(limit - courses.length);
+							}
+
+							if (courses.length)
+								qb.whereNotIn('id', queryIds);
+
+						}).fetchAll().then(function(additionalCourses) {
+							if (additionalCourses == null) {
+								if (!courses.length)
+									courses = [];
+							} else {
+								if (!courses.length) {
+									courses = additionalCourses;
+								} else {
+									courses.add(additionalCourses.models);
+								}
+							}
+
+							queryIds = !courses.length ? [] :
+								courses.map(function(course) {
+									return course.get('id');
+								});
+
+							callback(null, courses, queryIds);
+						}).catch(function(err) {
+							callback(err);
+						});
+					} else {
+						callback(null, courses, queryIds);
+					}
+				},
+				function(courses, queryIds, callback) {
+					if (courses.length < limit) {
+						new models.course().query(function(qb) {
+							var qbs = query.replace('  ', ' ').split(' ');
+							for (var i = 0; i < qbs.length; i++) {
+								var q = qbs[i];
+								qb.where('description', 'LIKE', '%' + q + '%')
+									.limit(limit - courses.length);
+							}
+
+							if (courses.length)
+								qb.whereNotIn('id', queryIds);
+
+						}).fetchAll().then(function(additionalCourses) {
+							if (additionalCourses == null) {
+								if (!courses.length)
+									courses = [];
+							} else {
+								if (!courses.length) {
+									courses = additionalCourses;
+								} else {
+									courses.add(additionalCourses.models);
+								}
+							}
+
+							queryIds = !courses.length ? [] :
+								courses.map(function(course) {
+									return course.get('id');
+								});
+
+							callback(null, courses, queryIds);
+						}).catch(function(err) {
+							callback(err);
+						});
+					} else {
+						callback(null, courses, queryIds);
+					}
 				}
+			], function(err, result) {
+				callback(null, result);
 			});
 		}).catch(function(err) {
 			callback(err);

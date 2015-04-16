@@ -485,9 +485,13 @@ module.exports = function(models, knex) {
 	 * @param {string} key Property key to extract from.
 	 */
 	function extractProperty(course, key) {
-		var value = course[key];
-		delete course[key];
-		return value;
+		if (typeof course !== 'undefined' && _.has(course, key)) {
+			var value = course[key];
+			delete course[key];
+			return value;
+		} else {
+			return [];
+		}
 	}
 
 	/**

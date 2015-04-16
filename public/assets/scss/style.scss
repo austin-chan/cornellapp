@@ -5,8 +5,18 @@
 @import "components";
 
 .cf {
-  overflow: auto;
-  zoom: 1;
+
+	&:before,
+	&:after {
+		content:"";
+		display:table;
+	}
+
+	&:after {
+		clear:both;
+	}
+
+	zoom: 1; /* For IE 6/7 (trigger hasLayout) */
 }
 
 body {
@@ -35,10 +45,12 @@ header {
 }
 
 #main {
+	padding-bottom: 30px;
 	
 	> .inner {
-		max-width: $full-width;
+		width: $full-width;
 		margin:0 auto;
+		@extend .cf;
 	}
 
 	.class-side {
@@ -68,7 +80,7 @@ header {
 				top: 5px;
 			}
 
-			input {
+			input.adder-input {
 				width: 100%;
 				border: 0px;
 				outline: none;
@@ -77,6 +89,7 @@ header {
 				font-size: 12px;
 				letter-spacing: .3px;
 				font-weight: 300;
+				padding-right: 10px;
 				background: transparent;
 				height: 100%;
 				@include box-sizing(border-box);
@@ -220,21 +233,22 @@ header {
 	.autocomplete-suggestion {
 		font-size: 13px;
 		padding: 7px 12px;
+		cursor: pointer;
 		font-weight: 300;
 		@include transition(all .17s $ios-easing);
 
 		&:first-child {
-			padding-top: 9px;
+			padding-top: 10px;
 			@include border-radius(2px 2px 0px 0px);
 		}
 
 		&:last-child {
-			padding-bottom: 9px;
+			padding-bottom: 11px;
 			@include border-radius(0px 0px 2px 2px);
 		}
 
 		&.autocomplete-selected {
-			background: #cdcdcd;
+			background: #e7e7e7;
 		}
 	}
 }

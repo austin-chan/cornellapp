@@ -5,7 +5,7 @@
 (function() {
 	/**
 	 * The cq object is the only declaration in the whole global namespace.
-	 * Pretty good javascript form, am I right?
+	 * Pretty good javascript practice, am I right?
 	 * @type {object}
 	 */
 	window.cq = {};
@@ -20,4 +20,18 @@
 	 */
 	window.cq.jst = window.JST;
 	delete window['JST'];
+
+	/**
+	 * cq.schedules is an object containing arrays of all the course selections
+	 * at indeces specified by semester slugs.
+	 * @type {array}
+	 */
+	window.cq.schedules = [];
+
+	/**
+	 * cq.semester is a string that specifies the active semester for the
+	 * schedule in view. This string has a value of a semester slug.
+	 * @type {String}
+	 */
+	window.cq.semester = '';
 })();
