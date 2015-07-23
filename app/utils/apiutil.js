@@ -1,5 +1,5 @@
 /**
- * @fileoverview Module for reusable and commonly-useful helper functions
+ * @fileoverview Util for reusable and commonly-useful helper functions
  * for the API.
  */
 
@@ -24,7 +24,7 @@ module.exports = function(models) {
 	m.searchCourses = function(semester, query, limit, callback) {
 		// get semester entry
 		new models.semester({
-			slug: semester
+			strm: semester
 		}).fetch().then(function(semesterEntry) {
 			if (!semesterEntry) {
 				callback('No such semester exists');

@@ -26,42 +26,7 @@
 					<input type="text" class="adder-input" placeholder="type a class name/number">
 				</div>
 				<ul class="class-list">
-					<li class="class">
-						<div class="cq-toggle">
-							<i class="icon-check-box on-icon"></i>
-							<i class="icon-check-box-outline-blank off-icon"></i>
-						</div>
-						<div class="close">
-							<i class="icon-close"></i>
-						</div>
-						<div class="top-section">
-							<a class="cq-display" href="javascript:void(0);">INFO 2300: Intermediate Web Dev...</a>
-						</div>
-						<div class="bottom-section">
-							<div class="class-section-group first">
-								<i class="icon-arrow-drop-down expand-icon"></i>
-								<div class="class-section-option">
-									LEC 001
-								</div>
-<!-- 								<div class="class-section-option">
-									LEC 002
-								</div> -->
-							</div>
-							<div class="class-section-group">
-								<div class="class-section-option">
-									DIS 001
-								</div>
-<!-- 								<div class="class-section-option">
-									DIS 002
-								</div> -->
-							</div>
-							<div class="class-section-group">
-								<div class="class-section-option">
-									SEM 001
-								</div>
-							</div>
-						</div>
-					</li>
+
 				</ul>
 			</div>
 			<div class="schedule-side">
@@ -108,6 +73,12 @@
 	<script src="/assets/js/jst.js"></script>
 	<script src="/assets/js/components.js"></script>
 	<script src="/assets/js/init.js"></script>
+	<script src="/assets/js/strunit.js"></script>
 	<script src="/assets/js/setup.js"></script>
+	<script src="/assets/js/courseunit.js"></script>
+	<script>
+		window.cq.semesters = <%- JSON.stringify(config.semesters) %>;
+		window.cq.semester = <%- JSON.stringify(configutil.getSemester()) %>;
+	</script>
 </body>
 </html>

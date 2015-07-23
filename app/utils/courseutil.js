@@ -1,5 +1,5 @@
 /**
- * @fileoverview Module to perform instructions related to managing course data
+ * @fileoverview Util to perform instructions related to managing course data
  * and handling database entries 
  */
 

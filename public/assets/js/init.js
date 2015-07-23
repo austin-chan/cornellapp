@@ -33,5 +33,5 @@
 	 * schedule in view. This string has a value of a semester slug.
 	 * @type {String}
 	 */
-	window.cq.semester = '';
+	window.cq.semester = {};
 })();

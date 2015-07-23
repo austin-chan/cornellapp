@@ -99,9 +99,10 @@ header {
 		.class-list {
 			padding: 0;
 
-			.class {
+			.class-info {
 				position: relative;
 				list-style: none;
+				margin-bottom: 15px;
 				@include tiny-shadow();
 
 				.close {

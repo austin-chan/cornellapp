@@ -10,7 +10,10 @@ module.exports = function(grunt) {
         banner: '/*! Built by Chequerd at <%= grunt.template.today("yyyy-mm-dd h:MM:ss TT Z") %> */\n'
       },
       build: {
-        src: ['public/assets/js/underscore-min.js', 'public/assets/js/html2canvas.js', 'public/assets/js/jquery.autocomplete.js', 'public/assets/js/global.js', 'public/assets/js/jst.js', 'public/assets/js/components.js', 'public/assets/js/init.js', 'public/assets/js/setup.js'],
+        src: ['public/assets/js/underscore-min.js', 'public/assets/js/html2canvas.js', 'public/assets/js/jquery.autocomplete.js',
+          'public/assets/js/global.js', 'public/assets/js/jst.js', 'public/assets/js/components.js',
+          'public/assets/js/init.js', 'public/assets/js/strunit.js', 'public/assets/js/setup.js',
+          'public/assets/js/courseunit.js'],
         dest: 'public/assets/js/js-built.js'
       }
     },

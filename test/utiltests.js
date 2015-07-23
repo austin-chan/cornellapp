@@ -2,7 +2,8 @@
  * @fileoverview This file is defines all the util test files to run.
  */
 
-describe('Util Modules', function() {
+describe('', function() {
+	require('./utils/configutiltest');
 	require('./utils/strutiltest');
 	require('./utils/cornellutiltest');
 });

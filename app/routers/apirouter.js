@@ -16,7 +16,7 @@ app.get('/api/search/courses', function(req, res) {
 		res.send('Provide semester and query parameters with this route.');
 	}
 
-	apiutil.searchCourses(params.semester.toUpperCase(), params.query.trim(),
+	apiutil.searchCourses(params.semester, params.query.trim(),
 		10, function(err, courses) {
 
 		if (err) {

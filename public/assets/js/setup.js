@@ -8,16 +8,20 @@
 
 		// Request parameters sent to the server
 		params: {
-			semester: 'FA15'
+			semester: function() {
+				return cq.semester.strm;
+			}
 		},
 
 		// Search request endpoint
 	    serviceUrl: '/api/search/courses',
 
 	    // Event fired on selection of a suggestion
-	    onSelect: function (suggestion) {
+	    onSelect: function (course) {
 	    	adderInput.val('').focus();
-	    	console.log(suggestion.data);
+
+	    	console.log(cq.courseunit);
+	    	cq.courseunit.addCourse(course);
 	    },
 
 	    // Customize highlighting of suggestions
@@ -34,8 +38,8 @@
 	    		}
 	    	}
 
-	    	var cleanTerm = suggestion.value
-		    		.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'),
+	    	var cleanTerm = suggestion.value,
+		    		// .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'),
 				htmlSafeString = cleanTerm
 		            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');

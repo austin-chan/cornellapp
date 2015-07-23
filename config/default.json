@@ -13,5 +13,12 @@
 		"seeds": {
 			"directory": "db/seeds"
 		}
-	}
+	},
+	"semester": "FA15",
+	"semesters": [
+		{
+			"slug": "FA15",
+			"strm": 2608
+		}
+	]
 }

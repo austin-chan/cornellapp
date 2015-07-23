@@ -6,7 +6,13 @@
 var app = module.exports = require('../server');
 
 app.get('/', function(req, res) {
-	res.render('index');
+	var config = app.get('config'),
+		configutil = require('./utils/configutil')(config);
+
+	res.render('index', {
+		"config": config,
+		"configutil": configutil
+	});
 });
 
 // "/api"

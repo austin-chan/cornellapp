@@ -1,6 +1,6 @@
 /**
- * @fileoverview Module to handle all operations related to accessing
- * Cornell's data endpoints, including course and netid user data.
+ * @fileoverview Util to handle all operations related to accessing Cornell's
+ * data endpoints, including course and netid user data.
  */
 
 var strutil = require('./strutil'),
