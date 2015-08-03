@@ -27,9 +27,20 @@ app.use(bodyParser.json())
 app.use(express.static(__dirname + '/public'));
 
 
-// Declare all site routes.
-require('./app/routes')
+// Include the JSX compiler.
+require("node-jsx").install();
 
+
+// Declare all site routes.
+require('./app/routes')(app);
+
+// Handle 404 error.
+app.get('*', function(req, res) {
+    res.json({
+        'route': 'Sorry this page does not exist!'
+    });
+});
 
 // Start server!
 app.listen(port);
+console.log(require('chalk').green('Server started at port ' + port));

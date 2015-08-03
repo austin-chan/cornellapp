@@ -3,17 +3,31 @@
  * application. This file uses submodule routers to handle subroutes.
  */
 
-var app = module.exports = require('../server');
+var React = require('react/addons'),
+ReactApp = React.createFactory(require('./components/App'));
 
-app.get('/', function(req, res) {
-	var config = app.get('config'),
-		configutil = require('./utils/configutil')(config);
+module.exports = function(app) {
 
-	res.render('index', {
-		"config": config,
-		"configutil": configutil
-	});
-});
+    app.get('/', function(req, res){
+        // React.renderToString takes your component
+        // and generates the markup
+        var reactHtml = React.renderToString(ReactApp({}));
+        // Output html rendered by react
+        // console.log(myAppHtml);
+        res.render('index.ejs', {reactOutput: reactHtml});
+    });
 
-// "/api"
-require('./routers/apirouter');
+    // app.get('/', function(req, res) {
+    //     var config = app.get('config'),
+    //         configutil = require('./utils/configutil')(config);
+
+    //     res.render('index', {
+    //         "config": config,
+    //         "configutil": configutil
+    //     });
+    // });
+
+    // "/api"
+    require('./routers/apirouter')(app);
+
+};

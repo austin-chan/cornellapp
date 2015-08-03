@@ -2,31 +2,34 @@
  * @fileoverview Router submodule for handling all api routes.
  */
 
-var app = module.exports = require('../routes'),
-	knex = app.get('knex'),
-	models = app.get('models'),
-	strutil = require('../utils/strutil'),
-	apiutil = require('../utils/apiutil')(models)
+module.exports = function(app) {
 
-app.get('/api/search/courses', function(req, res) {
-	var params = req.query;
+	var knex = app.get('knex'),
+		models = app.get('models'),
+		strutil = require('../utils/strutil'),
+		apiutil = require('../utils/apiutil')(models);
 
-	if (!params.semester || !params.query) {
-		res.status(400);
-		res.send('Provide semester and query parameters with this route.');
-	}
+	app.get('/api/search/courses', function(req, res) {
+		var params = req.query;
 
-	apiutil.searchCourses(params.semester, params.query.trim(),
-		10, function(err, courses) {
-
-		if (err) {
-			console.log(err);
+		if (!params.semester || !params.query) {
 			res.status(400);
-			res.send('An error occurred performing the course search.');
-			return;
+			res.send('Provide semester and query parameters with this route.');
 		}
 
-		res.send(courses);
+		apiutil.searchCourses(params.semester, params.query.trim(),
+			10, function(err, courses) {
+
+			if (err) {
+				console.log(err);
+				res.status(400);
+				res.send('An error occurred performing the course search.');
+				return;
+			}
+
+			res.send(courses);
+		});
+
 	});
 
-});
+};
