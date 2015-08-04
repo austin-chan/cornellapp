@@ -3,8 +3,6 @@
 var React = require('react/addons');
 var ChequerdHeader = require('./ChequerdHeader');
 
-if (process.browser) require('../styles/style.scss');
-
 var ChequerdApp = React.createClass({
 
     componentDidMount: function() {

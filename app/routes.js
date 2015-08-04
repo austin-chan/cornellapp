@@ -15,9 +15,14 @@ module.exports = function(app) {
         var number = 5;
 
         var reactHtml = React.renderToString(ChequerdApp({ prop: number }));
-        // Output html rendered by react
-        // console.log(myAppHtml);
-        res.render('index.ejs', {reactOutput: reactHtml});
+        var context = JSON.stringify({
+            test: 'test'
+        });
+
+        res.render('index.ejs', {
+            reactOutput: reactHtml,
+            context: context
+        });
     });
 
     // app.get('/', function(req, res) {

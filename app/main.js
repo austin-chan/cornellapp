@@ -1,9 +1,7 @@
 /** @jsx React.DOM */
 
-var React = require('react/addons');
-var ChequerdApp = require('./components/ChequerdApp');
+var React = require('react/addons'),
+    ChequerdApp = require('./components/ChequerdApp'),
+    mountNode = document.getElementById("chequerd-app-mount");
 
-var mountNode = document.getElementById("chequerd-app-mount");
-
-// React.render(new ChequerdApp({}), mountNode);
 React.render(React.createElement(ChequerdApp), mountNode);

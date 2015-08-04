@@ -1,10 +1,57 @@
 @font-face {
+    font-family: 'bunt';
+    src: url('/assets/font/bunt-display-regular-webfont.eot');
+    src: url('/assets/font/bunt-display-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/assets/font/bunt-display-regular-webfont.woff2') format('woff2'),
+         url('/assets/font/bunt-display-regular-webfont.woff') format('woff'),
+         url('/assets/font/bunt-display-regular-webfont.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'bunt';
+    src: url('/assets/font/bunt-display-light-webfont.eot');
+    src: url('/assets/font/bunt-display-light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/assets/font/bunt-display-light-webfont.woff2') format('woff2'),
+         url('/assets/font/bunt-display-light-webfont.woff') format('woff'),
+         url('/assets/font/bunt-display-light-webfont.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'bunt';
+    src: url('/assets/font/bunt-display-medium-webfont.eot');
+    src: url('/assets/font/bunt-display-medium-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/assets/font/bunt-display-medium-webfont.woff2') format('woff2'),
+         url('/assets/font/bunt-display-medium-webfont.woff') format('woff'),
+         url('/assets/font/bunt-display-medium-webfont.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'bunt';
+    src: url('/assets/font/bunt-display-thin-webfont.eot');
+    src: url('/assets/font/bunt-display-thin-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/assets/font/bunt-display-thin-webfont.woff2') format('woff2'),
+         url('/assets/font/bunt-display-thin-webfont.woff') format('woff'),
+         url('/assets/font/bunt-display-thin-webfont.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
 	font-family: 'icomoon';
-	src:url('../fonts/icomoon.eot?-umnxym');
-	src:url('../fonts/icomoon.eot?#iefix-umnxym') format('embedded-opentype'),
-		url('../fonts/icomoon.woff?-umnxym') format('woff'),
-		url('../fonts/icomoon.ttf?-umnxym') format('truetype'),
-		url('../fonts/icomoon.svg?-umnxym#icomoon') format('svg');
+	src:url('../font/icomoon.eot?-umnxym');
+	src:url('../font/icomoon.eot?#iefix-umnxym') format('embedded-opentype'),
+		url('../font/icomoon.woff?-umnxym') format('woff'),
+		url('../font/icomoon.ttf?-umnxym') format('truetype'),
+		url('../font/icomoon.svg?-umnxym#icomoon') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }

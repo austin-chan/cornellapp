@@ -2,14 +2,17 @@
 <html>
 <head>
     <title>React Isomorphic Server Side Rendering Example</title>
-    <!-- <link href='/style.css' rel="stylesheet"> -->
+    <link href='/assets/css/style.css' rel="stylesheet">
+    <script src="//use.typekit.net/rfd1tkc.js"></script>
+    <script>try{Typekit.load();}catch(e){}</script>
 </head>
 <body>
-    <div id="chequerd-app-mount">
-        <%- reactOutput %>
-    </div>
+    <div id="chequerd-app-mount"><%- reactOutput %></div>
 
-    <!-- comment out main.js to see server side only rendering -->
+    <script id='context' type='application/json'>
+        <%- context %>
+    </script>
+
     <script src="/assets/js-built/app.js"></script>
 
 </body>

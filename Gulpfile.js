@@ -1,13 +1,12 @@
 var gulp = require('gulp'),
     browserify = require('browserify'),
     watch = require('gulp-watch'),
-    sourcemaps = require('gulp-sourcemaps');
-    uglify = require('gulp-uglify');
-    rename = require('gulp-rename');
-    concat = require('gulp-concat');
-    sassify = require('sassify');
-    reactify = require('reactify');
-    source = require('vinyl-source-stream');
+    sourcemaps = require('gulp-sourcemaps'),
+    uglify = require('gulp-uglify'),
+    rename = require('gulp-rename'),
+    concat = require('gulp-concat'),
+    source = require('vinyl-source-stream'),
+    sass = require('gulp-sass');
 
 gulp.task('react', function() {
 
@@ -21,7 +20,7 @@ gulp.task('react', function() {
 
 });
 
-gulp.task('compile', function() {
+gulp.task('uglify', function() {
 
     return gulp.src([
             'public/assets/js/main.js'
@@ -36,10 +35,23 @@ gulp.task('compile', function() {
 
 });
 
+gulp.task('sass', function () {
+    return gulp.src('app/styles/*')
+        .pipe(sass({ outputStyle: 'compressed' }))
+        .pipe(gulp.dest('public/assets/css'));
+});
+
 gulp.task('watch', function() {
 
-    gulp.watch('public/assets/js/*', ['compile']);
-    gulp.watch(['app/components/*', 'app/styles/*', 'app/main.js'], ['react']);
+    gulp.watch('public/assets/js/*', ['uglify']);
+    gulp.watch(['app/components/*', 'app/main.js'], ['react']);
+    gulp.watch(['app/styles/*/*', 'app/styles/*'], ['sass']);
+
+});
+
+gulp.task('watchsass', function() {
+
+    gulp.watch(['app/styles/*/*', 'app/styles/*'], ['sass']);
 
 });
 
