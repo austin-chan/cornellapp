@@ -1,7 +1,6 @@
 /**
- * @fileoverview Main entrypoint for the Chequerd application. This file begins
- * the initialization process for the main application files and all their
- * dependencies.
+ * Entry point for the Davyhoy web server. This file begins the initialization
+ * process for the application files and all the dependencies.
  */
 
 

@@ -5,7 +5,7 @@
 			"host": "localhost",
 			"user": "root",
 			"password": "root",
-			"database": "chequerd"
+			"database": "davyhoy"
 		},
 		"migrations": {
 			"directory": "db/migrations"
@@ -19,6 +19,10 @@
 		{
 			"slug": "FA15",
 			"strm": 2608
+		},
+		{
+			"slug": "SU15",
+			"strm": 2594
 		}
 	]
 }

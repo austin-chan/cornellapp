@@ -1,10 +1,10 @@
 /**
- * @fileoverview This file is the main route declaration file for the Chequerd
+ * @fileoverview This file is the main route declaration file for the Davyhoy
  * application. This file uses submodule routers to handle subroutes.
  */
 
 var React = require('react/addons'),
-ChequerdApp = React.createFactory(require('./components/ChequerdApp'));
+DavyhoyApp = React.createFactory(require('./components/DavyhoyApp'));
 
 module.exports = function(app) {
 
@@ -14,7 +14,7 @@ module.exports = function(app) {
 
         var number = 5;
 
-        var reactHtml = React.renderToString(ChequerdApp({ prop: number }));
+        var reactHtml = React.renderToString(DavyhoyApp({ prop: number }));
         var context = JSON.stringify({
             test: 'test'
         });

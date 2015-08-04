@@ -1,61 +1,82 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/** @jsx React.DOM */
+/**
+ * DHApp.js
+ * Davyhoy
+ *
+ * Created by Austin Chan on August 3, 2015.
+ * Copyright (c) 2015, Davyhoy. All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ * @jsx React.DOM
+ */
 
-var React = require('react/addons');
-var ChequerdHeader = require('./ChequerdHeader');
+var React = require('react/addons'),
+    DHHeader = require('./DHHeader');
 
-var ChequerdApp = React.createClass({displayName: "ChequerdApp",
+/**
+ * DavyhoyApp is the main component that contains all of the subcomponents in
+ * the whole Davyhoy application.
+ *
+ * Component styles are located in _DavyhoyApp.scss.
+ */
 
-    componentDidMount: function() {
-        console.log('hi');
-    },
-
+module.exports = React.createClass({displayName: "exports",
     render: function() {
-
         return (
             React.createElement("div", null, 
-            React.createElement(ChequerdHeader, null), 
+            React.createElement(DHHeader, null), 
             "hillo"
             )
         );
     }
-
 });
 
-module.exports = ChequerdApp;
-
-},{"./ChequerdHeader":2,"react/addons":5}],2:[function(require,module,exports){
-/** @jsx React.DOM */
+},{"./DHHeader":2,"react/addons":5}],2:[function(require,module,exports){
+/**
+ * DavyhoyHeader.js
+ * Davyhoy
+ *
+ * Created by Austin Chan on August 3, 2015.
+ * Copyright (c) 2015, Davyhoy. All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ * @jsx React.DOM
+ */
 
 var React = require('react/addons');
 
-var ChequerdHeader = React.createClass({displayName: "ChequerdHeader",
+module.exports = React.createClass({displayName: "exports",
 
     render: function() {
 
         var context = {};
 
         if ("browserify" == 'browserify') {
-            console.log(document.getElementById('context').textContent)
             context = JSON.parse(
-                document.getElementById('context').textContent
-            );
-            console.log(context);
+                document.getElementById('context').textContent);
         }
 
         return (
-            React.createElement("header", {id: "chequerd-header"}, 
+            React.createElement("header", {id: "davyhoy-header"}, 
                 React.createElement("div", {className: "container"}, 
                     React.createElement("div", {className: "left"}, 
-                        React.createElement("p", {className: "logo museo-sans"}, "Chequerd"), 
+                        React.createElement("p", {className: "logo museo-sans"}, "Davyhoy"), 
                         React.createElement("div", {className: "account-buttons"}, 
                             React.createElement("button", {className: "outline"}, "Sign Up"), 
                             React.createElement("button", {className: "outline"}, "Log In")
                         )
                     ), 
                     React.createElement("div", {className: "right"}, 
-                        React.createElement("button", {className: "outline"}, "Sign Up"), 
-                        React.createElement("button", {className: "outline"}, "Sign Up")
+                        React.createElement("div", {className: "semester-buttons"}, 
+                            React.createElement("button", {className: "fill"}, "SUMMER 2015"), 
+                            React.createElement("button", {className: "fill selected"}, "FALL 2015")
+                        )
                     )
                 )
             )
@@ -64,18 +85,16 @@ var ChequerdHeader = React.createClass({displayName: "ChequerdHeader",
 
 });
 
-module.exports = ChequerdHeader;
-
 },{"react/addons":5}],3:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons'),
-    ChequerdApp = require('./components/ChequerdApp'),
-    mountNode = document.getElementById("chequerd-app-mount");
+    DHApp = require('./components/DHApp'),
+    mountNode = document.getElementById("davyhoy-app-mount");
 
-React.render(React.createElement(ChequerdApp), mountNode);
+React.render(React.createElement(DHApp), mountNode);
 
-},{"./components/ChequerdApp":1,"react/addons":5}],4:[function(require,module,exports){
+},{"./components/DHApp":1,"react/addons":5}],4:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
