@@ -1,0 +1,43 @@
+#davyhoy-header {
+    background: #C03D32;
+    width: 100%;
+    height: 76px;
+    color: #FFFFFF;
+
+    > .container {
+        @include container(1080px);
+
+        > .left {
+            @include span(5 of 12);
+        }
+
+        > .right {
+            @include span(7 of 12 last);
+            text-align: right;
+        }
+    }
+
+    .logo {
+        font-size: 27px;
+        padding-top: 24px;
+        float: left;
+    }
+
+    .account-buttons {
+        float: left;
+        padding-top: 24px;
+        padding-left: 24px;
+
+        button {
+            margin-right: 22px;
+        }
+    }
+
+    .semester-buttons {
+        padding-top: 21px;
+
+        button {
+            margin-left: 15px;
+        }
+    }
+}
