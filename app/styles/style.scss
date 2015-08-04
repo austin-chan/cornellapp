@@ -1,0 +1,255 @@
+@import "bourbon/bourbon";
+@import "variables";
+@import "normalize";
+@import "fonts";
+@import "components";
+
+.cf {
+
+	&:before,
+	&:after {
+		content:"";
+		display:table;
+	}
+
+	&:after {
+		clear:both;
+	}
+
+	zoom: 1; /* For IE 6/7 (trigger hasLayout) */
+}
+
+body {
+	font-family: 'Roboto';
+	background: #F3F3F4;
+}
+
+header {
+	height: 68px;
+	width: 100%;
+	background: #C1372C;
+	@include background-image(linear-gradient(to right, #C1372C, #CC5835));
+
+	> .inner {
+		font-family: 'Roboto Slab';
+		color: white;
+		font-size: 30px;
+		max-width: $full-width;
+		margin: 0 auto;
+	}
+
+	.name {
+		display: inline-block;
+		margin-top: 13px;
+	}
+}
+
+#main {
+	padding-bottom: 30px;
+
+	> .inner {
+		width: $full-width;
+		margin:0 auto;
+		@extend .cf;
+	}
+
+	.class-side {
+		float: left;
+		width: $full-width - $schedule-side-width;
+		padding-right: 20px;
+		height: 100px;
+		padding-top: 69px;
+		box-sizing: border-box;
+
+		.class-adder {
+			position: relative;
+			padding: 5px 0px 8px;
+			background: white;
+			height: 32px;
+			z-index: 10;
+			box-sizing: border-box;
+			border-radius: 2px;
+			@include tiny-shadow();
+
+			i {
+				position: absolute;
+				color: #575757;
+				font-size: 22px;
+				pointer-events: none;
+				left: 7px;
+				top: 5px;
+			}
+
+			input.adder-input {
+				width: 100%;
+				border: 0px;
+				outline: none;
+				color: #4c4c4c;
+				padding-left: 42px;
+				font-size: 12px;
+				letter-spacing: .3px;
+				font-weight: 300;
+				padding-right: 10px;
+				background: transparent;
+				height: 100%;
+				box-sizing: border-box;
+			}
+		}
+
+		.class-list {
+			padding: 0;
+
+			.class-info {
+				position: relative;
+				list-style: none;
+				margin-bottom: 15px;
+				@include tiny-shadow();
+
+				.close {
+					position: absolute;
+					top: 5px;
+					right: 5px;
+					cursor: pointer;
+					font-size: 22px;
+					color: white;
+					@include transition(all .17s $ios-easing);
+
+					&:hover {
+						opacity: .83;
+					}
+				}
+
+				.top-section {
+					background: #3A3A3C;
+					letter-spacing: .2px;
+					padding: 10px 32px;
+					font-size: 13px;
+					font-weight: 100;
+
+					a {
+						color: white;
+						text-decoration: none;
+
+						&:hover {
+							text-decoration: underline;
+						}
+					}
+				}
+
+				.bottom-section {
+					background: white;
+					padding: 0px 0px 2px 0px;
+
+					.class-section-group {
+						position: relative;
+						padding: 5px 0px;
+						margin: 0 5px;
+						border-top: 1px solid #dcdcdc;
+
+						&.first {
+							border-top: none;
+						}
+
+						.expand-icon {
+							position: absolute;
+							left: 241px;
+							font-size: 31px;
+							top: 2px;
+						}
+
+						.class-section-option {
+							font-size: 13px;
+							font-weight: 300;
+							padding: 5px 0px 5px 27px;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.schedule-side {
+		float: left;
+		width: $schedule-side-width;
+		text-align: right;
+
+		.day-labels {
+			float: right;
+			font-size: 0;
+			padding-top: 30px;
+			padding-bottom: 20px;
+
+			.label {
+				display: inline-block;
+				color: #B6B5B5;
+				color: #C2C2C2;
+				color: #BDBDBD;
+				width: 96px;
+				font-size: 16px;
+				font-weight: 100;
+				text-align: center;
+			}
+		}
+
+		.hours {
+			width: 672px;
+			display: inline-block;
+			@include tiny-shadow();
+		}
+
+		.hour {
+			position: relative;
+			width: 672px;
+			height: 64px;
+			background: #E7E8E9;
+			float: right;
+			clear: right;
+
+			span {
+				position: absolute;
+				color: #CBCACA;
+				margin-right: 16px;
+				font-size: 18px;
+				font-weight: 100;
+				right: 100%;
+				top: -11px;
+			}
+
+			&.odd {
+				background: white;
+			}
+		}
+	}
+}
+
+// Autocompletion styling for adding courses.
+.autocomplete-suggestions {
+	background: white;
+	max-height: none !important;
+	margin-top: 11px;
+	width: 454px !important;
+	border-radius: 2px;
+	@include small-shadow();
+
+	.autocomplete-suggestion {
+		font-size: 13px;
+		padding: 7px 12px;
+		cursor: pointer;
+		font-weight: 300;
+		@include transition(all .17s $ios-easing);
+
+		&:first-child {
+			padding-top: 10px;
+			border-radius: 2px 2px 0px 0px;
+		}
+
+		&:last-child {
+			padding-bottom: 11px;
+			border-radius: 0px 0px 2px 2px;
+		}
+
+		&.autocomplete-selected {
+			background: #e7e7e7;
+		}
+	}
+}

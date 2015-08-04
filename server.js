@@ -28,7 +28,7 @@ app.use(express.static(__dirname + '/public'));
 
 
 // Include the JSX compiler.
-require("node-jsx").install();
+require("node-jsx").install({ extension: '.js' });
 
 
 // Declare all site routes.

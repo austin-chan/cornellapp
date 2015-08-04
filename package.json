@@ -27,13 +27,30 @@
   "devDependencies": {
     "browserify": "^11.0.1",
     "gulp": "^3.9.0",
-    "gulp-browserify": "^0.5.1",
     "gulp-concat": "^2.6.0",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
     "gulp-watch": "^4.3.4",
     "reactify": "^1.1.1",
-    "uglify": "^0.1.5"
+    "sassify": "^0.9.1",
+    "uglify": "^0.1.5",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "sassify",
+        {
+          "auto-inject": true
+        }
+      ],
+      [
+        "reactify",
+        {
+          "es6": true
+        }
+      ]
+    ]
   }
 }

@@ -4,7 +4,7 @@
  */
 
 var React = require('react/addons'),
-ReactApp = React.createFactory(require('./components/App'));
+ChequerdApp = React.createFactory(require('./components/ChequerdApp'));
 
 module.exports = function(app) {
 
@@ -14,7 +14,7 @@ module.exports = function(app) {
 
         var number = 5;
 
-        var reactHtml = React.renderToString(ReactApp({ prop: number }));
+        var reactHtml = React.renderToString(ChequerdApp({ prop: number }));
         // Output html rendered by react
         // console.log(myAppHtml);
         res.render('index.ejs', {reactOutput: reactHtml});
