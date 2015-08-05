@@ -16,16 +16,46 @@
 var React = require('react/addons'),
     DHHeader = require('./DHHeader'),
     DHBasket = require('./DHBasket'),
-    DHSchedule = require('./DHSchedule');
+    DHSchedule = require('./DHSchedule'),
+    ScheduleStore = require('../stores/ScheduleStore');
+
+/**
+ * Retrieve schedule data from ScheduleStore.
+ */
+function getAppState() {
+    return {
+        courses: ScheduleStore.getCourses(),
+        semester: ScheduleStore.getSemester()
+    };
+}
 
 module.exports = React.createClass({
     displayName: 'DHApp',
+
+    getInitialState: function() {
+        return getAppState();
+    },
+
+    componentDidMount: function() {
+        ScheduleStore.addChangeListener(this._onChange);
+    },
+
+    componentWillUnmount: function() {
+        ScheduleStore.removeChangeListener(this._onChange);
+    },
+
+    _onChange: function() {
+        this.setState(getTodoState());
+    },
 
     render: function() {
         return (
             <div id="dh-app">
                 <DHHeader />
-
+                <div className="container">
+                    <DHBasket semester={this.state.semester} />
+                    <DHSchedule />
+                </div>
             </div>
         );
     }

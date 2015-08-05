@@ -22,7 +22,7 @@ module.exports = React.createClass({
     render: function() {
         return (
             <div className="dh-basket">
-                <DHCourseAdder />
+                <DHCourseAdder semester={this.props.semester} />
                 <p className="empty-label">No Courses Added</p>
             </div>
         );

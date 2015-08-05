@@ -21,4 +21,4 @@ global.$ = require('jquery');
 require('devbridge-autocomplete');
 
 // React.render(<DHApp />), mountNode);
-React.render(React.createElement(DHApp)), mountNode);
+React.render(React.createElement(DHApp), mountNode);

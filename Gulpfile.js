@@ -54,7 +54,7 @@ gulp.task('server', function () {
 
 gulp.task('watch', function() {
 
-    gulp.watch('public/assets/js/*', ['uglify']);
+    // gulp.watch('public/assets/js/*', ['uglify']);
     gulp.watch(['app/components/*', 'app/main.js'], ['react']);
     gulp.watch(['app/styles/**'], ['sass']);
 
