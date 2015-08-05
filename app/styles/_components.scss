@@ -1,41 +1,4 @@
 @import "components/DHApp";
 @import "components/DHHeader";
-
-.cq-toggle {
-	position: absolute;
-	height: 35px;
-	width: 30px;
-	top: 0px;
-	left: 0px;
-	color: white;
-	cursor: pointer;
-	font-size: 18px;
-	@include transition(.17s all $ios-easing);
-
-	&:hover {
-		opacity: .83;
-	}
-
-	i {
-		position: absolute;
-		top: 7px;
-		left: 8px;
-		@include transition(.17s all $ios-easing);
-	}
-
-	.off-icon {
-		visibility: hidden;
-		opacity: 0;
-	}
-
-	&.off {
-		.on-icon {
-			visibility: hidden;
-			opacity: 0;
-		}
-		.off-icon {
-			visibility: visible;
-			opacity: 1;
-		}
-	}
-}
+@import "components/DHBasket";
+@import "components/DHSchedule";

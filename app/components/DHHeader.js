@@ -1,5 +1,5 @@
 /**
- * DavyhoyHeader.js
+ * DHHeader.js
  * Davyhoy
  *
  * Created by Austin Chan on August 3, 2015.
@@ -14,10 +14,14 @@
 
 var React = require('react/addons');
 
+/**
+ * DHHeader is handles the site's header.
+ *
+ * Component styles are located in _DHHeader.scss.
+ */
+
 module.exports = React.createClass({
-
     render: function() {
-
         var context = {};
 
         if (process.env.NODE_ENV == 'browserify') {
@@ -26,7 +30,7 @@ module.exports = React.createClass({
         }
 
         return (
-            <header id="davyhoy-header">
+            <header id="dh-header">
                 <div className="container">
                     <div className="left">
                         <p className="logo museo-sans">Davyhoy</p>
@@ -45,5 +49,4 @@ module.exports = React.createClass({
             </header>
         );
     }
-
 });

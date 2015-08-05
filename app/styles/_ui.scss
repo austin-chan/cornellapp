@@ -1,0 +1,94 @@
+button.outline {
+    background: none;
+    border: 1px solid #F2F2F2;
+    color: #F2F2F2;
+    text-transform: uppercase;
+    font-family: 'bunt';
+    font-size: 10px;
+    letter-spacing: .4em;
+    padding: 5px 8px 4px;
+    text-align: center;
+    text-indent: .4em;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    animation-name: pulse 0.2s linear 2;
+    @include transition(all .13s ease-in-out);
+
+    &:hover {
+        color: rgba(242, 242, 242, .68);
+        border-color: rgba(242, 242, 242, .68);
+    }
+}
+
+button.fill {
+    background: rgba(56, 56, 56, 0.15);
+    border: none;
+    outline: none;
+    font-family: 'bunt';
+    color: rgba(255, 255, 255, .54);
+    padding: 9px 13px 8px;
+    letter-spacing: .25em;
+    border-radius: 4px;
+    text-indent: .25em;
+    cursor: pointer;
+    @include transition(all .13s ease-in-out);
+
+    &.selected {
+        color: white;
+    }
+
+    &:hover {
+        background: rgba(56,56,56,0.23);
+    }
+}
+
+.cq-toggle {
+    position: absolute;
+    height: 35px;
+    width: 30px;
+    top: 0px;
+    left: 0px;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    @include transition(.17s all $ios-easing);
+
+    &:hover {
+        opacity: .83;
+    }
+
+    i {
+        position: absolute;
+        top: 7px;
+        left: 8px;
+        @include transition(.17s all $ios-easing);
+    }
+
+    .off-icon {
+        visibility: hidden;
+        opacity: 0;
+    }
+
+    &.off {
+        .on-icon {
+            visibility: hidden;
+            opacity: 0;
+        }
+        .off-icon {
+            visibility: visible;
+            opacity: 1;
+        }
+    }
+}
+
+@keyframes pulse {
+    0% {transform: scale(1);}
+    50% {transform: scale(1.02);}
+    100% {transform: scale(1);}
+}
+
+.pulsate{
+    animation-name: pulse 0.2s linear 2;
+}
+

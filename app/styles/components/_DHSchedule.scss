@@ -1,0 +1,44 @@
+#dh-schedule {
+    @include span(8.6 of 12 last);
+
+    > .left {
+        @include span(1 of 12);
+    }
+
+    > .right {
+        @include span(11 of 12 last);
+    }
+
+    .schedule-area {
+        background: #FFFFFF;
+        box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.15);
+        border-radius: 4px;
+
+    }
+
+    .day-label {
+        @include span(1 of 7);
+        display: inline-block;
+        text-align: center;
+        color: #D1D1D1;
+        letter-spacing: .1em;
+
+        &:last-child {
+            @include span(1 of 7 last);
+        }
+    }
+
+    .hour-label {
+        font-size: 16px;
+        color: #D1D1D1;
+        letter-spacing: .05em;
+    }
+
+    .calendar-row {
+        height: 50px;
+
+        &:nth-child(odd) {
+            background: #EDEDED;
+        }
+    }
+}

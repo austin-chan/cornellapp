@@ -13,21 +13,29 @@
  */
 
 var React = require('react/addons'),
-    DHHeader = require('./DHHeader');
+    DHHeader = require('./DHHeader'),
+    DHBasket = require('./DHBasket'),
+    DHSchedule = require('./DHSchedule');
 
 /**
- * DavyhoyApp is the main component that contains all of the subcomponents in
- * the whole Davyhoy application.
+ * DHApp is the main component that contains all of the subcomponents in the
+ * Davyhoy application.
  *
- * Component styles are located in _DavyhoyApp.scss.
+ * Component styles are located in _DHApp.scss.
  */
 
 module.exports = React.createClass({
+
+    displayName: 'DHApp',
+
     render: function() {
         return (
-            <div>
-            <DHHeader />
-            hillo
+            <div id="dh-app">
+                <DHHeader />
+                <div className="container">
+                    <DHBasket />
+                    <DHSchedule />
+                </div>
             </div>
         );
     }

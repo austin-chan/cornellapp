@@ -1,10 +1,10 @@
 /**
- * @fileoverview This file is the main route declaration file for the Davyhoy
- * application. This file uses submodule routers to handle subroutes.
+ * The main route declaration file for the Davyhoy application. This file uses
+ * submodule routers to handle subroutes.
  */
 
 var React = require('react/addons'),
-DavyhoyApp = React.createFactory(require('./components/DavyhoyApp'));
+DHApp = React.createFactory(require('./components/DHApp'));
 
 module.exports = function(app) {
 
@@ -14,7 +14,7 @@ module.exports = function(app) {
 
         var number = 5;
 
-        var reactHtml = React.renderToString(DavyhoyApp({ prop: number }));
+        var reactHtml = React.renderToString(DHApp({ prop: number }));
         var context = JSON.stringify({
             test: 'test'
         });
