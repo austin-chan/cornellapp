@@ -1,5 +1,13 @@
 /**
- * @fileoverview Util to handle operations related to the application's config.
+ * Copyright (c) 2015, Davyhoy.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * Declares operations related to the application's config.
  */
 
 module.exports = function(config) {

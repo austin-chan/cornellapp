@@ -1,6 +1,14 @@
 /**
- * @fileoverview Util to perform instructions related to managing course data
- * and handling database entries 
+ * Copyright (c) 2015, Davyhoy.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * Defines instructions related to managing course data and handling database
+ * entries.
  */
 
 module.exports = function(models, knex) {
@@ -88,7 +96,7 @@ module.exports = function(models, knex) {
 	/**
 	 * Update a course entry in the database to reflect the values in a course
 	 * object from the Cornell Courses API. The update cascades down to the
-	 * course entry's corresponding groups.sections.meetings.professors 
+	 * course entry's corresponding groups.sections.meetings.professors
 	 * relations.
 	 * @param {object} course Object representing a course from the Cornell
 	 *     Courses API to copy values from.
@@ -229,7 +237,7 @@ module.exports = function(models, knex) {
 					sanitizeGroupObject(group);
 					group.courseId = savedCourse.get('id');
 
-					var classSections = 
+					var classSections =
 						extractProperty(group, 'classSections');
 
 					new models.group(group).save().then(function(savedGroup) {
@@ -251,23 +259,33 @@ module.exports = function(models, knex) {
 
 			// cascade down to classSections.
 			function(groupSections, callback) {
-				async.mapSeries(groupSections, function(groupSection, callback) {
+				async.mapSeries(
+					groupSections,
+					function(groupSection, callback) {
 
-					var savedGroup = groupSection[0],
-						sections = groupSection[1];
+						var savedGroup = groupSection[0],
+							sections = groupSection[1];
 
-					async.mapSeries(sections, function(section, callback) {
-						section.groupId = savedGroup.get('id');
-						sanitizeSectionObject(section);
+						async.mapSeries(sections, function(section, callback) {
+							section.groupId = savedGroup.get('id');
+							sanitizeSectionObject(section);
 
-						var meetings = extractProperty(section, 'meetings');
+							var meetings = extractProperty(section, 'meetings');
 
-						new models.section(section).save().then(
-							function(savedSection) {
+							new models.section(section).save().then(
+								function(savedSection) {
 
-							callback(null, [savedSection, meetings]);
-						}).catch(function(err) {
-							callback('creating class section entries.');
+								callback(null, [savedSection, meetings]);
+							}).catch(function(err) {
+								callback('creating class section entries.');
+							});
+						}, function(err, sectionMeetings) {
+							if (err) {
+								callback(err);
+								return;
+							}
+
+							callback(null, sectionMeetings);
 						});
 					}, function(err, sectionMeetings) {
 						if (err) {
@@ -275,39 +293,41 @@ module.exports = function(models, knex) {
 							return;
 						}
 
+						// flatten the enrollGroup level
+						sectionMeetings = _.flatten(sectionMeetings, true);
 						callback(null, sectionMeetings);
-					});
-				}, function(err, sectionMeetings) {
-					if (err) {
-						callback(err);
-						return;
-					}
-
-					// flatten the enrollGroup level
-					sectionMeetings = _.flatten(sectionMeetings, true);
-					callback(null, sectionMeetings);
 				});
 			},
 
 			// cascade down to meetings
 			function(sectionMeetings, callback) {
-				async.mapSeries(sectionMeetings, function(sectionMeeting, callback) {
+				async.mapSeries(
+					sectionMeetings,
+					function(sectionMeeting, callback) {
 
-					var savedSection = sectionMeeting[0],
-						meetings = sectionMeeting[1];
+						var savedSection = sectionMeeting[0],
+							meetings = sectionMeeting[1];
 
-					async.mapSeries(meetings, function(meeting, callback) {
-						meeting.sectionId = savedSection.get('id');
+						async.mapSeries(meetings, function(meeting, callback) {
+							meeting.sectionId = savedSection.get('id');
 
-						var professors =
-							extractProperty(meeting, 'instructors');
+							var professors =
+								extractProperty(meeting, 'instructors');
 
-						new models.meeting(meeting).save().then(
-							function(savedMeeting) {
+							new models.meeting(meeting).save().then(
+								function(savedMeeting) {
 
-							callback(null, [savedMeeting, professors]);
-						}).catch(function(err) {
-							callback('creating meeting entries.');
+								callback(null, [savedMeeting, professors]);
+							}).catch(function(err) {
+								callback('creating meeting entries.');
+							});
+						}, function(err, meetingProfessors) {
+							if (err) {
+								callback(err);
+								return;
+							}
+
+							callback(null, meetingProfessors);
 						});
 					}, function(err, meetingProfessors) {
 						if (err) {
@@ -315,17 +335,9 @@ module.exports = function(models, knex) {
 							return;
 						}
 
+						// flatten the meetings level
+						meetingProfessors = _.flatten(meetingProfessors, true);
 						callback(null, meetingProfessors);
-					});
-				}, function(err, meetingProfessors) {
-					if (err) {
-						callback(err);
-						return;
-					}
-
-					// flatten the meetings level
-					meetingProfessors = _.flatten(meetingProfessors, true);
-					callback(null, meetingProfessors);
 				});
 			},
 
@@ -357,7 +369,7 @@ module.exports = function(models, knex) {
 							});
 						},
 						function(callback) {
-							async.eachSeries(professors, 
+							async.eachSeries(professors,
 								function(professor, callback) {
 
 								knex('meeting_professors_joins').insert({
@@ -367,7 +379,7 @@ module.exports = function(models, knex) {
 								}).then(function() {
 									callback();
 								}).catch(function(err) {
-									callback('creating ' + 
+									callback('creating ' +
 										'meeting_professors_joins entries');
 								});
 							}, function(err) {

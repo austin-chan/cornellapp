@@ -1,6 +1,13 @@
 /**
- * @fileoverview Util for reusable and commonly-useful helper functions
- * for the API.
+ * Copyright (c) 2015, Davyhoy.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * Declares reusable and commonly-useful helper functions for the API.
  */
 
 module.exports = function(models) {

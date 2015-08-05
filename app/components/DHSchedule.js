@@ -1,27 +1,21 @@
 /**
- * DHSchedule.js
- * Davyhoy
- *
- * Created by Austin Chan on August 4, 2015.
- * Copyright (c) 2015, Davyhoy. All rights reserved.
+ * Copyright (c) 2015, Davyhoy.
+ * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
  * license found in the LICENSE file in the root directory of this source
  * tree.
+ *
+ *
+ * DHSchedule represents the schedule area of the application. Component styles
+ * are located in _DHSchedule.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons');
 
-/**
- * DHSchedule represents the schedule area of the application.
- *
- * Component styles are located in _DHSchedule.scss.
- */
-
 module.exports = React.createClass({
-
     displayName: 'DHSchedule',
 
     render: function() {
@@ -32,7 +26,7 @@ module.exports = React.createClass({
             days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
         // Loop from 8am through 10pm to generate hour labels and calendar rows.
-        for (var n = 0; n < 14; n++) {
+        for (var n = 0; n < 15; n++) {
             hourLabels.push(
                 <div key={n} className="hour-label">{iterator}:00</div>);
             calendarRows.push(
@@ -46,7 +40,7 @@ module.exports = React.createClass({
         }
 
         return (
-            <div id="dh-schedule">
+            <div className="dh-schedule">
                 <div className="left">
                     {hourLabels}
                 </div>

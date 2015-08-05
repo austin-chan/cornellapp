@@ -1,6 +1,14 @@
 /**
- * @fileoverview Util to handle all operations related to accessing Cornell's
- * data endpoints, including course and netid user data.
+ * Copyright (c) 2015, Davyhoy.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * Handles all operations related to accessing Cornell's data endpoints,
+ * including course and netid user data.
  */
 
 var strutil = require('./strutil'),
