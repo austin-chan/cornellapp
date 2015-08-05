@@ -18,13 +18,68 @@ var React = require('react/addons');
 module.exports = React.createClass({
     displayName: 'DHCourseAdder',
 
-    componentDidMount: function() {
-        var x = global.$.ajax;
-    },
+    // componentDidMount: function() {
+    //     console.log('hi');
+    //     $(this.refs.root).autocomplete({
+    //         params: {
+    //             semester: function() {
+    //                 return cq.semester.strm;
+    //             }
+    //         },
+
+    //         serviceUrl: '/api/search/courses',
+
+    //         onSelect: function (course) {
+    //             adderInput.val('').focus();
+
+    //             console.log(cq.courseunit);
+    //             cq.courseunit.addCourse(course);
+    //         },
+
+    //         formatResult: function(suggestion, currentValue) {
+    //             // Highlight 'CS3410' with no space
+    //             var isLetter = true;
+    //             for (var i = 0; i < currentValue.length && i < 6; i++) {
+    //                 if (isLetter && currentValue[i].match(/[a-z]/i)) {
+    //                     isLetter = false;
+    //                 } else {
+    //                     if (currentValue[i].match(/[0-9]/i)) {
+    //                         currentValue = currentValue.splice(i, 0, ' ');
+    //                     }
+    //                 }
+    //             }
+
+    //             var cleanTerm = suggestion.value,
+    //                     // .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'),
+    //                 htmlSafeString = cleanTerm
+    //                     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    //                     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    //             currentValue = $.trim(currentValue).replace('  ', ' ')
+    //                 .split(' ').join('|');
+
+    //             var regex = new RegExp('(' + currentValue + ')', 'gi');
+    //             return htmlSafeString.replace(regex, '<strong>$1<\/strong>');
+    //         },
+
+    //         // Properly prepare data received from the server
+    //         transformResult: function(response, originalQuery) {
+    //             return {
+    //                 suggestions: _.map(JSON.parse(response), function(course) {
+    //                     return {
+    //                         value: course.subject + ' ' + course.catalogNbr + ': ' +
+    //                             course.titleLong,
+    //                         data: course
+    //                     };
+    //                 })
+    //             };
+    //         }
+    //     });
+    // },
 
     render: function() {
         return (
-            <div className="dh-course-adder">
+            <div className="dh-course-adder" ref="root">
                 <i className="icon icon-add"></i>
                 <div className="input-wrapper">
                     <input type="text" placeholder="Add a Course" />

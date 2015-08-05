@@ -15,6 +15,9 @@ gulp.task('react', function() {
         entries: ['app/main.js']
     })
     .bundle()
+    .on('error', function(err){
+        console.log(err.message);
+    })
     .pipe(source('app/main.js'))
     .pipe(rename('main.js'))
     .pipe(gulp.dest('./public/assets/js'));

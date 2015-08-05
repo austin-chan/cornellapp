@@ -25,10 +25,7 @@ module.exports = React.createClass({
         return (
             <div id="dh-app">
                 <DHHeader />
-                <div className="container">
-                    <DHBasket />
-                    <DHSchedule />
-                </div>
+
             </div>
         );
     }
