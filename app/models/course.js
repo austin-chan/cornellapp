@@ -10,6 +10,8 @@
  * The model class for courses.
  */
 
+var Joi = require('joi')
+
 module.exports = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'courses',
@@ -21,5 +23,31 @@ module.exports = function(bookshelf, models) {
 		groups: function() {
 			return this.hasMany(models.group, 'courseId');
 		}
+	}, {
+		joi: Joi.object({
+			crseId: Joi.number().required(),
+			crseOfferNbr: Joi.number().required(),
+			strm: Joi.number().required(),
+			subject: Joi.string().required(),
+			titleLong: Joi.string().required(),
+			titleShort: Joi.string().required(),
+			description: Joi.string().default(''),
+			acadCareer: Joi.string().default(''),
+			acadGroup: Joi.string().default(''),
+			catalogBreadth: Joi.string().default(''),
+			catalogAttribute: Joi.string().default(''),
+			catalogComments: Joi.string().default(''),
+			catalogCourseSubfield: Joi.string().default(''),
+			catalogDistr: Joi.string().default(''),
+			catalogFee: Joi.string().default(''),
+			catalogForbiddenOverlaps: Joi.string().default(''),
+			catalogLang: Joi.string().default(''),
+			catalogNbr: Joi.number().default(''),
+			catalogOutcomes: Joi.string().default('[]'),
+			catalogPermission: Joi.string().default(''),
+			catalogPrereqCoreq: Joi.string().default(''),
+			catalogSatisfiesReq: Joi.string().default(''),
+			catalogWhenOffered: Joi.string().default(''),
+		}).unknown(false)
 	});
 }

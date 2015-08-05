@@ -25,13 +25,14 @@ exports.up = function(knex, Promise) {
 			table.string('acadCareer');
 			table.string('acadGroup');
 			table.string('catalogBreadth');
+			table.string('catalogAttribute');
 			table.string('catalogComments', 2048);
 			table.string('catalogCourseSubfield');
 			table.string('catalogDistr');
 			table.string('catalogFee');
 			table.string('catalogForbiddenOverlaps', 2048);
 			table.string('catalogLang');
-			table.string('catalogNbr');
+			table.integer('catalogNbr');
 			table.string('catalogOutcomes', 4096);
 			table.string('catalogPermission', 2048);
 			table.string('catalogPrereqCoreq', 2048);

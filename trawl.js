@@ -18,7 +18,7 @@ var async = require('async'),
 	semester = process.argv[2];
 
 if (!semester || typeof semester != 'string') {
-	console.log('Provide a semester to scrape as an argument.');
+	console.log('Provide a semester to scrape.');
 	process.exit(1);
 }
 
@@ -263,7 +263,7 @@ async.waterfall([
 			});
 		}, function(err) {
 			if (err) {
-				callback('An error occurred saving new courses to the ' + 
+				callback('An error occurred saving new courses to the ' +
 					'database while ' + err);
 				return;
 			}

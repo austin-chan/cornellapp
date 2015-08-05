@@ -11,6 +11,8 @@
  * entries.
  */
 
+var Joi = require('joi');
+
 module.exports = function(models, knex) {
 	var async = require('async'),
 		_ = require('underscore'),
@@ -62,7 +64,7 @@ module.exports = function(models, knex) {
 		}
 
 		// sanitize course API object
-		sanitizeCourseObject(copyCourse);
+		copyCourse = sanitizeCourseObject(copyCourse);
 		copyCourse.groups = copyCourse.enrollGroups;
 		delete copyCourse['enrollGroups'];
 		for (var i = 0; i < copyCourse.groups.length; i++) {
@@ -218,8 +220,12 @@ module.exports = function(models, knex) {
 	 *     non-empty string is passed otherwise.
 	 */
 	m.insertCourse = function(course, callback) {
-		var enrollGroups = extractProperty(course, 'enrollGroups');
-		sanitizeCourseObject(course);
+		try {
+			var enrollGroups = extractProperty(course, 'enrollGroups');
+			course = sanitizeCourseObject(course);
+		} catch (err) {
+			callback('sanitizing course object. ' + err);
+		}
 
 		async.waterfall([
 			// save course object
@@ -227,7 +233,7 @@ module.exports = function(models, knex) {
 				new models.course(course).save().then(function(savedCourse) {
 					callback(null, savedCourse);
 				}).catch(function(err) {
-					callback('creating course entries.');
+					callback('creating course entries. ' + err);
 				});
 			},
 
@@ -244,7 +250,7 @@ module.exports = function(models, knex) {
 						callback(null, [savedGroup, classSections]);
 
 					}).catch(function(err) {
-						callback('creating enroll group entries.');
+						callback('creating enroll group entries. ' + err);
 					});
 
 				}, function(err, groupSections) {
@@ -277,7 +283,8 @@ module.exports = function(models, knex) {
 
 								callback(null, [savedSection, meetings]);
 							}).catch(function(err) {
-								callback('creating class section entries.');
+								callback('creating class section entries. '
+									+ err);
 							});
 						}, function(err, sectionMeetings) {
 							if (err) {
@@ -319,7 +326,7 @@ module.exports = function(models, knex) {
 
 								callback(null, [savedMeeting, professors]);
 							}).catch(function(err) {
-								callback('creating meeting entries.');
+								callback('creating meeting entries. ' + err);
 							});
 						}, function(err, meetingProfessors) {
 							if (err) {
@@ -361,7 +368,8 @@ module.exports = function(models, knex) {
 								function(err) {
 
 								if (err) {
-									callback('creating professor entries.');
+									callback('creating professor entries. '
+										+ err);
 									return;
 								}
 
@@ -380,7 +388,8 @@ module.exports = function(models, knex) {
 									callback();
 								}).catch(function(err) {
 									callback('creating ' +
-										'meeting_professors_joins entries');
+										'meeting_professors_joins entries. '
+										+ err);
 								});
 							}, function(err) {
 								if (err) {
@@ -524,9 +533,16 @@ module.exports = function(models, knex) {
 	 * Convenience function to sanitize a course object from the Cornell Courses
 	 * API to prepare it for insertion into the database.
 	 * @param {object} course Course object to sanitize.
+	 * @return {object} Santized course object.
 	 */
 	function sanitizeCourseObject(course) {
 		jsonFlatten(course, 'catalogOutcomes');
+		console.log(models.course.joi);
+		var validation = Joi.validate(course, models.course.joi);
+		if (validation.error) {
+			throw new Error(validation.error);
+		}
+		return validation.value;
 	}
 
 	/**
