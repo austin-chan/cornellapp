@@ -40,15 +40,16 @@ module.exports = React.createClass({
             },
 
             formatResult: function(suggestion, currentValue) {
-                // Highlight 'CS3410' with no space
-                var isLetter = true;
-                for (var i = 0; i < currentValue.length && i < 6; i++) {
-                    if (isLetter && currentValue[i].match(/[a-z]/i)) {
-                        isLetter = false;
-                    } else {
-                        if (currentValue[i].match(/[0-9]/i)) {
-                            currentValue = currentValue.splice(i, 0, ' ');
-                        }
+                // Turn 'CS3410' into 'CS 3410' for highlighting.
+                var firstDigitIndex = currentValue.search(/\d/);
+                if (firstDigitIndex >= 2 && firstDigitIndex < 6) {
+                    var lettersOnlyTest = /^[a-zA-Z]+$/.test(
+                        currentValue.substring(0, firstDigitIndex));
+
+                    if (lettersOnlyTest) {
+                        currentValue =
+                            currentValue.substring(0, firstDigitIndex) + ' ' +
+                            currentValue.substring(firstDigitIndex);
                     }
                 }
 

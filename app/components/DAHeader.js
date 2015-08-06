@@ -31,14 +31,22 @@ module.exports = React.createClass({
                     <div className="left">
                         <p className="logo museo-sans">Davyapp</p>
                         <div className="account-buttons">
-                            <button className="outline">Sign Up</button>
-                            <button className="outline">Log In</button>
+                            <button className="da-outline-button">
+                                Sign Up
+                            </button>
+                            <button className="da-outline-button">
+                                Log In
+                            </button>
                         </div>
                     </div>
                     <div className="right">
                         <div className="semester-buttons">
-                            <button className="fill">SUMMER 2015</button>
-                            <button className="fill selected">FALL 2015</button>
+                            <button className="da-fill-button">
+                                SUMMER 2015
+                            </button>
+                            <button className="da-fill-button selected">
+                                FALL 2015
+                            </button>
                         </div>
                     </div>
                 </div>

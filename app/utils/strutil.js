@@ -13,6 +13,27 @@
 var m = {};
 
 /**
+ * Shortens a string to a specified maximum length, adding a specified number
+ * of periods to suffix the shortened string. If the original string is larger
+ * than the maximum length, the final shortened string including the periods
+ * has a length of the maximum specified length.
+ * @param {string} str String to shorten.
+ * @param {number} len Maximum length of shortened string.
+ * @param {number} dots Number of dots to use if the string needs to be
+ *      shortened.
+ * @return {string} Shortened string.
+ */
+m.shorten = function(str, len, dots) {
+    dots = typeof dots !== 'undefined' ? dots : 3;
+
+    var dotStr = Array(dots + 1).join('.');
+    if(str.length > len - dots)
+        str = str.substring(0, len - dots) + dotStr;
+
+    return str;
+}
+
+/**
  * Determines if the input string only consists of numbers and letters, either
  * uppercase or lowercase. If the condition is true, or the string is empty,
  * returns true otherwise returns false.
@@ -29,7 +50,7 @@ m.isAlphanumeric = function(str) {
  * @return {boolean} true if only white-space or empty. false otherwise.
  */
 m.isWhiteEmpty = function(str) {
-	return str.trim() == '';
+	return str.trim() === '';
 }
 
 /**

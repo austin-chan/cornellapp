@@ -1,4 +1,4 @@
-button.outline {
+.da-outline-button {
     background: none;
     border: 1px solid #F2F2F2;
     color: #F2F2F2;
@@ -21,7 +21,7 @@ button.outline {
     }
 }
 
-button.fill {
+.da-fill-button {
     background: rgba(56, 56, 56, 0.15);
     border: none;
     outline: none;
@@ -43,26 +43,38 @@ button.fill {
     }
 }
 
-.cq-toggle {
-    position: absolute;
-    height: 35px;
-    width: 30px;
-    top: 0px;
-    left: 0px;
-    color: white;
+.da-simple-button {
+    font-size: 9px;
+    color: #C4C4C4;
+    letter-spacing: .27em;
+    text-transform: uppercase;
+    border: none;
+    outline: none;
+    background: transparent;
     cursor: pointer;
-    font-size: 18px;
-    @include transition(.17s all $ios-easing);
+    padding: 2px 3px;
+    @include transition(all .13s ease-in-out);
 
     &:hover {
-        opacity: .83;
+        opacity: .63;
+    }
+}
+
+.da-toggle {
+    color: white;
+    cursor: pointer;
+    font-size: 19px;
+    @include transition(.13s all ease-in-out);
+
+    &:hover {
+        opacity: .73;
     }
 
     i {
         position: absolute;
         top: 7px;
         left: 8px;
-        @include transition(.17s all $ios-easing);
+        @include transition(.13s all ease-in-out);
     }
 
     .off-icon {
@@ -82,13 +94,13 @@ button.fill {
     }
 }
 
-@keyframes pulse {
-    0% {transform: scale(1);}
-    50% {transform: scale(1.02);}
-    100% {transform: scale(1);}
-}
+.da-close {
+    color: white;
+    cursor: pointer;
+    font-size: 19px;
+    @include transition(.13s all ease-in-out);
 
-.pulsate{
-    animation-name: pulse 0.2s linear 2;
+    &:hover {
+        opacity: .73;
+    }
 }
-

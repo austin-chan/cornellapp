@@ -10,3 +10,11 @@ $da-red: #C8453A;
 $da-green: #43A047;
 $da-yellow: #FFA726;
 $da-pink: #FF69B4;
+
+@mixin basket-item() {
+    position: relative;
+    box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.15);
+    border-radius: 3px;
+    background: white;
+    margin-bottom: 20px;
+}
