@@ -20,5 +20,5 @@ var React = require('react/addons'),
 global.$ = require('jquery');
 require('devbridge-autocomplete');
 
-React.render(<DAApp />), mountNode);
+React.render(<DAApp />, mountNode);
 // React.render(React.createElement(DAApp), mountNode);

@@ -3,10 +3,10 @@ $schedule-side-width: 740px;
 $ios-easing: cubic-bezier(.23, 1, .32, 1);
 $ios-easing-two: cubic-bezier(.10, .70, .10, 1);
 
-@mixin tiny-shadow() {
-	box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-}
-
-@mixin small-shadow() {
-	box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-}
+$da-blue: #5B68C6;
+$da-purple: #7E57C2;
+$da-light-blue: #0093DD;
+$da-red: #C8453A;
+$da-green: #43A047;
+$da-yellow: #FFA726;
+$da-pink: #FF69B4;

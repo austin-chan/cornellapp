@@ -38,9 +38,9 @@
         @include placeholder {
             color: #AEAEAE;
             text-transform: uppercase;
-            font-size: 11px;
+            font-size: 10px;
             position: relative;
-            top: 1px;
+            top: 2px;
             left: 2px;
             letter-spacing: .32em;
             font-weight: 300;
@@ -61,23 +61,28 @@
 
     .autocomplete-suggestion {
         font-size: 13px;
-        padding: 7px 12px;
+        line-height: 14px;
+        padding: 9px 14px 7px;
         cursor: pointer;
         font-weight: 400;
         @include transition(all .17s $ios-easing);
 
+        strong {
+            font-weight: 600;
+        }
+
         &:first-child {
-            padding-top: 10px;
+            padding-top: 12px;
             border-radius: 3px 3px 0px 0px;
         }
 
         &:last-child {
-            padding-bottom: 11px;
+            padding-bottom: 10px;
             border-radius: 0px 0px 3px 3px;
         }
 
         &.autocomplete-selected {
-            background: #e7e7e7;
+            background: #EDEDED;
         }
     }
 }

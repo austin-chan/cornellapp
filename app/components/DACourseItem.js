@@ -22,10 +22,9 @@ module.exports = React.createClass({
 
     render: function() {
         return (
-            <div className="da-course-adder">
-                <i className="icon icon-add"></i>
-                <div className="input-wrapper">
-                    <input type="text" placeholder="Add a Course" ref="input" />
+            <div className="da-course-item">
+                <div className="item-header blue">
+
                 </div>
             </div>
         );

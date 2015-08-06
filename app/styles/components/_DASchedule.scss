@@ -1,13 +1,13 @@
-$rowHeight: 50px;
+$rowHeight: 60px;
 
 .da-schedule {
     @include span(8.6 of 12 last);
-    padding-top: 28px;
+    padding-top: 30px;
 
     > .left {
         @include span(.9 of 12);
         text-align: right;
-        padding-top: 21px;
+        padding-top: 26px;
     }
 
     > .right {
@@ -22,22 +22,25 @@ $rowHeight: 50px;
 
     .day-labels {
         @extend .cf;
-        padding-bottom: 11px;
+        padding-bottom: 14px;
+        font-weight: 300;
     }
 
     .day-label {
         width: percentage(1/7);
         display: inline-block;
         text-align: center;
-        font-size: 15px;
+        font-size: 16px;
         color: #D1D1D1;
         letter-spacing: .1em;
     }
 
     .hour-label {
         height: $rowHeight;
-        font-size: 15px;
+        font-size: 14px;
         color: #D1D1D1;
+        font-weight: 300;
+        margin-right: -2px;
         letter-spacing: .05em;
     }
 
