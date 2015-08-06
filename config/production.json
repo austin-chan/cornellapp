@@ -5,7 +5,7 @@
 			"host": "",
 			"user": "",
 			"password": "",
-			"database": "davyhoy"
+			"database": "davyapp"
 		},
 		"migrations": {
 			"directory": "db/migrations"

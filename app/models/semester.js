@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -10,6 +10,8 @@
  * The model class for semesters.
  */
 
+var Joi = require('joi');
+
 module.exports = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'semesters',
@@ -18,5 +20,12 @@ module.exports = function(bookshelf, models) {
 			relation.relatedData.parentTableName = 'strm';
 			return relation;
 		}
-	});
+	}, {
+        validator: Joi.object({
+            descr: Joi.string().required(),
+            lastModifiedDttm: Joi.string().required(),
+            slug: Joi.string().required(),
+            strm: Joi.number().required()
+        }).options({ stripUnknown: true })
+    });
 }

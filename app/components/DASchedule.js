@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,8 +7,8 @@
  * tree.
  *
  *
- * DHSchedule represents the schedule area of the application. Component styles
- * are located in _DHSchedule.scss.
+ * DASchedule represents the schedule area of the application. Component styles
+ * are located in _DASchedule.scss.
  *
  * @jsx React.DOM
  */
@@ -16,7 +16,7 @@
 var React = require('react/addons');
 
 module.exports = React.createClass({
-    displayName: 'DHSchedule',
+    displayName: 'DASchedule',
 
     render: function() {
         var hourLabels = [],
@@ -40,7 +40,7 @@ module.exports = React.createClass({
         }
 
         return (
-            <div className="dh-schedule">
+            <div className="da-schedule">
                 <div className="left">
                     {hourLabels}
                 </div>

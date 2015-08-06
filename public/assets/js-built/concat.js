@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -51,10 +51,10 @@ module.exports = React.createClass({
 
     render: function() {
         return (
-            React.createElement("div", {id: "dh-app"}, 
-                React.createElement(DHHeader, null), 
-                React.createElement("div", {className: "container"}, 
-                    React.createElement(DHBasket, {semester: this.state.semester}), 
+            React.createElement("div", {id: "dh-app"},
+                React.createElement(DHHeader, null),
+                React.createElement("div", {className: "container"},
+                    React.createElement(DHBasket, {semester: this.state.semester}),
                     React.createElement(DHSchedule, null)
                 )
             )
@@ -64,7 +64,7 @@ module.exports = React.createClass({
 
 },{"../stores/ScheduleStore":9,"./DHBasket":2,"./DHHeader":4,"./DHSchedule":5,"react/addons":19}],2:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -86,8 +86,8 @@ module.exports = React.createClass({
 
     render: function() {
         return (
-            React.createElement("div", {className: "dh-basket"}, 
-                React.createElement(DHCourseAdder, {semester: this.props.semester}), 
+            React.createElement("div", {className: "dh-basket"},
+                React.createElement(DHCourseAdder, {semester: this.props.semester}),
                 React.createElement("p", {className: "empty-label"}, "No Courses Added")
             )
         );
@@ -96,7 +96,7 @@ module.exports = React.createClass({
 
 },{"./DHCourseAdder":3,"react/addons":19}],3:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -176,9 +176,9 @@ module.exports = React.createClass({
 
     render: function() {
         return (
-            React.createElement("div", {className: "dh-course-adder"}, 
-                React.createElement("i", {className: "icon icon-add"}), 
-                React.createElement("div", {className: "input-wrapper"}, 
+            React.createElement("div", {className: "dh-course-adder"},
+                React.createElement("i", {className: "icon icon-add"}),
+                React.createElement("div", {className: "input-wrapper"},
                     React.createElement("input", {type: "text", placeholder: "Add a Course", ref: "input"})
                 )
             )
@@ -188,7 +188,7 @@ module.exports = React.createClass({
 
 },{"react/addons":19}],4:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -215,18 +215,18 @@ module.exports = React.createClass({displayName: "exports",
         }
 
         return (
-            React.createElement("header", {className: "dh-header"}, 
-                React.createElement("div", {className: "container"}, 
-                    React.createElement("div", {className: "left"}, 
-                        React.createElement("p", {className: "logo museo-sans"}, "Davyhoy"), 
-                        React.createElement("div", {className: "account-buttons"}, 
-                            React.createElement("button", {className: "outline"}, "Sign Up"), 
+            React.createElement("header", {className: "dh-header"},
+                React.createElement("div", {className: "container"},
+                    React.createElement("div", {className: "left"},
+                        React.createElement("p", {className: "logo museo-sans"}, "Davyhoy"),
+                        React.createElement("div", {className: "account-buttons"},
+                            React.createElement("button", {className: "outline"}, "Sign Up"),
                             React.createElement("button", {className: "outline"}, "Log In")
                         )
-                    ), 
-                    React.createElement("div", {className: "right"}, 
-                        React.createElement("div", {className: "semester-buttons"}, 
-                            React.createElement("button", {className: "fill"}, "SUMMER 2015"), 
+                    ),
+                    React.createElement("div", {className: "right"},
+                        React.createElement("div", {className: "semester-buttons"},
+                            React.createElement("button", {className: "fill"}, "SUMMER 2015"),
                             React.createElement("button", {className: "fill selected"}, "FALL 2015")
                         )
                     )
@@ -238,7 +238,7 @@ module.exports = React.createClass({displayName: "exports",
 
 },{"react/addons":19}],5:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -279,15 +279,15 @@ module.exports = React.createClass({
         }
 
         return (
-            React.createElement("div", {className: "dh-schedule"}, 
-                React.createElement("div", {className: "left"}, 
+            React.createElement("div", {className: "dh-schedule"},
+                React.createElement("div", {className: "left"},
                     hourLabels
-                ), 
-                React.createElement("div", {className: "right"}, 
-                    React.createElement("div", {className: "day-labels"}, 
+                ),
+                React.createElement("div", {className: "right"},
+                    React.createElement("div", {className: "day-labels"},
                         dayLabels
-                    ), 
-                    React.createElement("div", {className: "schedule-area"}, 
+                    ),
+                    React.createElement("div", {className: "schedule-area"},
                         calendarRows
                     )
                 )
@@ -298,7 +298,7 @@ module.exports = React.createClass({
 
 },{"react/addons":19}],6:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -336,7 +336,7 @@ module.exports = new Dispatcher();
 },{"flux":13}],8:[function(require,module,exports){
 (function (global){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -363,7 +363,7 @@ React.render(React.createElement(DHApp), mountNode);
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./components/DHApp":1,"devbridge-autocomplete":12,"jquery":16,"react/addons":19}],9:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -1041,7 +1041,7 @@ process.umask = function() { return 0; };
         onBlur: function () {
             this.enableKillerFn();
         },
-        
+
         abortAjax: function () {
             var that = this;
             if (that.currentRequest) {

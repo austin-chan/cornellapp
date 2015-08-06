@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0

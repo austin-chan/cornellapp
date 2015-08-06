@@ -8,88 +8,88 @@ exports.up = function(knex, Promise) {
 			table.string('name');
 		}),
 		knex.schema.createTable('semesters', function(table) {
-			table.string('descr');
-			table.string('lastModifiedDttm');
-			table.string('slug');
-			table.string('strm');
+			table.string('descr').notNullable();
+			table.string('lastModifiedDttm').notNullable();
+			table.string('slug').notNullable();
+			table.integer('strm').notNullable();
 		}),
 		knex.schema.createTable('courses', function(table) {
 			table.increments();
-			table.integer('crseId').unsigned();
-			table.integer('crseOfferNbr').unsigned();
-			table.integer('strm').unsigned();
-			table.string('subject', 16);
-			table.string('titleLong');
-			table.string('titleShort');
-			table.string('description', 4096);
-			table.string('acadCareer');
-			table.string('acadGroup');
-			table.string('catalogBreadth');
-			table.string('catalogAttribute');
-			table.string('catalogComments', 2048);
-			table.string('catalogCourseSubfield');
-			table.string('catalogDistr');
-			table.string('catalogFee');
-			table.string('catalogForbiddenOverlaps', 2048);
-			table.string('catalogLang');
-			table.integer('catalogNbr');
-			table.string('catalogOutcomes', 4096);
-			table.string('catalogPermission', 2048);
-			table.string('catalogPrereqCoreq', 2048);
-			table.string('catalogSatisfiesReq', 2048);
-			table.string('catalogWhenOffered');
+			table.integer('crseId').unsigned().notNullable();
+			table.integer('crseOfferNbr').unsigned().notNullable();
+			table.integer('strm').unsigned().notNullable();
+			table.string('subject', 16).notNullable();
+			table.string('titleLong').notNullable();
+			table.string('titleShort').notNullable();
+			table.string('description', 4096).notNullable();
+			table.string('acadCareer').notNullable();
+			table.string('acadGroup').notNullable();
+			table.string('catalogBreadth').notNullable();
+			table.string('catalogAttribute').notNullable();
+			table.string('catalogComments', 2048).notNullable();
+			table.string('catalogCourseSubfield').notNullable();
+			table.string('catalogDistr').notNullable();
+			table.string('catalogFee').notNullable();
+			table.string('catalogForbiddenOverlaps', 2048).notNullable();
+			table.string('catalogLang').notNullable();
+			table.integer('catalogNbr').notNullable();
+			table.string('catalogOutcomes', 4096).notNullable();
+			table.string('catalogPermission', 2048).notNullable();
+			table.string('catalogPrereqCoreq', 2048).notNullable();
+			table.string('catalogSatisfiesReq', 2048).notNullable();
+			table.string('catalogWhenOffered').notNullable();
 		}),
 		knex.schema.createTable('groups', function(table) {
 			table.increments();
-			table.integer('courseId').unsigned();
-			table.string('componentsOptional', 2048);
-			table.string('componentsRequired', 2048);
-			table.string('gradingBasis');
-			table.string('gradingBasisLong');
-			table.string('gradingBasisShort');
-			table.string('sessionBeginDt');
-			table.string('sessionEndDt');
-			table.string('sessionCode');
-			table.string('sessionLong');
-			table.string('simpleCombinations', 2048);
-			table.float('unitsMaximum');
-			table.float('unitsMinimum');
+			table.integer('courseId').unsigned().notNullable();
+			table.string('componentsOptional', 2048).notNullable();
+			table.string('componentsRequired', 2048).notNullable();
+			table.string('gradingBasis').notNullable();
+			table.string('gradingBasisLong').notNullable();
+			table.string('gradingBasisShort').notNullable();
+			table.string('sessionBeginDt').notNullable();
+			table.string('sessionEndDt').notNullable();
+			table.string('sessionCode').notNullable();
+			table.string('sessionLong').notNullable();
+			table.string('simpleCombinations', 2048).notNullable();
+			table.float('unitsMaximum').notNullable();
+			table.float('unitsMinimum').notNullable();
 		}),
 		knex.schema.createTable('sections', function(table) {
 			table.increments();
-			table.integer('groupId').unsigned();
-			table.string('addConsent');
-			table.string('addConsentDescr');
-			table.string('campus');
-			table.string('campusDescr');
-			table.integer('classNbr');
-			table.string('endDt');
-			table.string('instructionMode');
-			table.string('instrModeDescr');
-			table.string('instrModeDescrshort');
-			table.boolean('isComponentGraded');
-			table.string('location');
-			table.string('locationDescr');
-			table.string('notes', 4096);
-			table.string('section');
-			table.string('ssrComponent');
-			table.string('ssrComponentLong');
-			table.string('startDt');
-			table.string('topicDescription');
+			table.integer('groupId').unsigned().notNullable();
+			table.string('addConsent').notNullable();
+			table.string('addConsentDescr').notNullable();
+			table.string('campus').notNullable();
+			table.string('campusDescr').notNullable();
+			table.integer('classNbr').notNullable();
+			table.string('endDt').notNullable();
+			table.string('instructionMode').notNullable();
+			table.string('instrModeDescr').notNullable();
+			table.string('instrModeDescrshort').notNullable();
+			table.boolean('isComponentGraded').notNullable();
+			table.string('location').notNullable();
+			table.string('locationDescr').notNullable();
+			table.string('notes', 4096).notNullable();
+			table.string('section').notNullable();
+			table.string('ssrComponent').notNullable();
+			table.string('ssrComponentLong').notNullable();
+			table.string('startDt').notNullable();
+			table.string('topicDescription').notNullable();
 		}),
 		knex.schema.createTable('meetings', function(table) {
 			table.increments();
-			table.integer('sectionId').unsigned();
-			table.string('bldgDescr');
-			table.integer('classMtgNbr');
-			table.string('facilityDescr');
-			table.string('facilityDescrshort');
-			table.string('pattern');
-			table.string('timeEnd');
-			table.string('timeStart');
-			table.string('startDt');
-			table.string('endDt');
-			table.string('meetingTopicDescription', 2048);
+			table.integer('sectionId').unsigned().notNullable();
+			table.string('bldgDescr').notNullable();
+			table.integer('classMtgNbr').notNullable();
+			table.string('facilityDescr').notNullable();
+			table.string('facilityDescrshort').notNullable();
+			table.string('pattern').notNullable();
+			table.string('timeEnd').notNullable();
+			table.string('timeStart').notNullable();
+			table.string('startDt').notNullable();
+			table.string('endDt').notNullable();
+			table.string('meetingTopicDescription', 2048).notNullable();
 		}),
 		knex.schema.createTable('meeting_professors_joins', function(table) {
 			table.integer('meetingId').unsigned();
@@ -97,10 +97,10 @@ exports.up = function(knex, Promise) {
 		}),
 		knex.schema.createTable('professors', function(table) {
 			table.string('label').primary();
-			table.string('netid');
-			table.string('firstName');
-			table.string('middleName');
-			table.string('lastName');
+			table.string('netid').notNullable();
+			table.string('firstName').notNullable();
+			table.string('middleName').notNullable();
+			table.string('lastName').notNullable();
 		})
 	]);
 };

@@ -1,5 +1,5 @@
 /**
- * Entry point for the Davyhoy web server. This file begins the initialization
+ * Entry point for the Davyapp web server. This file begins the initialization
  * process for the application files and all the dependencies.
  */
 

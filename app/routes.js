@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,12 +7,12 @@
  * tree.
  *
  *
- * This is the main route declaration file for the Davyhoy application. This
+ * This is the main route declaration file for the Davyapp application. This
  * routing file uses submodule routers to modularize routes.
  */
 
 var React = require('react/addons'),
-    DHApp = React.createFactory(require('./components/DHApp'));
+    DAApp = React.createFactory(require('./components/DAApp'));
 
 module.exports = function(app) {
 
@@ -22,7 +22,7 @@ module.exports = function(app) {
 
         var number = 5;
 
-        var reactHtml = React.renderToString(DHApp({ prop: number }));
+        var reactHtml = React.renderToString(DAApp({ prop: number }));
         var context = JSON.stringify({
             test: 'test'
         });

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -9,6 +9,8 @@
  *
  * The model class for meetings.
  */
+
+var Joi = require('joi');
 
 module.exports = function(bookshelf, models) {
 	return bookshelf.Model.extend({
@@ -25,5 +27,19 @@ module.exports = function(bookshelf, models) {
 			relation.relatedData.throughForeignKey = 'label';
 			return relation;
 		}
-	});
+	}, {
+        validator: Joi.object({
+            sectionId: Joi.number(),
+            bldgDescr: Joi.string().allow('').default(''),
+            classMtgNbr: Joi.number().default(1),
+            facilityDescr: Joi.string().allow('').default(''),
+            facilityDescrshort: Joi.string().allow('').default(''),
+            pattern: Joi.string().allow('').default(''),
+            timeEnd: Joi.string().allow('').default(''),
+            timeStart: Joi.string().allow('').default(''),
+            startDt: Joi.string().allow('').default(''),
+            endDt: Joi.string().allow('').default(''),
+            meetingTopicDescription: Joi.string().allow('').default('')
+        }).options({ stripUnknown: true })
+    });
 }

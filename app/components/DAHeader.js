@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,8 +7,8 @@
  * tree.
  *
  *
- * DHHeader is handles the site's header. Component styles are located in
- * _DHHeader.scss.
+ * DAHeader is handles the site's header. Component styles are located in
+ * _DAHeader.scss.
  *
  * @jsx React.DOM
  */
@@ -26,10 +26,10 @@ module.exports = React.createClass({
         }
 
         return (
-            <header className="dh-header">
+            <header className="da-header">
                 <div className="container">
                     <div className="left">
-                        <p className="logo museo-sans">Davyhoy</p>
+                        <p className="logo museo-sans">Davyapp</p>
                         <div className="account-buttons">
                             <button className="outline">Sign Up</button>
                             <button className="outline">Log In</button>

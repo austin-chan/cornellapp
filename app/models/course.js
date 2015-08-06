@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -24,30 +24,30 @@ module.exports = function(bookshelf, models) {
 			return this.hasMany(models.group, 'courseId');
 		}
 	}, {
-		joi: Joi.object({
+		validator: Joi.object({
 			crseId: Joi.number().required(),
 			crseOfferNbr: Joi.number().required(),
 			strm: Joi.number().required(),
 			subject: Joi.string().required(),
 			titleLong: Joi.string().required(),
 			titleShort: Joi.string().required(),
-			description: Joi.string().default(''),
-			acadCareer: Joi.string().default(''),
-			acadGroup: Joi.string().default(''),
-			catalogBreadth: Joi.string().default(''),
-			catalogAttribute: Joi.string().default(''),
-			catalogComments: Joi.string().default(''),
-			catalogCourseSubfield: Joi.string().default(''),
-			catalogDistr: Joi.string().default(''),
-			catalogFee: Joi.string().default(''),
-			catalogForbiddenOverlaps: Joi.string().default(''),
-			catalogLang: Joi.string().default(''),
-			catalogNbr: Joi.number().default(''),
+			description: Joi.string().allow('').default(''),
+			acadCareer: Joi.string().allow('').default(''),
+			acadGroup: Joi.string().allow('').default(''),
+			catalogBreadth: Joi.string().allow('').default(''),
+			catalogAttribute: Joi.string().allow('').default(''),
+			catalogComments: Joi.string().allow('').default(''),
+			catalogCourseSubfield: Joi.string().allow('').default(''),
+			catalogDistr: Joi.string().allow('').default(''),
+			catalogFee: Joi.string().allow('').default(''),
+			catalogForbiddenOverlaps: Joi.string().allow('').default(''),
+			catalogLang: Joi.string().allow('').default(''),
+			catalogNbr: Joi.number().required(),
 			catalogOutcomes: Joi.string().default('[]'),
-			catalogPermission: Joi.string().default(''),
-			catalogPrereqCoreq: Joi.string().default(''),
-			catalogSatisfiesReq: Joi.string().default(''),
-			catalogWhenOffered: Joi.string().default(''),
-		}).unknown(false)
+			catalogPermission: Joi.string().allow('').default(''),
+			catalogPrereqCoreq: Joi.string().allow('').default(''),
+			catalogSatisfiesReq: Joi.string().allow('').default(''),
+			catalogWhenOffered: Joi.string().allow('').default(''),
+		}).options({ stripUnknown: true })
 	});
 }

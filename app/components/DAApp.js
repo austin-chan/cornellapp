@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,16 +7,16 @@
  * tree.
  *
  *
- * DHApp is the main component that contains all of the subcomponents in the
- * Davyhoy application. Component styles are located in _DHApp.scss.
+ * DAApp is the main component that contains all of the subcomponents in the
+ * Davyapp application. Component styles are located in _DAApp.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    DHHeader = require('./DHHeader'),
-    DHBasket = require('./DHBasket'),
-    DHSchedule = require('./DHSchedule'),
+    DAHeader = require('./DAHeader'),
+    DABasket = require('./DABasket'),
+    DASchedule = require('./DASchedule'),
     ScheduleStore = require('../stores/ScheduleStore');
 
 /**
@@ -30,7 +30,7 @@ function getAppState() {
 }
 
 module.exports = React.createClass({
-    displayName: 'DHApp',
+    displayName: 'DAApp',
 
     getInitialState: function() {
         return getAppState();
@@ -45,16 +45,17 @@ module.exports = React.createClass({
     },
 
     _onChange: function() {
-        this.setState(getTodoState());
+        this.setState(getAppState());
     },
 
     render: function() {
         return (
-            <div id="dh-app">
-                <DHHeader />
+            <div id="da-app">
+                <DAHeader />
                 <div className="container">
-                    <DHBasket semester={this.state.semester} />
-                    <DHSchedule />
+                    <DABasket courses={this.state.courses}
+                        semester={this.state.semester} />
+                    <DASchedule />
                 </div>
             </div>
         );

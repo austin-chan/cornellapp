@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -11,7 +11,7 @@
  */
 
 var AppDispatcher = require('../dispatcher/AppDispatcher');
-var AppConstants = require('../constants/AppConstants');
+var ScheduleConstants = require('../constants/ScheduleConstants');
 
 module.exports = {
 
@@ -21,7 +21,7 @@ module.exports = {
      */
     add: function(course) {
         AppDispatcher.dispatch({
-            actionType: AppConstants.SCHEDULE_ADD,
+            actionType: ScheduleConstants.ADD,
             course: course
         });
     }

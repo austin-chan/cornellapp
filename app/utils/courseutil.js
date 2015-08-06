@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -11,7 +11,8 @@
  * entries.
  */
 
-var Joi = require('joi');
+var Joi = require('joi'),
+	_ = require('underscore');
 
 module.exports = function(models, knex) {
 	var async = require('async'),
@@ -37,61 +38,83 @@ module.exports = function(models, knex) {
 
 		// delete ids and relation ids for the entry
 		delete copyCourseEntry['id'];
+		var groups = extractProperty(copyCourseEntry, 'groups');
+		// console.log(typeof copyCourseEntry.catalogOutcomes);
+		copyCourseEntry = sanitizeCourseObject(copyCourseEntry);
+		// console.log(typeof copyCourseEntry.catalogOutcomes);
+		copyCourseEntry.groups = groups;
 		for (var i = 0; i < copyCourseEntry.groups.length; i++) {
 			var group = copyCourseEntry.groups[i];
 			delete group['id'];
 			delete group['courseId'];
+			var sections = extractProperty(group, 'sections');
+			group = sanitizeGroupObject(group);
+			group.sections = sections;
 
 			for(var j = 0; j < group.sections.length; j++) {
 				var section = group.sections[j];
-				section.isComponentGraded = !!section.isComponentGraded;
 				delete section['id'];
 				delete section['groupId'];
+				var meetings = extractProperty(section, 'meetings');
+				section = sanitizeSectionObject(section);
+				section.meetings = meetings;
 
 				for(var k = 0; k < section.meetings.length; k++) {
 					var meeting = section.meetings[k];
 					delete meeting['id'];
 					delete meeting['sectionId'];
+					var professors = extractProperty(meeting, 'professors');
+					meeting = sanitizeMeetingObject(meeting);
+					meeting.professors = professors;
 
 					for(var l = 0; l < meeting.professors.length; l++) {
 						var professor = meeting.professors[l];
 						delete professor['_pivot_professorLabel'];
 						delete professor['_pivot_meetingId'];
-						delete professor['label'];
+						meeting.professors[l] =
+							sanitizeProfessorObject(professor);
 					}
 				}
 			}
 		}
 
 		// sanitize course API object
+		var enrollGroups = extractProperty(copyCourse, 'enrollGroups');
 		copyCourse = sanitizeCourseObject(copyCourse);
-		copyCourse.groups = copyCourse.enrollGroups;
-		delete copyCourse['enrollGroups'];
+		copyCourse.groups = enrollGroups;
 		for (var i = 0; i < copyCourse.groups.length; i++) {
 			var group = copyCourse.groups[i];
-			sanitizeGroupObject(group);
-
-			group.sections = group.classSections;
-			delete group['classSections'];
+			var sections = extractProperty(group, 'classSections')
+			group = sanitizeGroupObject(group);
+			group.sections = sections;
 
 			for(var j = 0; j < group.sections.length; j++) {
 				var section = group.sections[j];
+				var meetings = extractProperty(section, 'meetings');
 				sanitizeSectionObject(section);
+				section.meetings = meetings;
 
 				for(var k = 0; k < section.meetings.length; k++) {
 					var meeting = section.meetings[k];
 
-					meeting.professors = meeting.instructors;
+					var professors = meeting.instructors;
 					delete meeting['instructors'];
+					meeting = sanitizeMeetingObject(meeting);
+					meeting.professors = professors;
 
 					for(var l = 0; l < meeting.professors.length; l++) {
 						var professor = meeting.professors[l];
-						sanitizeProfessorObject(professor);
+						meeting.professors[l] =
+							sanitizeProfessorObject(professor);
 					}
 				}
 			}
 		}
 
+		// console.log(copyCourseEntry);
+		// console.log(copyCourse);
+		// console.log(_.isEqual(copyCourseEntry, copyCourse));
+		// process.exit();
 		return _.isEqual(copyCourseEntry, copyCourse);
 	}
 
@@ -220,8 +243,8 @@ module.exports = function(models, knex) {
 	 *     non-empty string is passed otherwise.
 	 */
 	m.insertCourse = function(course, callback) {
+		var enrollGroups = extractProperty(course, 'enrollGroups');
 		try {
-			var enrollGroups = extractProperty(course, 'enrollGroups');
 			course = sanitizeCourseObject(course);
 		} catch (err) {
 			callback('sanitizing course object. ' + err);
@@ -240,11 +263,11 @@ module.exports = function(models, knex) {
 			// cascade down to enrollGroups
 			function(savedCourse, callback) {
 				async.mapSeries(enrollGroups, function(group, callback) {
-					sanitizeGroupObject(group);
-					group.courseId = savedCourse.get('id');
-
 					var classSections =
 						extractProperty(group, 'classSections');
+
+					group.courseId = savedCourse.get('id');
+					group = sanitizeGroupObject(group);
 
 					new models.group(group).save().then(function(savedGroup) {
 						callback(null, [savedGroup, classSections]);
@@ -274,9 +297,8 @@ module.exports = function(models, knex) {
 
 						async.mapSeries(sections, function(section, callback) {
 							section.groupId = savedGroup.get('id');
-							sanitizeSectionObject(section);
-
 							var meetings = extractProperty(section, 'meetings');
+							sanitizeSectionObject(section);
 
 							new models.section(section).save().then(
 								function(savedSection) {
@@ -317,9 +339,9 @@ module.exports = function(models, knex) {
 
 						async.mapSeries(meetings, function(meeting, callback) {
 							meeting.sectionId = savedSection.get('id');
-
 							var professors =
 								extractProperty(meeting, 'instructors');
+							meeting = sanitizeMeetingObject(meeting);
 
 							new models.meeting(meeting).save().then(
 								function(savedMeeting) {
@@ -445,8 +467,6 @@ module.exports = function(models, knex) {
 
 		sanitizeProfessorObject(professor);
 
-		professor.label = generateProfessorLabel(professor);
-
 		new models.professor({
 			label: professor.label
 		}).fetch().then(function(savedProfessor) {
@@ -488,14 +508,15 @@ module.exports = function(models, knex) {
 	/**
 	 * Convenience function to json flatten a property of a course. If the
 	 * property is an array, reset it as a json encoded version of the array. If
-	 * the property is not an empty array or is null, reset it as a json encoded
-	 * empty array.
+	 * the property is not an array, ignore it.
 	 * @param {object} course Course object to possibly flatten.
 	 * @param {string} key Property key to possibly flatten.
 	 */
 	function jsonFlatten(course, key) {
-		course[key] = !course[key] || !course[key].length ? '[]' :
-			JSON.stringify(course[key]);
+		if (typeof course[key] == 'array' || typeof course[key] == 'object') {
+			course[key] = !course[key] || !course[key].length ? '[]' :
+				JSON.stringify(course[key]);
+		}
 	}
 
 	/**
@@ -530,30 +551,66 @@ module.exports = function(models, knex) {
 	}
 
 	/**
+	 * Convenience function all keys whose corresponding value is null.
+	 * @param {object} object Object to de-nullify.
+	 */
+	function removeAllNullKeys(object) {
+		_.each(object, function(val, key) {
+			if (val === null) {
+				delete object[key];
+			}
+		});
+	}
+
+	/**
+	 * Convenience function to validate an object with a schema. Throws an
+	 * exception if the validation produces a failure.
+	 * @param {object} object Object to validate.
+	 * @param {object} schema Schema to validate against.
+	 * @return {object} Validated object if validation was successful.
+	 */
+	function validateObject(object, schema) {
+		var validation = Joi.validate(object, schema);
+		if (validation.error)
+			throw new Error(validation.error);
+		return validation.value;
+	}
+
+	/**
+	 * Convenience function to sanitize a semester object from the Cornell
+	 * Courses API to prepare it for insertion into the database.
+	 * @param {object} semester Semester object to sanitize.
+	 * @return {object} Santized semester object.
+	 */
+	m.sanitizeSemesterObject = function(semester) {
+		removeAllNullKeys(semester);
+		return validateObject(semester, models.semester.validator);
+	}
+
+	/**
 	 * Convenience function to sanitize a course object from the Cornell Courses
 	 * API to prepare it for insertion into the database.
 	 * @param {object} course Course object to sanitize.
-	 * @return {object} Santized course object.
+	 * @return {object} Sanitized course object.
 	 */
 	function sanitizeCourseObject(course) {
 		jsonFlatten(course, 'catalogOutcomes');
-		console.log(models.course.joi);
-		var validation = Joi.validate(course, models.course.joi);
-		if (validation.error) {
-			throw new Error(validation.error);
-		}
-		return validation.value;
+		removeAllNullKeys(course);
+		return validateObject(course, models.course.validator);
 	}
 
 	/**
 	 * Convenience function to sanitize a group object from the Cornell Courses
 	 * API to prepare it for insertion into the database.
 	 * @param {object} group Group object to sanitize.
+	 * @return {object} Sanitized group object.
 	 */
 	function sanitizeGroupObject(group) {
 		jsonFlatten(group, 'componentsOptional');
 		jsonFlatten(group, 'componentsRequired');
 		jsonFlatten(group, 'simpleCombinations');
+		removeAllNullKeys(group);
+		return validateObject(group, models.group.validator);
 	}
 
 	/**
@@ -564,6 +621,19 @@ module.exports = function(models, knex) {
 	function sanitizeSectionObject(section) {
 		reduceNotes(section);
 		jsonFlatten(section, 'notes');
+		section.isComponentGraded = !!section.isComponentGraded;
+		removeAllNullKeys(section);
+		return validateObject(section, models.section.validator);
+	}
+
+	/**
+	 * Convenience function to sanitize a meeting object from the Cornell
+	 * Courses API to prepare it for insertion into the database.
+	 * @param {object} meeting Meeting object to sanitize.
+	 */
+	function sanitizeMeetingObject(meeting) {
+		removeAllNullKeys(meeting);
+		return validateObject(meeting, models.meeting.validator);
 	}
 
 	/**
@@ -573,6 +643,9 @@ module.exports = function(models, knex) {
 	 */
 	function sanitizeProfessorObject(professor) {
 		delete professor['instrAssignSeq'];
+		professor.label = generateProfessorLabel(professor);
+		removeAllNullKeys(professor);
+		return validateObject(professor, models.professor.validator);
 	}
 
 	return m;

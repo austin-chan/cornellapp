@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -14,11 +14,11 @@
  */
 
 var React = require('react/addons'),
-    DHApp = require('./components/DHApp'),
-    mountNode = document.body;
+    DAApp = require('./components/DAApp'),
+    mountNode = document.getElementById('davy-app-mount');
 
 global.$ = require('jquery');
 require('devbridge-autocomplete');
 
-// React.render(<DHApp />), mountNode);
-React.render(React.createElement(DHApp), mountNode);
+React.render(<DAApp />), mountNode);
+// React.render(React.createElement(DAApp), mountNode);

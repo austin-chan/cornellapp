@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,16 +7,18 @@
  * tree.
  *
  *
- * DHCourseAdder renders an input that can add courses to the course basket.
- * Component styles are located in _DHCourseAdder.scss.
+ * DACourseAdder renders an input that can add courses to the course basket.
+ * Component styles are located in _DACourseAdder.scss.
  *
  * @jsx React.DOM
  */
 
-var React = require('react/addons');
+var React = require('react/addons'),
+    ScheduleActions = require('../actions/ScheduleActions'),
+    _ = require;
 
 module.exports = React.createClass({
-    displayName: 'DHCourseAdder',
+    displayName: 'DACourseAdder',
 
     componentDidMount: function() {
         var input = React.findDOMNode(this.refs.input),
@@ -32,9 +34,9 @@ module.exports = React.createClass({
             serviceUrl: '/api/search/courses',
 
             onSelect: function (course) {
-                adderInput.val('').focus();
+                $(input).val('').focus();
 
-                // cq.courseunit.addCourse(course);
+                ScheduleActions.add(course);
             },
 
             formatResult: function(suggestion, currentValue) {
@@ -66,10 +68,10 @@ module.exports = React.createClass({
             // Properly prepare data received from the server
             transformResult: function(response, originalQuery) {
                 return {
-                    suggestions: _.map(JSON.parse(response), function(course) {
+                    suggestions: JSON.parse(response).map(function(course) {
                         return {
-                            value: course.subject + ' ' + course.catalogNbr + ': ' +
-                                course.titleLong,
+                            value: course.subject + ' ' + course.catalogNbr +
+                                ': ' + course.titleLong,
                             data: course
                         };
                     })
@@ -80,7 +82,7 @@ module.exports = React.createClass({
 
     render: function() {
         return (
-            <div className="dh-course-adder">
+            <div className="da-course-adder">
                 <i className="icon icon-add"></i>
                 <div className="input-wrapper">
                     <input type="text" placeholder="Add a Course" ref="input" />

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyhoy.
+ * Copyright (c) 2015, Davyapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -12,19 +12,27 @@
 
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var EventEmitter = require('events').EventEmitter;
-var AppConstants = require('../constants/AppConstants');
+var ScheduleConstants = require('../constants/ScheduleConstants');
 var assign = require('object-assign');
 
 var CHANGE_EVENT = 'schedule_change';
 
 var _courses = {};
-var _semester = 'FA15';
+var _semester = 2608;
 
-function create(course) {
-
+/**
+ * Add a course to the ScheduleStore.
+ * @param {object} course Course object to add to the ScheduleStore.
+ */
+function add(course) {
+    course = course.data;
+    _courses[course.catalogNbr] = {
+        raw: course,
+        selection: {}
+    }
 }
 
-module.exports = assign({}, EventEmitter.prototype, {
+var ScheduleStore = assign({}, EventEmitter.prototype, {
 
     /**
      * Get all of the courses in the schedule.
@@ -34,6 +42,10 @@ module.exports = assign({}, EventEmitter.prototype, {
         return _courses;
     },
 
+    /**
+     * Get the active semester for the schedule.
+     * @return {object}
+     */
     getSemester: function() {
         return _semester;
     },
@@ -61,3 +73,15 @@ module.exports = assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     }
 });
+
+AppDispatcher.register(function(action) {
+    switch(action.actionType) {
+        case ScheduleConstants.ADD:
+            add(action.course);
+            ScheduleStore.emitChange();
+            break;
+        default:
+    }
+});
+
+module.exports = ScheduleStore;

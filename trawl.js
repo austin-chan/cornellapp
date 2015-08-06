@@ -1,9 +1,8 @@
 /**
  * @fileoverview Performs the operation of retrieving, storing and updating
  * all course data from the Cornell University Courses API. This file is named
- * after the Google web crawler's internal name "Trawler". Run trawl in the
- * command line with an argument of the semester name to update:
- * 'node trawl FA15'
+ * after the Google web crawler "Trawler". Run trawl in the command line with an
+ * argument of the semester name to update: 'node trawl FA15'
  */
 
 var async = require('async'),
@@ -42,6 +41,7 @@ async.waterfall([
 	// fetch an already saved semester entry or save a new semester entry
 	function(roster, callback) {
 		console.log('Inserting new semester entry if no entry already exists');
+
 		new models.semester({
 			slug: semester
 		}).fetch().then(function(semesterEntry) {
@@ -52,18 +52,15 @@ async.waterfall([
 
 			// save new semester entry
 			} else {
-				new models.semester({
-					descr: roster.descr,
-					lastModifiedDttm: roster.lastModifiedDttm,
-					slug: roster.slug,
-					strm: roster.strm
-				}).save().then(function(semesterEntry) {
-					printSuccess('Inserted new semester entry');
-					callback(null, semesterEntry);
-				}).catch(function(err) {
-					if (err)
-						callback(err);
-				});
+				var rosterSemester = courseutil.sanitizeSemesterObject(roster);
+				new models.semester(rosterSemester).save()
+					.then(function(semesterEntry) {
+						printSuccess('Inserted new semester entry');
+						callback(null, semesterEntry);
+					}).catch(function(err) {
+						if (err)
+							callback(err);
+					});
 			}
 		}).catch(function(err) {
 			if (err)

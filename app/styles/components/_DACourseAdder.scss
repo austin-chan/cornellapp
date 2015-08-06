@@ -1,4 +1,4 @@
-.dh-course-adder {
+.da-course-adder {
     position: relative;
     background: #FFFFFF;
     box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.15);
@@ -16,8 +16,8 @@
     .input-wrapper {
         position: absolute;
         top: 0;
-        left: 35px;
-        right: 0;
+        left: 0px;
+        right: 0px;
         bottom: 0;
     }
 
@@ -27,6 +27,7 @@
         background: transparent;
         margin: 0;
         border: 0;
+        padding: 0 8px 0 32px;
         box-sizing: border-box;
         outline: none;
         font-size: 13px;
@@ -45,6 +46,38 @@
             font-weight: 300;
             font-family: 'bunt';
             text-indent: 1px;
+        }
+    }
+}
+
+.autocomplete-suggestions {
+    background: white;
+    max-height: none !important;
+    margin-top: 6px;
+    width: 454px !important;
+    border-radius: 3px;
+    box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.15);
+    color: #424242;
+
+    .autocomplete-suggestion {
+        font-size: 13px;
+        padding: 7px 12px;
+        cursor: pointer;
+        font-weight: 400;
+        @include transition(all .17s $ios-easing);
+
+        &:first-child {
+            padding-top: 10px;
+            border-radius: 3px 3px 0px 0px;
+        }
+
+        &:last-child {
+            padding-bottom: 11px;
+            border-radius: 0px 0px 3px 3px;
+        }
+
+        &.autocomplete-selected {
+            background: #e7e7e7;
         }
     }
 }
