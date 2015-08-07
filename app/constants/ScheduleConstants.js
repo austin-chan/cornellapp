@@ -14,4 +14,5 @@ module.exports = {
     ADD: 'SCHEDULE_ADD',
     REMOVE: 'SCHEDULE_REMOVE',
     TOGGLE: 'SCHEDULE_TOGGLE',
+    SET_COLOR: 'SCHEDULE_SET_COLOR'
 };

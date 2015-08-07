@@ -1,6 +1,12 @@
 .da-color-panel {
     background: rgba(255,255,255,0.92);
     padding: 12px 10px 0px;
+    @include transition(.09s all ease-in-out);
+
+    &.inactive {
+        opacity: 0;
+        visibility: hidden;
+    }
 
     p {
         font-size: 14px;
@@ -9,9 +15,80 @@
 
     .swatches {
         font-size: 0;
+        padding-top: 8px;
     }
 
     .swatch {
+        position: relative;
+        height: 23px;
+        width: 23px;
+        margin-bottom: 5px;
+        margin-right: 9px;
+        border-radius: 23px;
+        display: inline-block;
+        overflow: hidden;
+        font-size: 14px;
+        color: white;
+        text-align: center;
+        padding-top: 4px;
+        cursor: pointer;
+        box-sizing: border-box;
+        @include transition(.13s all ease-in-out);
 
+        .check {
+            position: relative;
+            visibility: hidden;
+            opacity: 0;
+            @include transition(.13s all ease-in-out);
+        }
+
+        .tint {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            visibility: hidden;
+            opacity: 0;
+            border-radius: 23px;
+            background-color: rgba(0, 0, 0, .22);
+            @include transition(.13s all ease-in-out);
+        }
+
+        .button-area {
+            font-size: 0;
+            position: absolute;
+            bottom: 8px;
+            left: 7px;
+
+            button {
+                margin-right: 13px;
+            }
+        }
+
+        @each $color-name, $color in $da-colors {
+            &.#{$color-name} {
+                background: $color;
+            }
+        }
+
+        &:hover {
+            .tint {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+
+        &.selected {
+            .check {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+    }
+
+    .push {
+        display: inline-block;
+        margin-left: 16px;
     }
 }

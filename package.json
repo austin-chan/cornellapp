@@ -24,6 +24,7 @@
     "object-assign": "^3.0.0",
     "passport": "^0.2.1",
     "passport-local": "^1.0.0",
+    "pluralize": "^1.1.4",
     "react": "^0.13.3",
     "underscore": "^1.8.3",
     "vcardparser": "^1.0.3"

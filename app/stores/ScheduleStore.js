@@ -28,12 +28,10 @@ var _courses = {},
  * @param {object} course Course object to add to the ScheduleStore.
  */
 function add(course) {
-    if (exists(course)) { // ignore course adding if it already exists
+    if (exists(course)) // ignore course adding if it already exists
         return;
-    }
 
     var selection = generateSelection(course);
-
     _courses[selection.key] = {
         raw: course,
         selection: selection
@@ -60,28 +58,15 @@ function toggle(key, active) {
 }
 
 /**
- * Generates a color for a newly added course. The color chosen is done with an
- * attempt to diversify the colors used by the schedule.
- * @return {string} Color string generated.
+ * Set the color for a course.
+ * @param {string} key Key of course to change the color.
+ * @param {string} color Color to change to.
  */
-function generateColor() {
-    var existingColors = _.values(_courses).map(function(c) {
-            return c.selection.color; }),
-        colorList = _colors.slice();
+function setColor(key, color) {
+    if (_colors.indexOf(color) === -1) // nake sure color is in _colors.
+        return
 
-    // Schedule looks best when blue comes up first.
-    if (!existingColors.length && _.contains(_colors, 'blue')) {
-        return 'blue';
-    }
-
-    // Loop through colors already in the schedule.
-    for (var c = 0; c < existingColors.length; c++) {
-        colorList = _.without(colorList, existingColors[c]);
-    }
-
-    // Make sure the color options array is not empty.
-    colorList = colorList.length ? colorList : _colors.slice();
-    return _.sample(colorList); // _.sample produces a random item
+    _courses[key].selection.color = color;
 }
 
 /**
@@ -111,18 +96,63 @@ function generateSelection(course) {
     // Using the current timestamp + random number for the key. This is good
     // enough unless functionality needs to be built to allow the course
     // order to change.
-    // 2821109907455 in decimal is base 36 "zzzzzzzz".
-    var date = +new Date(),
-        key = (2821109907455 - date - Math.floor(Math.random() * 999999))
-            .toString(36);
+    var key = (+new Date() + Math.floor(Math.random() * 100))
+        .toString(36);
 
     return {
         key: key,
         color: generateColor(),
         active: true,
-        groupSelection: 0,
-        sectionSelection: sections
+        groupIndex: 0,
+        sectionChoices: sections
     };
+}
+
+/**
+ * Generates a color for a newly added course. The color chosen is done with an
+ * attempt to diversify the colors used by the schedule.
+ * @return {string} Color string generated.
+ */
+function generateColor() {
+    var existingColors = _.values(_courses).map(function(c) {
+            return c.selection.color; }),
+        colorList = _colors.slice();
+
+    // Schedule looks best when blue comes up first.
+    if (!existingColors.length && _.contains(_colors, 'blue')) {
+        return 'blue';
+    }
+
+    // Loop through colors already in the schedule.
+    for (var c = 0; c < existingColors.length; c++) {
+        colorList = _.without(colorList, existingColors[c]);
+    }
+
+    // Make sure the color options array is not empty.
+    colorList = colorList.length ? colorList : _colors.slice();
+    return _.sample(colorList); // _.sample produces a random item
+}
+
+/**
+ * Get the selected group for a course.
+ * @param {string} key Key for the course to retrieve group for.
+ * @return {object} Selected group of the course.
+ */
+function getGroup(key) {
+    return _courses[key].raw.groups[_courses[key].selection.groupIndex];
+}
+
+/**
+ * Get a particular section for a group.
+ * @param {string} key Key for the associated course.
+ * @param {string} sectionId Section ID to retrieve.
+ * @return {object} Section object that was requested.
+ */
+function getSection(key, sectionId) {
+    var group = getGroup(key);
+    return _.find(group.sections, function(section) {
+        return section.section == sectionId;
+    });
 }
 
 /**
@@ -140,7 +170,7 @@ function exists(course) {
 var ScheduleStore = assign({}, EventEmitter.prototype, {
 
     /**
-     * Get a
+     * Get all available colors for courses.
      */
     getColors: function() {
         return _colors;
@@ -160,6 +190,25 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      */
     getSemester: function() {
         return _semester;
+    },
+
+    /**
+     * Get the selected group for a course.
+     * @param {string} key Key for the course to retrieve group for.
+     * @return {object} Selected group of the course.
+     */
+    getGroup: function(key) {
+        return getGroup(key);
+    },
+
+    /**
+     * Get a particular section for a group.
+     * @param {string} key Key for the associated course.
+     * @param {string} sectionId Section ID to retrieve.
+     * @return {object} Section object that was requested.
+     */
+    getSection: function(key, sectionId) {
+        return getSection(key, sectionId);
     },
 
     /**
@@ -200,6 +249,11 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.TOGGLE:
             toggle(action.key, action.active);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.SET_COLOR:
+            setColor(action.key, action.color);
             ScheduleStore.emitChange();
             break;
 

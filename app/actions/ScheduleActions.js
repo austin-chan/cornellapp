@@ -38,7 +38,7 @@ module.exports = {
 
     /**
      * Set a course either active or unactive.
-     * @param {key} key Key of course to update active state for.
+     * @param {string} key Key of course to update active state for.
      * @param {bool} active True to make the course active, false to make the
      *      course inactive.
      */
@@ -47,6 +47,19 @@ module.exports = {
             actionType: ScheduleConstants.TOGGLE,
             key: key,
             active: active,
+        });
+    },
+
+    /**
+     * Change the color of a course.
+     * @param {string} key Key of course to change the color.
+     * @param {string} color Color string to change to.
+     */
+    setColor: function(key, color) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.SET_COLOR,
+            key: key,
+            color: color,
         });
     }
 }

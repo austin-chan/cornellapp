@@ -27,9 +27,11 @@ var DABasket = React.createClass({
             rootClass = classNames('da-basket',
                 { empty: !_.size(this.props.courses) });
 
-        for (var key in courses) {
+        // Get course keys in order.
+        var keys = _.sortBy(_.keys(courses)).reverse();
+        _.each(keys, function(key) {
             courseItems.push(<DACourseItem key={key} course={courses[key]} />);
-        }
+        });
 
         return (
             <div className={rootClass}>
