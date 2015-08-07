@@ -11,5 +11,7 @@
  */
 
 module.exports = {
-    ADD: 'SCHEDULE_ADD'
+    ADD: 'SCHEDULE_ADD',
+    REMOVE: 'SCHEDULE_REMOVE',
+    TOGGLE: 'SCHEDULE_TOGGLE',
 };

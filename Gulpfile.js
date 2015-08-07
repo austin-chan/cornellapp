@@ -19,7 +19,7 @@ gulp.task('react', function() {
         console.log(err.message);
     })
     .pipe(source('app/main.js'))
-    .pipe(rename('main.js'))
+    .pipe(rename('bundle.js'))
     .pipe(gulp.dest('./public/assets/js'));
 
 });

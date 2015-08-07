@@ -16,16 +16,16 @@
 var React = require('react/addons'),
     DACourseAdder = require('./DACourseAdder'),
     DACourseItem = require('./DACourseItem'),
-    classNames = require('classnames');
+    classNames = require('classnames'),
+    _ = require('underscore');
 
-module.exports = React.createClass({
-    displayName: 'DABasket',
+var DABasket = React.createClass({
 
     render: function() {
         var courseItems = [],
             courses = this.props.courses,
             rootClass = classNames('da-basket',
-                { empty: !Object.keys(this.props.courses).length });
+                { empty: !_.size(this.props.courses) });
 
         for (var key in courses) {
             courseItems.push(<DACourseItem key={key} course={courses[key]} />);
@@ -41,3 +41,5 @@ module.exports = React.createClass({
         );
     }
 });
+
+module.exports = DABasket;

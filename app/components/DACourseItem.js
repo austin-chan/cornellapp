@@ -14,31 +14,35 @@
  */
 
 var React = require('react/addons'),
+    DAToggle = require('./DAToggle'),
+    DAColorPanel = require('./DAColorPanel'),
     ScheduleActions = require('../actions/ScheduleActions'),
-    strutil = require('../utils/strutil');
+    strutil = require('../utils/strutil'),
+    classNames = require('classnames');
 
-module.exports = React.createClass({
-    displayName: 'DACourseItem',
-
+var DACourseItem = React.createClass({
     render: function() {
         var course = this.props.course,
-            description = strutil.shorten(course.raw.description, 140, 3),
-            headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
-                ': ' + course.raw.titleLong;
+            active = course.selection.active,
+            rootClass = classNames('da-course-item', course.selection.color,
+                { inactive: !course.selection.active });
 
+        // Description for the course item.
+        var description = course.raw.description.length ?
+            strutil.shorten(course.raw.description, 140, 3) :
+            'No description available.';
+
+        // Header for the course item.
+        var headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
+                ': ' + course.raw.titleLong;
         headerTitle = strutil.shorten(headerTitle, 36, 2);
 
-        console.log(course);
-
         return (
-            <div className="da-course-item blue">
+            <div className={rootClass}>
                 <div className="item-header">
-                    <div className="da-toggle">
-                        <i className="icon-check_box on-icon"></i>
-                        <i className="icon-check_box_outline_blank off-icon"></i>
-                    </div>
+                    <DAToggle selected={active} onToggle={this._onToggle} />
                     {headerTitle}
-                    <div className="da-close">
+                    <div className="da-close" onClick={this._onRemove}>
                         <i className="icon-close"></i>
                     </div>
                 </div>
@@ -52,12 +56,32 @@ module.exports = React.createClass({
                         <button className="da-simple-button">
                             Change Color
                         </button>
-                        <button className="da-simple-button">
+                        <button className="da-simple-button"
+                            onClick={this._onCloseClick}>
                             Open in Catalog
                         </button>
                     </div>
                 </div>
+                <DAColorPanel />
             </div>
         );
+    },
+
+    /**
+     * Event handler for toggling the course on and off to apply the course to
+     * the schedule.
+     */
+    _onToggle: function(selected) {
+        ScheduleActions.toggle(this.props.course.selection.key, selected);
+    },
+
+    /**
+     * Event handler for clicking on the x button to remove the course.
+     */
+    _onRemove: function() {
+        ScheduleActions.remove(this.props.course.selection.key);
     }
+
 });
+
+module.exports = DACourseItem;

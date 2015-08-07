@@ -17,8 +17,6 @@ var React = require('react/addons'),
     DAApp = require('./components/DAApp'),
     mountNode = document.getElementById('davy-app-mount');
 
-global.$ = require('jquery');
-require('devbridge-autocomplete');
+require('./scripts/preparation');
 
 React.render(<DAApp />, mountNode);
-// React.render(React.createElement(DAApp), mountNode);

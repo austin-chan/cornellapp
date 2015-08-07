@@ -15,8 +15,7 @@
 
 var React = require('react/addons');
 
-module.exports = React.createClass({
-
+var DAHeader = React.createClass({
     render: function() {
         var context = {};
 
@@ -29,7 +28,7 @@ module.exports = React.createClass({
             <header className="da-header">
                 <div className="container">
                     <div className="left">
-                        <p className="logo museo-sans">Davyapp</p>
+                        <p className="logo museo-sans">Drakeapp</p>
                         <div className="account-buttons">
                             <button className="da-outline-button">
                                 Sign Up
@@ -54,3 +53,5 @@ module.exports = React.createClass({
         );
     }
 });
+
+module.exports = DAHeader;

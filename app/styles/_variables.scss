@@ -10,6 +10,15 @@ $da-red: #C8453A;
 $da-green: #43A047;
 $da-yellow: #FFA726;
 $da-pink: #FF69B4;
+$da-colors: (
+    'blue': $da-blue,
+    'purple': $da-purple,
+    'light-blue': $da-light-blue,
+    'red': $da-red,
+    'green': $da-green,
+    'yellow': $da-yellow,
+    'pink': $da-pink
+);
 
 @mixin basket-item() {
     position: relative;

@@ -60,44 +60,11 @@
     }
 }
 
-.da-toggle {
-    color: white;
-    cursor: pointer;
-    font-size: 19px;
-    @include transition(.13s all ease-in-out);
-
-    &:hover {
-        opacity: .73;
-    }
-
-    i {
-        position: absolute;
-        top: 7px;
-        left: 8px;
-        @include transition(.13s all ease-in-out);
-    }
-
-    .off-icon {
-        visibility: hidden;
-        opacity: 0;
-    }
-
-    &.off {
-        .on-icon {
-            visibility: hidden;
-            opacity: 0;
-        }
-        .off-icon {
-            visibility: visible;
-            opacity: 1;
-        }
-    }
-}
-
 .da-close {
     color: white;
     cursor: pointer;
     font-size: 19px;
+    box-sizing: border-box;
     @include transition(.13s all ease-in-out);
 
     &:hover {

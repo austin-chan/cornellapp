@@ -15,7 +15,7 @@
 
 var React = require('react/addons');
 
-module.exports = React.createClass({
+var DASchedule = React.createClass({
     displayName: 'DASchedule',
 
     render: function() {
@@ -56,3 +56,5 @@ module.exports = React.createClass({
         );
     }
 });
+
+module.exports = DASchedule;

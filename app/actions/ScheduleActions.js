@@ -14,7 +14,6 @@ var AppDispatcher = require('../dispatcher/AppDispatcher');
 var ScheduleConstants = require('../constants/ScheduleConstants');
 
 module.exports = {
-
     /**
      * Add a course to the schedule.
      * @param {object} course Course to add to the schedule.
@@ -23,6 +22,31 @@ module.exports = {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.ADD,
             course: course
+        });
+    },
+
+    /**
+     * Remove a course from the schedule.
+     * @param {string} key Key of course to remove.
+     */
+    remove: function(key) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.REMOVE,
+            key: key
+        });
+    },
+
+    /**
+     * Set a course either active or unactive.
+     * @param {key} key Key of course to update active state for.
+     * @param {bool} active True to make the course active, false to make the
+     *      course inactive.
+     */
+    toggle: function(key, active) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.TOGGLE,
+            key: key,
+            active: active,
         });
     }
 }

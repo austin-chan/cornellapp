@@ -29,9 +29,7 @@ function getAppState() {
     };
 }
 
-module.exports = React.createClass({
-    displayName: 'DAApp',
-
+var DAApp = React.createClass({
     getInitialState: function() {
         return getAppState();
     },
@@ -61,3 +59,5 @@ module.exports = React.createClass({
         );
     }
 });
+
+module.exports = DAApp;

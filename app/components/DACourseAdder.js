@@ -17,9 +17,7 @@ var React = require('react/addons'),
     ScheduleActions = require('../actions/ScheduleActions'),
     _ = require;
 
-module.exports = React.createClass({
-    displayName: 'DACourseAdder',
-
+var DACourseAdder = React.createClass({
     componentDidMount: function() {
         var input = React.findDOMNode(this.refs.input),
             self = this;
@@ -33,10 +31,10 @@ module.exports = React.createClass({
 
             serviceUrl: '/api/search/courses',
 
-            onSelect: function (course) {
+            onSelect: function (courseSelection) {
                 $(input).val('').focus();
 
-                ScheduleActions.add(course);
+                ScheduleActions.add(courseSelection.data);
             },
 
             formatResult: function(suggestion, currentValue) {
@@ -92,3 +90,5 @@ module.exports = React.createClass({
         );
     }
 });
+
+module.exports = DACourseAdder;

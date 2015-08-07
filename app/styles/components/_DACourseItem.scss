@@ -10,6 +10,7 @@
         padding: 12px 0px 0 33px;
         box-sizing: border-box;
         font-weight: 400;
+        @include transition(.13s background ease-in-out);
 
         .da-toggle {
             position: absolute;
@@ -57,10 +58,18 @@
         }
     }
 
+    .da-color-panel {
+        position: absolute;
+        top: 35px;
+        bottom: 0;
+        right: 0;
+        left: 0;
+    }
+
     .button-area {
         font-size: 0;
         position: absolute;
-        bottom: 9px;
+        bottom: 8px;
         left: 7px;
 
         button {
@@ -68,9 +77,17 @@
         }
     }
 
-    &.blue {
+    @each $color-name, $color in $da-colors {
+        &.#{$color-name} {
+            .item-header {
+                background: $color;
+            }
+        }
+    }
+
+    &.inactive {
         .item-header {
-            background: $da-blue;
+            background: #919191 !important;
         }
     }
 }
