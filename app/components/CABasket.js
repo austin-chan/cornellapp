@@ -14,8 +14,8 @@
  */
 
 var React = require('react/addons'),
-    CACourseAdder = require('./CACourseAdder'),
-    CACourseItem = require('./CACourseItem'),
+    CABasketAdder = require('./CABasketAdder'),
+    CABasketItem = require('./CABasketItem'),
     classNames = require('classnames'),
     _ = require('underscore');
 
@@ -30,12 +30,12 @@ var CABasket = React.createClass({
         // Get course keys in order.
         var keys = _.sortBy(_.keys(courses)).reverse();
         _.each(keys, function(key) {
-            courseItems.push(<CACourseItem key={key} course={courses[key]} />);
+            courseItems.push(<CABasketItem key={key} course={courses[key]} />);
         });
 
         return (
             <div className={rootClass}>
-                <CACourseAdder semester={this.props.semester} />
+                <CABasketAdder semester={this.props.semester} />
 
                 <p className="empty-label">No Courses Added</p>
                 {courseItems}

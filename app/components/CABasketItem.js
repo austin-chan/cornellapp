@@ -7,7 +7,7 @@
  * tree.
  *
  *
- * CACourseItem is the component that displays course information for each
+ * CABasketItem is the component that displays course information for each
  * course in the schedule basket.
  *
  * @jsx React.DOM
@@ -23,7 +23,7 @@ var React = require('react/addons'),
     pluralize = require('pluralize'),
     _ = require('underscore');
 
-var CACourseItem = React.createClass({
+var CABasketItem = React.createClass({
     getInitialState: function() {
         return {
             colorSelecting: false
@@ -33,9 +33,9 @@ var CACourseItem = React.createClass({
     render: function() {
         var self = this,
             course = this.props.course,
-            group = ScheduleStore.getGroup(course.selection.key),
+            group = ScheduleStore.getSelectedGroup(course.selection.key),
             active = course.selection.active,
-            rootClass = classNames('ca-course-item', course.selection.color,
+            rootClass = classNames('ca-basket-item', course.selection.color,
                 { inactive: !course.selection.active });
 
         // Description for the course item.
@@ -193,4 +193,4 @@ var CACourseItem = React.createClass({
 
 });
 
-module.exports = CACourseItem;
+module.exports = CABasketItem;

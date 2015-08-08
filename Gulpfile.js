@@ -60,5 +60,5 @@ gulp.task('watch', function() {
 
 });
 
-gulp.task('default', ['server', 'watch']);
+gulp.task('default', ['server', 'watch', 'react', 'sass']);
 // gulp.task('default', ['watch']);

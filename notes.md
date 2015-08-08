@@ -17,5 +17,5 @@ TODO
 Search for a course with slash /
 
 cs1132
-bio4550
+bee4550
 amst5710

@@ -7,8 +7,8 @@
  * tree.
  *
  *
- * CACourseAdder renders an input that can add courses to the course basket.
- * Component styles are located in _CACourseAdder.scss.
+ * CABasketAdder renders an input that can add courses to the course basket.
+ * Component styles are located in _CABasketAdder.scss.
  *
  * @jsx React.DOM
  */
@@ -16,7 +16,7 @@
 var React = require('react/addons'),
     ScheduleActions = require('../actions/ScheduleActions');
 
-var CACourseAdder = React.createClass({
+var CABasketAdder = React.createClass({
     componentDidMount: function() {
         var input = React.findDOMNode(this.refs.input),
             self = this;
@@ -80,7 +80,7 @@ var CACourseAdder = React.createClass({
 
     render: function() {
         return (
-            <div className="ca-course-adder">
+            <div className="ca-basket-adder">
                 <i className="icon icon-add"></i>
                 <div className="input-wrapper">
                     <input type="text" placeholder="Add a Course" ref="input" />
@@ -90,4 +90,4 @@ var CACourseAdder = React.createClass({
     }
 });
 
-module.exports = CACourseAdder;
+module.exports = CABasketAdder;

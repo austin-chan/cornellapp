@@ -31,7 +31,7 @@ function add(course) {
     if (exists(course)) // ignore course adding if it already exists
         return;
 
-    var selection = generateSelection(course);
+    var selection = defaultSelection(course);
     _courses[selection.key] = {
         raw: course,
         selection: selection
@@ -82,8 +82,18 @@ function selectSection(key, sectionId) {
         return;
 
     var course = _courses[key],
-        section = getSection(key, sectionId);
+        previousGroup = getSelectedGroup(key),
+        section = getSection(key, sectionId),
+        newGroup = getGroupOfSection(key, sectionId);
 
+    // Section selection across groups requires repicking all the sections.
+    if (newGroup.id !== previousGroup.id) {
+        // Reassign all selected section ids.
+        course.selection.selectedSectionIds =
+            defaultSectionIdSelections(newGroup);
+    }
+
+    // Remove the section of the same type as the newly selected section.
     deselectSectionType(key, section.ssrComponent);
 
     // Add the desired section to the course selection.
@@ -103,10 +113,11 @@ function deselectSectionType(key, sectionType) {
 
     // If an existing section of the same type is already selected, deselect it.
     if (selectedSectionOfType) {
-        var index = course.selection.selectedSectionIds
-            .indexOf(selectedSectionOfType.section);
-
-        course.selection.selectedSectionIds.splice(index, 1);
+        course.selection.selectedSectionIds = _.reject(
+            course.selection.selectedSectionIds,
+            function(sectionId) {
+                return selectedSectionOfType.section === sectionId;
+        });
     }
 }
 
@@ -115,38 +126,57 @@ function deselectSectionType(key, sectionType) {
  * @param {object} course Course object to calculate a selection for.
  * @return {object} Default selection object for the course.
  */
-function generateSelection(course) {
-    var group = course.groups[0],
-        sections = [],
-        components = JSON.parse(course.groups[0].componentsRequired).concat(
-            JSON.parse(course.groups[0].componentsOptional));
-
-    // Loop through each required component.
-    for (var c = 0; c < components.length; c++) {
-        var component = components[c];
-
-        // Loop through available sections.
-        for (var s = 0; s < group.sections.length; s++) {
-            var section = group.sections[s];
-            if (section.ssrComponent === component) {
-                sections.push(section.section);
-                break;
-            }
-        }
-    }
+function defaultSelection(course) {
 
     // Using the current timestamp + random number for the key. This is good
     // enough unless functionality needs to be built to allow the course
     // order to change.
-    var key = (+new Date() + Math.floor(Math.random() * 100))
+    var group = course.groups[0],
+        key = (+new Date() + Math.floor(Math.random() * 100))
         .toString(36);
 
     return {
         key: key,
         color: generateColor(),
         active: true,
-        selectedSectionIds: sections
+        selectedSectionIds: defaultSectionIdSelections(group)
     };
+}
+
+/**
+ * Generate default section id selections for a group based on its required and
+ * optional components.
+ * @param {object} group Group object to generate section id selections for.
+ * @return {array} List of section id defaults for the group.
+ */
+function defaultSectionIdSelections(group) {
+    var sections = [],
+        components = JSON.parse(group.componentsRequired).concat(
+            JSON.parse(group.componentsOptional));
+
+    // Loop through each required component.
+    for (var c = 0; c < components.length; c++) {
+        var component = components[c];
+        sections.push(defaultSectionInGroupOfType(group, component).section);
+    }
+
+    return sections;
+}
+
+/**
+ * Generates the default section choice for a section type in a group.
+ * @param {object} group Group object to retrieve section from.
+ * @param {string} sectionType Type of section to choose a default value for.
+ * @return {object} Chosen default section object.
+ */
+function defaultSectionInGroupOfType(group, sectionType) {
+    // Loop through available sections.
+    for (var s = 0; s < group.sections.length; s++) {
+        var section = group.sections[s];
+        if (section.ssrComponent === sectionType) {
+            return section;
+        }
+    }
 }
 
 /**
@@ -179,13 +209,21 @@ function generateColor() {
  * @param {string} key Key for the course to retrieve group for.
  * @return {object} Selected group of the course.
  */
-function getGroup(key) {
-    var course = _courses[key],
-        sectionChoice = course.selection.selectedSectionIds[0];
+function getSelectedGroup(key) {
+    return getGroupOfSection(key,
+        _courses[key].selection.selectedSectionIds[0]);
+}
 
-    return _.find(course.raw.groups, function(group) {
+/**
+ * Get the group object for a section.
+ * @param {string} key Key for the course to retrieve group for.
+ * @param {string} sectionId Section to request group for.
+ * @return {object} Group that contains the section.
+ */
+function getGroupOfSection(key, sectionId) {
+    return _.find(_courses[key].raw.groups, function(group) {
         return _.some(group.sections, function(section) {
-            return section.section == sectionChoice;
+            return section.section === sectionId;
         });
     });
 }
@@ -219,7 +257,7 @@ function getSectionsOfType(key, sectionType, inGroup) {
     var course = _courses[key],
         sections = [];
 
-    groups = inGroup ? [getGroup(key)] : course.raw.groups;
+    groups = inGroup ? [getSelectedGroup(key)] : course.raw.groups;
 
     // Loop through each group.
     _.each(groups, function(group) {
@@ -294,8 +332,8 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @param {string} key Key for the course to retrieve group for.
      * @return {object} Selected group of the course.
      */
-    getGroup: function(key) {
-        return getGroup(key);
+    getSelectedGroup: function(key) {
+        return getSelectedGroup(key);
     },
 
     /**
