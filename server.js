@@ -1,18 +1,25 @@
 /**
- * Entry point for the Davyapp web server. This file begins the initialization
- * process for the application files and all the dependencies.
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * Entry point for the Cornellapp web server. This file begins the
+ * initialization process for the application files and all the dependencies.
  */
-
 
 // Initialize express and all top-level packages.
 var express = require('express'),
-	app = module.exports = express(),
-	port = process.env.PORT || 3000,
-	bodyParser = require('body-parser'),
-	config = require('config'),
-	knex = require('knex')(config.knex),
-	bookshelf = require('bookshelf')(knex),
-	models = require('./app/models')(bookshelf);
+    app = module.exports = express(),
+    port = process.env.PORT || 3000,
+    bodyParser = require('body-parser'),
+    config = require('config'),
+    knex = require('knex')(config.knex),
+    bookshelf = require('bookshelf')(knex),
+    models = require('./app/models')(bookshelf);
 
 
 // App configuration.

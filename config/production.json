@@ -4,8 +4,7 @@
 		"connection": {
 			"host": "",
 			"user": "",
-			"password": "",
-			"database": "davyapp"
+			"password": ""
 		},
 		"migrations": {
 			"directory": "db/migrations"

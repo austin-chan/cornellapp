@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,16 +7,16 @@
  * tree.
  *
  *
- * DAApp is the main component that contains all of the subcomponents in the
- * Davyapp application. Component styles are located in _DAApp.scss.
+ * CAApp is the main component that contains all of the subcomponents in the
+ * Cornellapp application. Component styles are located in _CAApp.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    DAHeader = require('./DAHeader'),
-    DABasket = require('./DABasket'),
-    DASchedule = require('./DASchedule'),
+    CAHeader = require('./CAHeader'),
+    CABasket = require('./CABasket'),
+    CASchedule = require('./CASchedule'),
     ScheduleStore = require('../stores/ScheduleStore');
 
 /**
@@ -29,7 +29,7 @@ function getAppState() {
     };
 }
 
-var DAApp = React.createClass({
+var CAApp = React.createClass({
     getInitialState: function() {
         return getAppState();
     },
@@ -48,16 +48,16 @@ var DAApp = React.createClass({
 
     render: function() {
         return (
-            <div id="da-app">
-                <DAHeader />
+            <div id="ca-app">
+                <CAHeader />
                 <div className="container">
-                    <DABasket courses={this.state.courses}
+                    <CABasket courses={this.state.courses}
                         semester={this.state.semester} />
-                    <DASchedule />
+                    <CASchedule />
                 </div>
             </div>
         );
     }
 });
 
-module.exports = DAApp;
+module.exports = CAApp;

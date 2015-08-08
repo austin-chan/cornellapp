@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,17 +7,16 @@
  * tree.
  *
  *
- * DACourseAdder renders an input that can add courses to the course basket.
- * Component styles are located in _DACourseAdder.scss.
+ * CACourseAdder renders an input that can add courses to the course basket.
+ * Component styles are located in _CACourseAdder.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    ScheduleActions = require('../actions/ScheduleActions'),
-    _ = require;
+    ScheduleActions = require('../actions/ScheduleActions');
 
-var DACourseAdder = React.createClass({
+var CACourseAdder = React.createClass({
     componentDidMount: function() {
         var input = React.findDOMNode(this.refs.input),
             self = this;
@@ -81,7 +80,7 @@ var DACourseAdder = React.createClass({
 
     render: function() {
         return (
-            <div className="da-course-adder">
+            <div className="ca-course-adder">
                 <i className="icon icon-add"></i>
                 <div className="input-wrapper">
                     <input type="text" placeholder="Add a Course" ref="input" />
@@ -91,4 +90,4 @@ var DACourseAdder = React.createClass({
     }
 });
 
-module.exports = DACourseAdder;
+module.exports = CACourseAdder;

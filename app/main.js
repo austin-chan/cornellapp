@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -14,9 +14,9 @@
  */
 
 var React = require('react/addons'),
-    DAApp = require('./components/DAApp'),
-    mountNode = document.getElementById('davy-app-mount');
+    CAApp = require('./components/CAApp'),
+    mountNode = document.getElementById('cornell-app-mount');
 
 require('./scripts/preparation');
 
-React.render(<DAApp />, mountNode);
+React.render(<CAApp />, mountNode);

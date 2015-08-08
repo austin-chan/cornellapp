@@ -1,4 +1,4 @@
-.da-course-item {
+.ca-course-item {
     @include basket-item();
     height: 184px;
 
@@ -12,7 +12,7 @@
         font-weight: 400;
         @include transition(.13s background ease-in-out);
 
-        .da-toggle {
+        .ca-toggle {
             position: absolute;
             height: 35px;
             width: 30px;
@@ -20,7 +20,7 @@
             left: 0px;
         }
 
-        .da-close {
+        .ca-close {
             position: absolute;
             height: 35px;
             width: 30px;
@@ -82,7 +82,7 @@
         }
     }
 
-    .da-color-panel {
+    .ca-color-panel {
         position: absolute;
         top: 35px;
         bottom: 0;
@@ -101,7 +101,7 @@
         }
     }
 
-    @each $color-name, $color in $da-colors {
+    @each $color-name, $color in $ca-colors {
         &.#{$color-name} {
             .item-header {
                 background: $color;

@@ -5,7 +5,7 @@
 			"host": "localhost",
 			"user": "root",
 			"password": "root",
-			"database": "davyapp"
+			"database": "cornellapp"
 		},
 		"migrations": {
 			"directory": "db/migrations"

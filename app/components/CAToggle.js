@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,7 +7,7 @@
  * tree.
  *
  *
- * DAToggle is a resusable component to render the application's standard
+ * CAToggle is a resusable component to render the application's standard
  * checkbox.
  *
  * @jsx React.DOM
@@ -16,14 +16,14 @@
 var React = require('react/addons'),
     classNames = require('classnames');
 
-var DAToggle = React.createClass({
+var CAToggle = React.createClass({
     propTypes: {
         selected: React.PropTypes.bool.isRequired,
         onToggle: React.PropTypes.func.isRequired
     },
 
     render: function() {
-        var rootClass = classNames('da-toggle', {
+        var rootClass = classNames('ca-toggle', {
             off: !this.props.selected
         });
 
@@ -44,4 +44,4 @@ var DAToggle = React.createClass({
     }
 });
 
-module.exports = DAToggle;
+module.exports = CAToggle;

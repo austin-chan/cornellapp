@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,7 +7,7 @@
  * tree.
  *
  *
- * DAColorPanel is the color picking panel for course items.
+ * CAColorPanel is the color picking panel for course items.
  *
  * @jsx React.DOM
  */
@@ -16,7 +16,7 @@ var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
     classNames = require('classnames');
 
- var DAColorPanel = React.createClass({
+ var CAColorPanel = React.createClass({
     propTypes: {
         active: React.PropTypes.bool.isRequired,
         selected: React.PropTypes.string.isRequired,
@@ -27,7 +27,7 @@ var React = require('react/addons'),
     render: function() {
         var swatches = [],
             colors = ScheduleStore.getColors(),
-            rootClass = classNames('da-color-panel',
+            rootClass = classNames('ca-color-panel',
                 { inactive: !this.props.active });
 
         // Iterate through each available color.
@@ -56,7 +56,7 @@ var React = require('react/addons'),
                 <p>Change Color</p>
                 <div className="swatches">{swatches}</div>
                 <div className="button-area">
-                    <button className="da-simple-button" onClick={this._onDone}>
+                    <button className="ca-simple-button" onClick={this._onDone}>
                         Done
                     </button>
                 </div>
@@ -80,4 +80,4 @@ var React = require('react/addons'),
     }
 });
 
- module.exports = DAColorPanel;
+ module.exports = CAColorPanel;

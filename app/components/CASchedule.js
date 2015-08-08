@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,16 +7,16 @@
  * tree.
  *
  *
- * DASchedule represents the schedule area of the application. Component styles
- * are located in _DASchedule.scss.
+ * CASchedule represents the schedule area of the application. Component styles
+ * are located in _CASchedule.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons');
 
-var DASchedule = React.createClass({
-    displayName: 'DASchedule',
+var CASchedule = React.createClass({
+    displayName: 'CASchedule',
 
     render: function() {
         var hourLabels = [],
@@ -40,7 +40,7 @@ var DASchedule = React.createClass({
         }
 
         return (
-            <div className="da-schedule">
+            <div className="ca-schedule">
                 <div className="left">
                     {hourLabels}
                 </div>
@@ -57,4 +57,4 @@ var DASchedule = React.createClass({
     }
 });
 
-module.exports = DASchedule;
+module.exports = CASchedule;

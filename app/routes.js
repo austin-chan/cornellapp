@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,12 +7,12 @@
  * tree.
  *
  *
- * This is the main route declaration file for the Davyapp application. This
+ * This is the main route declaration file for the Cornellapp application. This
  * routing file uses submodule routers to modularize routes.
  */
 
 var React = require('react/addons'),
-    DAApp = React.createFactory(require('./components/DAApp'));
+    CAApp = React.createFactory(require('./components/CAApp'));
 
 module.exports = function(app) {
 
@@ -22,7 +22,7 @@ module.exports = function(app) {
 
         var number = 5;
 
-        var reactHtml = React.renderToString(DAApp({ prop: number }));
+        var reactHtml = React.renderToString(CAApp({ prop: number }));
         var context = JSON.stringify({
             test: 'test'
         });
@@ -32,16 +32,6 @@ module.exports = function(app) {
             context: context
         });
     });
-
-    // app.get('/', function(req, res) {
-    //     var config = app.get('config'),
-    //         configutil = require('./utils/configutil')(config);
-
-    //     res.render('index', {
-    //         "config": config,
-    //         "configutil": configutil
-    //     });
-    // });
 
     // "/api"
     require('./routers/apirouter')(app);

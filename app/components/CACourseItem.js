@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,15 +7,15 @@
  * tree.
  *
  *
- * DACourseItem is the component that displays course information for each
+ * CACourseItem is the component that displays course information for each
  * course in the schedule basket.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    DAToggle = require('./DAToggle'),
-    DAColorPanel = require('./DAColorPanel'),
+    CAToggle = require('./CAToggle'),
+    CAColorPanel = require('./CAColorPanel'),
     ScheduleActions = require('../actions/ScheduleActions'),
     ScheduleStore = require('../stores/ScheduleStore'),
     strutil = require('../utils/strutil'),
@@ -23,7 +23,7 @@ var React = require('react/addons'),
     pluralize = require('pluralize'),
     _ = require('underscore');
 
-var DACourseItem = React.createClass({
+var CACourseItem = React.createClass({
     getInitialState: function() {
         return {
             colorSelecting: false
@@ -35,7 +35,7 @@ var DACourseItem = React.createClass({
             course = this.props.course,
             group = ScheduleStore.getGroup(course.selection.key),
             active = course.selection.active,
-            rootClass = classNames('da-course-item', course.selection.color,
+            rootClass = classNames('ca-course-item', course.selection.color,
                 { inactive: !course.selection.active });
 
         // Description for the course item.
@@ -108,9 +108,9 @@ var DACourseItem = React.createClass({
         return (
             <div className={rootClass}>
                 <div className="item-header">
-                    <DAToggle selected={active} onToggle={this._onToggle} />
+                    <CAToggle selected={active} onToggle={this._onToggle} />
                     {headerTitle}
-                    <div className="da-close" onClick={this._onRemove}>
+                    <div className="ca-close" onClick={this._onRemove}>
                         <i className="icon-close"></i>
                     </div>
                 </div>
@@ -123,16 +123,16 @@ var DACourseItem = React.createClass({
                         {description}
                     </p>
                     <div className="button-area">
-                        <button className="da-simple-button"
+                        <button className="ca-simple-button"
                             onClick={this._onColorSelecting.bind(this, true)}>
                             Change Color
                         </button>
-                        <button className="da-simple-button">
+                        <button className="ca-simple-button">
                             Open in Catalog
                         </button>
                     </div>
                 </div>
-                <DAColorPanel selected={course.selection.color}
+                <CAColorPanel selected={course.selection.color}
                     active={this.state.colorSelecting}
                     onDone={this._onColorSelecting.bind(this, false)}
                     onColorChange={this._onColorChange} />
@@ -186,10 +186,11 @@ var DACourseItem = React.createClass({
             ScheduleActions.deselectSectionType(this.props.course.selection.key,
                 value.substring(1));
         } else {
-            ScheduleActions.selectSection(this.props.course.selection.key, value);
+            ScheduleActions.selectSection(this.props.course.selection.key,
+                value);
         }
     }
 
 });
 
-module.exports = DACourseItem;
+module.exports = CACourseItem;

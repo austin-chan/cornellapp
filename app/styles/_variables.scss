@@ -3,21 +3,21 @@ $schedule-side-width: 740px;
 $ios-easing: cubic-bezier(.23, 1, .32, 1);
 $ios-easing-two: cubic-bezier(.10, .70, .10, 1);
 
-$da-blue: #5B68C6;
-$da-purple: #7E57C2;
-$da-light-blue: #0093DD;
-$da-red: #C8453A;
-$da-green: #43A047;
-$da-yellow: #FFA726;
-$da-pink: #FF69B4;
-$da-colors: (
-    'blue': $da-blue,
-    'purple': $da-purple,
-    'light-blue': $da-light-blue,
-    'red': $da-red,
-    'green': $da-green,
-    'yellow': $da-yellow,
-    'pink': $da-pink
+$ca-blue: #5B68C6;
+$ca-purple: #7E57C2;
+$ca-light-blue: #0093DD;
+$ca-red: #C8453A;
+$ca-green: #43A047;
+$ca-yellow: #FFA726;
+$ca-pink: #FF69B4;
+$ca-colors: (
+    'blue': $ca-blue,
+    'purple': $ca-purple,
+    'light-blue': $ca-light-blue,
+    'red': $ca-red,
+    'green': $ca-green,
+    'yellow': $ca-yellow,
+    'pink': $ca-pink
 );
 
 @mixin basket-item() {

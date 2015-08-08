@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -95,7 +95,7 @@ module.exports = {
 
 },{"../constants/ScheduleConstants":10,"../dispatcher/AppDispatcher":11}],2:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -103,16 +103,16 @@ module.exports = {
  * tree.
  *
  *
- * DAApp is the main component that contains all of the subcomponents in the
- * Davyapp application. Component styles are located in _DAApp.scss.
+ * CAApp is the main component that contains all of the subcomponents in the
+ * Cornellapp application. Component styles are located in _CAApp.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    DAHeader = require('./DAHeader'),
-    DABasket = require('./DABasket'),
-    DASchedule = require('./DASchedule'),
+    CAHeader = require('./CAHeader'),
+    CABasket = require('./CABasket'),
+    CASchedule = require('./CASchedule'),
     ScheduleStore = require('../stores/ScheduleStore');
 
 /**
@@ -125,7 +125,7 @@ function getAppState() {
     };
 }
 
-var DAApp = React.createClass({displayName: "DAApp",
+var CAApp = React.createClass({displayName: "CAApp",
     getInitialState: function() {
         return getAppState();
     },
@@ -144,23 +144,23 @@ var DAApp = React.createClass({displayName: "DAApp",
 
     render: function() {
         return (
-            React.createElement("div", {id: "da-app"}, 
-                React.createElement(DAHeader, null), 
+            React.createElement("div", {id: "ca-app"}, 
+                React.createElement(CAHeader, null), 
                 React.createElement("div", {className: "container"}, 
-                    React.createElement(DABasket, {courses: this.state.courses, 
+                    React.createElement(CABasket, {courses: this.state.courses, 
                         semester: this.state.semester}), 
-                    React.createElement(DASchedule, null)
+                    React.createElement(CASchedule, null)
                 )
             )
         );
     }
 });
 
-module.exports = DAApp;
+module.exports = CAApp;
 
-},{"../stores/ScheduleStore":15,"./DABasket":3,"./DAHeader":7,"./DASchedule":8,"react/addons":27}],3:[function(require,module,exports){
+},{"../stores/ScheduleStore":15,"./CABasket":3,"./CAHeader":7,"./CASchedule":8,"react/addons":27}],3:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -168,35 +168,35 @@ module.exports = DAApp;
  * tree.
  *
  *
- * DABasket lists all the courses a user has added. Component styles are located
- * in _DABasket.scss.
+ * CABasket lists all the courses a user has added. Component styles are located
+ * in _CABasket.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    DACourseAdder = require('./DACourseAdder'),
-    DACourseItem = require('./DACourseItem'),
+    CACourseAdder = require('./CACourseAdder'),
+    CACourseItem = require('./CACourseItem'),
     classNames = require('classnames'),
     _ = require('underscore');
 
-var DABasket = React.createClass({displayName: "DABasket",
+var CABasket = React.createClass({displayName: "CABasket",
 
     render: function() {
         var courseItems = [],
             courses = this.props.courses,
-            rootClass = classNames('da-basket',
+            rootClass = classNames('ca-basket',
                 { empty: !_.size(this.props.courses) });
 
         // Get course keys in order.
         var keys = _.sortBy(_.keys(courses)).reverse();
         _.each(keys, function(key) {
-            courseItems.push(React.createElement(DACourseItem, {key: key, course: courses[key]}));
+            courseItems.push(React.createElement(CACourseItem, {key: key, course: courses[key]}));
         });
 
         return (
             React.createElement("div", {className: rootClass}, 
-                React.createElement(DACourseAdder, {semester: this.props.semester}), 
+                React.createElement(CACourseAdder, {semester: this.props.semester}), 
 
                 React.createElement("p", {className: "empty-label"}, "No Courses Added"), 
                 courseItems
@@ -205,11 +205,11 @@ var DABasket = React.createClass({displayName: "DABasket",
     }
 });
 
-module.exports = DABasket;
+module.exports = CABasket;
 
-},{"./DACourseAdder":5,"./DACourseItem":6,"classnames":19,"react/addons":27,"underscore":199}],4:[function(require,module,exports){
+},{"./CACourseAdder":5,"./CACourseItem":6,"classnames":19,"react/addons":27,"underscore":199}],4:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -217,7 +217,7 @@ module.exports = DABasket;
  * tree.
  *
  *
- * DAColorPanel is the color picking panel for course items.
+ * CAColorPanel is the color picking panel for course items.
  *
  * @jsx React.DOM
  */
@@ -226,7 +226,7 @@ var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
     classNames = require('classnames');
 
- var DAColorPanel = React.createClass({displayName: "DAColorPanel",
+ var CAColorPanel = React.createClass({displayName: "CAColorPanel",
     propTypes: {
         active: React.PropTypes.bool.isRequired,
         selected: React.PropTypes.string.isRequired,
@@ -237,7 +237,7 @@ var React = require('react/addons'),
     render: function() {
         var swatches = [],
             colors = ScheduleStore.getColors(),
-            rootClass = classNames('da-color-panel',
+            rootClass = classNames('ca-color-panel',
                 { inactive: !this.props.active });
 
         // Iterate through each available color.
@@ -266,7 +266,7 @@ var React = require('react/addons'),
                 React.createElement("p", null, "Change Color"), 
                 React.createElement("div", {className: "swatches"}, swatches), 
                 React.createElement("div", {className: "button-area"}, 
-                    React.createElement("button", {className: "da-simple-button", onClick: this._onDone}, 
+                    React.createElement("button", {className: "ca-simple-button", onClick: this._onDone}, 
                         "Done"
                     )
                 )
@@ -290,11 +290,11 @@ var React = require('react/addons'),
     }
 });
 
- module.exports = DAColorPanel;
+ module.exports = CAColorPanel;
 
 },{"../stores/ScheduleStore":15,"classnames":19,"react/addons":27}],5:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -302,17 +302,16 @@ var React = require('react/addons'),
  * tree.
  *
  *
- * DACourseAdder renders an input that can add courses to the course basket.
- * Component styles are located in _DACourseAdder.scss.
+ * CACourseAdder renders an input that can add courses to the course basket.
+ * Component styles are located in _CACourseAdder.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    ScheduleActions = require('../actions/ScheduleActions'),
-    _ = require;
+    ScheduleActions = require('../actions/ScheduleActions');
 
-var DACourseAdder = React.createClass({displayName: "DACourseAdder",
+var CACourseAdder = React.createClass({displayName: "CACourseAdder",
     componentDidMount: function() {
         var input = React.findDOMNode(this.refs.input),
             self = this;
@@ -376,7 +375,7 @@ var DACourseAdder = React.createClass({displayName: "DACourseAdder",
 
     render: function() {
         return (
-            React.createElement("div", {className: "da-course-adder"}, 
+            React.createElement("div", {className: "ca-course-adder"}, 
                 React.createElement("i", {className: "icon icon-add"}), 
                 React.createElement("div", {className: "input-wrapper"}, 
                     React.createElement("input", {type: "text", placeholder: "Add a Course", ref: "input"})
@@ -386,11 +385,11 @@ var DACourseAdder = React.createClass({displayName: "DACourseAdder",
     }
 });
 
-module.exports = DACourseAdder;
+module.exports = CACourseAdder;
 
 },{"../actions/ScheduleActions":1,"react/addons":27}],6:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -398,15 +397,15 @@ module.exports = DACourseAdder;
  * tree.
  *
  *
- * DACourseItem is the component that displays course information for each
+ * CACourseItem is the component that displays course information for each
  * course in the schedule basket.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    DAToggle = require('./DAToggle'),
-    DAColorPanel = require('./DAColorPanel'),
+    CAToggle = require('./CAToggle'),
+    CAColorPanel = require('./CAColorPanel'),
     ScheduleActions = require('../actions/ScheduleActions'),
     ScheduleStore = require('../stores/ScheduleStore'),
     strutil = require('../utils/strutil'),
@@ -414,7 +413,7 @@ var React = require('react/addons'),
     pluralize = require('pluralize'),
     _ = require('underscore');
 
-var DACourseItem = React.createClass({displayName: "DACourseItem",
+var CACourseItem = React.createClass({displayName: "CACourseItem",
     getInitialState: function() {
         return {
             colorSelecting: false
@@ -426,7 +425,7 @@ var DACourseItem = React.createClass({displayName: "DACourseItem",
             course = this.props.course,
             group = ScheduleStore.getGroup(course.selection.key),
             active = course.selection.active,
-            rootClass = classNames('da-course-item', course.selection.color,
+            rootClass = classNames('ca-course-item', course.selection.color,
                 { inactive: !course.selection.active });
 
         // Description for the course item.
@@ -499,9 +498,9 @@ var DACourseItem = React.createClass({displayName: "DACourseItem",
         return (
             React.createElement("div", {className: rootClass}, 
                 React.createElement("div", {className: "item-header"}, 
-                    React.createElement(DAToggle, {selected: active, onToggle: this._onToggle}), 
+                    React.createElement(CAToggle, {selected: active, onToggle: this._onToggle}), 
                     headerTitle, 
-                    React.createElement("div", {className: "da-close", onClick: this._onRemove}, 
+                    React.createElement("div", {className: "ca-close", onClick: this._onRemove}, 
                         React.createElement("i", {className: "icon-close"})
                     )
                 ), 
@@ -514,16 +513,16 @@ var DACourseItem = React.createClass({displayName: "DACourseItem",
                         description
                     ), 
                     React.createElement("div", {className: "button-area"}, 
-                        React.createElement("button", {className: "da-simple-button", 
+                        React.createElement("button", {className: "ca-simple-button", 
                             onClick: this._onColorSelecting.bind(this, true)}, 
                             "Change Color"
                         ), 
-                        React.createElement("button", {className: "da-simple-button"}, 
+                        React.createElement("button", {className: "ca-simple-button"}, 
                             "Open in Catalog"
                         )
                     )
                 ), 
-                React.createElement(DAColorPanel, {selected: course.selection.color, 
+                React.createElement(CAColorPanel, {selected: course.selection.color, 
                     active: this.state.colorSelecting, 
                     onDone: this._onColorSelecting.bind(this, false), 
                     onColorChange: this._onColorChange})
@@ -577,17 +576,18 @@ var DACourseItem = React.createClass({displayName: "DACourseItem",
             ScheduleActions.deselectSectionType(this.props.course.selection.key,
                 value.substring(1));
         } else {
-            ScheduleActions.selectSection(this.props.course.selection.key, value);
+            ScheduleActions.selectSection(this.props.course.selection.key,
+                value);
         }
     }
 
 });
 
-module.exports = DACourseItem;
+module.exports = CACourseItem;
 
-},{"../actions/ScheduleActions":1,"../stores/ScheduleStore":15,"../utils/strutil":16,"./DAColorPanel":4,"./DAToggle":9,"classnames":19,"pluralize":26,"react/addons":27,"underscore":199}],7:[function(require,module,exports){
+},{"../actions/ScheduleActions":1,"../stores/ScheduleStore":15,"../utils/strutil":16,"./CAColorPanel":4,"./CAToggle":9,"classnames":19,"pluralize":26,"react/addons":27,"underscore":199}],7:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -595,15 +595,15 @@ module.exports = DACourseItem;
  * tree.
  *
  *
- * DAHeader is handles the site's header. Component styles are located in
- * _DAHeader.scss.
+ * CAHeader is handles the site's header. Component styles are located in
+ * _CAHeader.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons');
 
-var DAHeader = React.createClass({displayName: "DAHeader",
+var CAHeader = React.createClass({displayName: "CAHeader",
     render: function() {
         var context = {};
 
@@ -613,25 +613,25 @@ var DAHeader = React.createClass({displayName: "DAHeader",
         }
 
         return (
-            React.createElement("header", {className: "da-header"}, 
+            React.createElement("header", {className: "ca-header"}, 
                 React.createElement("div", {className: "container"}, 
                     React.createElement("div", {className: "left"}, 
                         React.createElement("p", {className: "logo museo-sans"}, "Cornellapp"), 
                         React.createElement("div", {className: "account-buttons"}, 
-                            React.createElement("button", {className: "da-outline-button"}, 
+                            React.createElement("button", {className: "ca-outline-button"}, 
                                 "Sign Up"
                             ), 
-                            React.createElement("button", {className: "da-outline-button"}, 
+                            React.createElement("button", {className: "ca-outline-button"}, 
                                 "Log In"
                             )
                         )
                     ), 
                     React.createElement("div", {className: "right"}, 
                         React.createElement("div", {className: "semester-buttons"}, 
-                            React.createElement("button", {className: "da-fill-button"}, 
+                            React.createElement("button", {className: "ca-fill-button"}, 
                                 "SUMMER 2015"
                             ), 
-                            React.createElement("button", {className: "da-fill-button selected"}, 
+                            React.createElement("button", {className: "ca-fill-button selected"}, 
                                 "FALL 2015"
                             )
                         )
@@ -642,11 +642,11 @@ var DAHeader = React.createClass({displayName: "DAHeader",
     }
 });
 
-module.exports = DAHeader;
+module.exports = CAHeader;
 
 },{"react/addons":27}],8:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -654,16 +654,16 @@ module.exports = DAHeader;
  * tree.
  *
  *
- * DASchedule represents the schedule area of the application. Component styles
- * are located in _DASchedule.scss.
+ * CASchedule represents the schedule area of the application. Component styles
+ * are located in _CASchedule.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons');
 
-var DASchedule = React.createClass({
-    displayName: 'DASchedule',
+var CASchedule = React.createClass({
+    displayName: 'CASchedule',
 
     render: function() {
         var hourLabels = [],
@@ -687,7 +687,7 @@ var DASchedule = React.createClass({
         }
 
         return (
-            React.createElement("div", {className: "da-schedule"}, 
+            React.createElement("div", {className: "ca-schedule"}, 
                 React.createElement("div", {className: "left"}, 
                     hourLabels
                 ), 
@@ -704,11 +704,11 @@ var DASchedule = React.createClass({
     }
 });
 
-module.exports = DASchedule;
+module.exports = CASchedule;
 
 },{"react/addons":27}],9:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -716,7 +716,7 @@ module.exports = DASchedule;
  * tree.
  *
  *
- * DAToggle is a resusable component to render the application's standard
+ * CAToggle is a resusable component to render the application's standard
  * checkbox.
  *
  * @jsx React.DOM
@@ -725,14 +725,14 @@ module.exports = DASchedule;
 var React = require('react/addons'),
     classNames = require('classnames');
 
-var DAToggle = React.createClass({displayName: "DAToggle",
+var CAToggle = React.createClass({displayName: "CAToggle",
     propTypes: {
         selected: React.PropTypes.bool.isRequired,
         onToggle: React.PropTypes.func.isRequired
     },
 
     render: function() {
-        var rootClass = classNames('da-toggle', {
+        var rootClass = classNames('ca-toggle', {
             off: !this.props.selected
         });
 
@@ -753,11 +753,11 @@ var DAToggle = React.createClass({displayName: "DAToggle",
     }
 });
 
-module.exports = DAToggle;
+module.exports = CAToggle;
 
 },{"classnames":19,"react/addons":27}],10:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -797,7 +797,7 @@ module.exports = new Dispatcher();
 
 },{"flux":21}],12:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -812,16 +812,16 @@ module.exports = new Dispatcher();
  */
 
 var React = require('react/addons'),
-    DAApp = require('./components/DAApp'),
-    mountNode = document.getElementById('davy-app-mount');
+    CAApp = require('./components/CAApp'),
+    mountNode = document.getElementById('cornell-app-mount');
 
 require('./scripts/preparation');
 
-React.render(React.createElement(DAApp, null), mountNode);
+React.render(React.createElement(CAApp, null), mountNode);
 
-},{"./components/DAApp":2,"./scripts/preparation":14,"react/addons":27}],13:[function(require,module,exports){
+},{"./components/CAApp":2,"./scripts/preparation":14,"react/addons":27}],13:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -838,7 +838,7 @@ React.render(React.createElement(DAApp, null), mountNode);
 },{}],14:[function(require,module,exports){
 (function (global){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -860,7 +860,7 @@ require('./global');
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./global":13,"devbridge-autocomplete":20,"jquery":24}],15:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -1257,7 +1257,7 @@ module.exports = ScheduleStore;
 
 },{"../constants/ScheduleConstants":10,"../dispatcher/AppDispatcher":11,"events":17,"object-assign":25,"underscore":199}],16:[function(require,module,exports){
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0

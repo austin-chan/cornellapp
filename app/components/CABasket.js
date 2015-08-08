@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, Davyapp.
+ * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
  *
  * This source code is licensed under the GNU General Public License v3.0
@@ -7,35 +7,35 @@
  * tree.
  *
  *
- * DABasket lists all the courses a user has added. Component styles are located
- * in _DABasket.scss.
+ * CABasket lists all the courses a user has added. Component styles are located
+ * in _CABasket.scss.
  *
  * @jsx React.DOM
  */
 
 var React = require('react/addons'),
-    DACourseAdder = require('./DACourseAdder'),
-    DACourseItem = require('./DACourseItem'),
+    CACourseAdder = require('./CACourseAdder'),
+    CACourseItem = require('./CACourseItem'),
     classNames = require('classnames'),
     _ = require('underscore');
 
-var DABasket = React.createClass({
+var CABasket = React.createClass({
 
     render: function() {
         var courseItems = [],
             courses = this.props.courses,
-            rootClass = classNames('da-basket',
+            rootClass = classNames('ca-basket',
                 { empty: !_.size(this.props.courses) });
 
         // Get course keys in order.
         var keys = _.sortBy(_.keys(courses)).reverse();
         _.each(keys, function(key) {
-            courseItems.push(<DACourseItem key={key} course={courses[key]} />);
+            courseItems.push(<CACourseItem key={key} course={courses[key]} />);
         });
 
         return (
             <div className={rootClass}>
-                <DACourseAdder semester={this.props.semester} />
+                <CACourseAdder semester={this.props.semester} />
 
                 <p className="empty-label">No Courses Added</p>
                 {courseItems}
@@ -44,4 +44,4 @@ var DABasket = React.createClass({
     }
 });
 
-module.exports = DABasket;
+module.exports = CABasket;
