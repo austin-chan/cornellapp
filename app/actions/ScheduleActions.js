@@ -61,5 +61,33 @@ module.exports = {
             key: key,
             color: color,
         });
+    },
+
+    /**
+     * Select a section and deselect the previously selected section of the
+     * same type if necessary.
+     * @param {string} key Key of the course to change the section selection of.
+     * @param {string} sectionId Section ID to add to the course.
+     */
+    selectSection: function(key, sectionId) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.SELECT_SECTION,
+            key: key,
+            sectionId: sectionId,
+        });
+    },
+
+    /**
+     * Deselect a section type from a course selection. Used in cases where
+     * courses have optional components.
+     * @param {string} key Key of the course to deselect a section from.
+     * @param {string} sectionType Type of section to deselect.
+     */
+    deselectSectionType: function(key, sectionType) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.DESELECT_SECTION_TYPE,
+            key: key,
+            sectionType: sectionType,
+        });
     }
 }

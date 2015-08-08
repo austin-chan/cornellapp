@@ -42,11 +42,35 @@
             line-height: 15px;
         }
 
-        .credits {
+        .byline {
             font-size: 12px;
             color: #535353;
             font-weight: 500;
             margin-top: 2px;
+
+            .section {
+
+                .middot {
+                    margin: 0 6px;
+                    color: #bdbdbd;
+                }
+
+                select {
+                    cursor: pointer;
+                    background: transparent;
+                    outline: none;
+                    color: #535353;
+                    font-weight: 500;
+                    font-size: 12px;
+                    border: none;
+                    @include appearance(none);
+                    @include transition(.13s all ease-in-out);
+
+                    &:hover {
+                        opacity: .64;
+                    }
+                }
+            }
         }
 
         .description {

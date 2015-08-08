@@ -2,5 +2,6 @@
 
     > .container {
         @include container(1080px);
+        padding-bottom: 50px;
     }
 }

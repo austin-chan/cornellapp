@@ -63,10 +63,51 @@ function toggle(key, active) {
  * @param {string} color Color to change to.
  */
 function setColor(key, color) {
-    if (_colors.indexOf(color) === -1) // nake sure color is in _colors.
-        return
+    // Make sure color is in _colors and is not already selected.
+    if (_colors.indexOf(color) === -1 && color != _courses[key].selection.color)
+        return;
 
     _courses[key].selection.color = color;
+}
+
+/**
+ * Select a section and deselect the previously selected section of the
+ * same type if necessary.
+ * @param {string} key Key of the course to change the section selection of.
+ * @param {string} sectionId Section ID to add to the course.
+ */
+function selectSection(key, sectionId) {
+    // Make sure the newly selected section is not already selected.
+    if (_courses[key].selection.selectedSectionIds.indexOf(sectionId) !== -1)
+        return;
+
+    var course = _courses[key],
+        section = getSection(key, sectionId);
+
+    deselectSectionType(key, section.ssrComponent);
+
+    // Add the desired section to the course selection.
+    course.selection.selectedSectionIds.push(sectionId);
+}
+
+/**
+ * Deselect a section type from a course selection. Used in cases where
+ * courses have optional components.
+ * @param {string} key Key of the course to deselect a section from.
+ * @param {string} sectionType Type of section to deselect.
+ */
+function deselectSectionType(key, sectionType) {
+    var course = _courses[key],
+        selectedSectionOfType = getSelectedSectionOfType(key,
+            sectionType);
+
+    // If an existing section of the same type is already selected, deselect it.
+    if (selectedSectionOfType) {
+        var index = course.selection.selectedSectionIds
+            .indexOf(selectedSectionOfType.section);
+
+        course.selection.selectedSectionIds.splice(index, 1);
+    }
 }
 
 /**
@@ -76,8 +117,9 @@ function setColor(key, color) {
  */
 function generateSelection(course) {
     var group = course.groups[0],
-        components = JSON.parse(course.groups[0].componentsRequired),
-        sections = [];
+        sections = [],
+        components = JSON.parse(course.groups[0].componentsRequired).concat(
+            JSON.parse(course.groups[0].componentsOptional));
 
     // Loop through each required component.
     for (var c = 0; c < components.length; c++) {
@@ -103,8 +145,7 @@ function generateSelection(course) {
         key: key,
         color: generateColor(),
         active: true,
-        groupIndex: 0,
-        sectionChoices: sections
+        selectedSectionIds: sections
     };
 }
 
@@ -139,7 +180,14 @@ function generateColor() {
  * @return {object} Selected group of the course.
  */
 function getGroup(key) {
-    return _courses[key].raw.groups[_courses[key].selection.groupIndex];
+    var course = _courses[key],
+        sectionChoice = course.selection.selectedSectionIds[0];
+
+    return _.find(course.raw.groups, function(group) {
+        return _.some(group.sections, function(section) {
+            return section.section == sectionChoice;
+        });
+    });
 }
 
 /**
@@ -149,11 +197,60 @@ function getGroup(key) {
  * @return {object} Section object that was requested.
  */
 function getSection(key, sectionId) {
-    var group = getGroup(key);
-    return _.find(group.sections, function(section) {
-        return section.section == sectionId;
-    });
+    for (var g = 0; g < _courses[key].raw.groups.length; g++) {
+        var group = _courses[key].raw.groups[g];
+        for (var s = 0; s < group.sections.length; s++) {
+            var section = group.sections[s];
+            if (section.section == sectionId)
+                return section;
+        }
+    }
 }
+
+/**
+ * Get all sections for a course of a certain ssrComponent type either
+ * limited to the selected group or not.
+ * @param {string} key Key for the course to retrieve sections from.
+ * @param {string} sectionType The ssrComponent type to retrieve from.
+ * @param {boolean} inGroup Limit only to the selected group.
+ * @return {array} List of sections of the type.
+ */
+function getSectionsOfType(key, sectionType, inGroup) {
+    var course = _courses[key],
+        sections = [];
+
+    groups = inGroup ? [getGroup(key)] : course.raw.groups;
+
+    // Loop through each group.
+    _.each(groups, function(group) {
+
+        // Loop through each section of the group.
+        _.each(group.sections, function(section) {
+            if (section.ssrComponent == sectionType)
+                sections.push(section);
+        });
+    });
+
+    return sections;
+}
+
+/**
+ * Get the selected section for a course of a section type.
+ * @param {string} key Key of course to retrieve section from.
+ * @param {string} sectionType Section type to retrieve.
+ * @return {object} Selected section object of the type or undefined if no
+ *      sections of the type are selected.
+ */
+function getSelectedSectionOfType(key, sectionType) {
+    var selectedSectionId = _.find(_courses[key].selection.selectedSectionIds,
+        function(selectedSectionId) {
+            var selectedSection = getSection(key, selectedSectionId);
+            return selectedSection.ssrComponent === sectionType;
+        });
+
+    return selectedSectionId ? getSection(key, selectedSectionId) : undefined;
+}
+
 
 /**
  * Determines if course already has been added to the schedule.
@@ -212,6 +309,30 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     },
 
     /**
+     * Get all sections for a course of a certain ssrComponent type either
+     * limited to the selected group or not.
+     * @param {string} key Key for the course to retrieve sections from.
+     * @param {string} sectionType The ssrComponent type to retrieve from.
+     * @param {boolean} inGroup Limit only to the selected group.
+     * @return {array} List of sections of the type.
+     */
+    getSectionsOfType: function(key, sectionType, inGroup) {
+        inGroup = typeof inGroup !== 'undefined' ? inGroup : false;
+        return getSectionsOfType(key, sectionType, inGroup);
+    },
+
+    /**
+     * Get the selected section for a course of a section type.
+     * @param {string} key Key of course to retrieve section from.
+     * @param {string} sectionType Section type to retrieve.
+     * @return {object} Selected section object of the type or undefined if no
+     *      sections of the type are selected.
+     */
+    getSelectedSectionOfType: function(key, sectionType) {
+        return getSelectedSectionOfType(key, sectionType);
+    },
+
+    /**
      * Publish a change to all listeners.
      */
     emitChange: function() {
@@ -254,6 +375,16 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.SET_COLOR:
             setColor(action.key, action.color);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.SELECT_SECTION:
+            selectSection(action.key, action.sectionId);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.DESELECT_SECTION_TYPE:
+            deselectSectionType(action.key, action.sectionType);
             ScheduleStore.emitChange();
             break;
 

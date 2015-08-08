@@ -31,7 +31,8 @@ var DACourseItem = React.createClass({
     },
 
     render: function() {
-        var course = this.props.course,
+        var self = this,
+            course = this.props.course,
             group = ScheduleStore.getGroup(course.selection.key),
             active = course.selection.active,
             rootClass = classNames('da-course-item', course.selection.color,
@@ -47,7 +48,7 @@ var DACourseItem = React.createClass({
                 ': ' + course.raw.titleLong;
         headerTitle = strutil.shorten(headerTitle, 36, 2);
 
-        // Byline right under the professor name.
+        // Label to display credit count.
         if (group.unitsMinimum == group.unitsMaximum) {
             var credits = group.unitsMinimum + ' ' +
                 pluralize('credits', group.unitsMinimum);
@@ -55,11 +56,51 @@ var DACourseItem = React.createClass({
             var credits = group.unitsMinimum + '-' + group.unitsMaximum +
                 'credits';
         }
-        var sectionLabels = [];
-        _.each(course.selection.sectionChoices, function(section) {
+
+        // Section dropdowns to change the sections.
+        var sectionLabels = [],
+            requiredSectionTypes = JSON.parse(group.componentsRequired),
+            optionalSectionTypes = JSON.parse(group.componentsOptional),
+            allSectionTypes = requiredSectionTypes.concat(optionalSectionTypes);
+
+        // Loop through each section component for the course.
+        _.each(allSectionTypes, function(sectionType, index) {
+            var options = [],
+                sectionsOfType = ScheduleStore.getSectionsOfType(
+                    course.selection.key, sectionType, index !== 0),
+                selectedSectionOfType = ScheduleStore.getSelectedSectionOfType(
+                    course.selection.key, sectionType),
+                selectedSectionId = selectedSectionOfType ?
+                    selectedSectionOfType.section : 'none';
+
+            // If section type is optional add no selection option.
+            if (optionalSectionTypes.indexOf(sectionType) !== -1) {
+                var value = '!' + sectionType;
+                options.push(
+                    <option key="none" value={value}>
+                        No {sectionType}
+                    </option>
+                );
+            }
+
+            // Generate all options for the section component.
+            _.each(sectionsOfType, function(sectionOption) {
+                options.push(
+                    <option key={sectionOption.section}
+                        value={sectionOption.section}>
+                        {sectionOption.ssrComponent} {sectionOption.section}
+                    </option>
+                );
+            });
+
             sectionLabels.push(
-                <span key={section}>
-                    &middot;{section}
+                <span key={sectionType} className="section">
+                    <span className="middot">&middot;</span>
+                    <select className="freight-sans-pro"
+                        value={selectedSectionId}
+                        onChange={self._onSectionSelect}>
+                        {options}
+                    </select>
                 </span>
             );
         });
@@ -75,7 +116,7 @@ var DACourseItem = React.createClass({
                 </div>
                 <div className="item-content">
                     <p className="professor">Professor Katheleen Gibson</p>
-                    <p className="credits freight-sans-pro">
+                    <p className="byline freight-sans-pro">
                         {credits}{sectionLabels}
                     </p>
                     <p className="description freight-sans-pro">
@@ -131,6 +172,22 @@ var DACourseItem = React.createClass({
      */
     _onColorChange: function(color) {
         ScheduleActions.setColor(this.props.course.selection.key, color);
+    },
+
+    /**
+     * Event handler for selecting a section.
+     * @param {object} e Event object from the onChange event.
+     */
+    _onSectionSelect: function(e) {
+        var value = e.target.value;
+
+        // Deselect or select the section.
+        if (value[0] === '!') {
+            ScheduleActions.deselectSectionType(this.props.course.selection.key,
+                value.substring(1));
+        } else {
+            ScheduleActions.selectSection(this.props.course.selection.key, value);
+        }
     }
 
 });

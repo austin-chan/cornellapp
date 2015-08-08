@@ -15,3 +15,7 @@ jsx --watch react/ react-built/
 
 TODO
 Search for a course with slash /
+
+cs1132
+bio4550
+amst5710

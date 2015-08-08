@@ -28,7 +28,7 @@ var DAHeader = React.createClass({
             <header className="da-header">
                 <div className="container">
                     <div className="left">
-                        <p className="logo museo-sans">Drakeapp</p>
+                        <p className="logo museo-sans">Cornellapp</p>
                         <div className="account-buttons">
                             <button className="da-outline-button">
                                 Sign Up

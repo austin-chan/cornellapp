@@ -69,9 +69,6 @@ var React = require('react/addons'),
      * @param {string} color Color string that was selected.
      */
     _onSelect: function(color) {
-        if (color === this.props.selected) // ignore if already selected
-            return;
-
         this.props.onColorChange(color);
     },
 
