@@ -24,6 +24,10 @@ var React = require('react/addons'),
     _ = require('underscore');
 
 var CABasketItem = React.createClass({
+    propTypes: {
+        course: React.PropTypes.object.isRequired
+    },
+
     getInitialState: function() {
         return {
             colorSelecting: false

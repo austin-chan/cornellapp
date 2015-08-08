@@ -14,25 +14,19 @@ $rowHeight: 60px;
         @include span(11.25 of 12 last);
     }
 
-    .schedule-area {
-        background: #FFFFFF;
-        box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.15);
-        border-radius: 4px;
-    }
-
     .day-labels {
         @extend .cf;
         padding-bottom: 14px;
         font-weight: 300;
-    }
 
-    .day-label {
-        width: percentage(1/7);
-        display: inline-block;
-        text-align: center;
-        font-size: 16px;
-        color: #D1D1D1;
-        letter-spacing: .1em;
+        .day-label {
+            width: percentage(1/7);
+            display: inline-block;
+            text-align: center;
+            font-size: 16px;
+            color: #D1D1D1;
+            letter-spacing: .1em;
+        }
     }
 
     .hour-label {
@@ -44,11 +38,26 @@ $rowHeight: 60px;
         letter-spacing: .05em;
     }
 
-    .calendar-row {
-        height: $rowHeight;
+    .schedule-area {
+        position: relative;
+        background: #FFFFFF;
+        box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.15);
+        border-radius: 4px;
 
-        &:nth-child(odd) {
-            background: #EDEDED;
+        .schedule-row {
+            height: $rowHeight;
+
+            &:nth-child(odd) {
+                background: #EDEDED;
+            }
         }
+    }
+
+    .courses-area {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
     }
 }

@@ -24,7 +24,7 @@ var React = require('react/addons'),
  */
 function getAppState() {
     return {
-        courses: ScheduleStore.getCourses(),
+        allCourses: ScheduleStore.getCourses(),
         semester: ScheduleStore.getSemester()
     };
 }
@@ -51,9 +51,9 @@ var CAApp = React.createClass({
             <div id="ca-app">
                 <CAHeader />
                 <div className="container">
-                    <CABasket courses={this.state.courses}
+                    <CABasket courses={this.state.allCourses}
                         semester={this.state.semester} />
-                    <CASchedule />
+                    <CASchedule courses={this.state.allCourses} />
                 </div>
             </div>
         );

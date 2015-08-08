@@ -16,6 +16,7 @@ jsx --watch react/ react-built/
 TODO
 Search for a course with slash /
 
-cs1132
-bee4550
-amst5710
+cs1132 - exclusive discussions for diff lectures
+bee4550 - different requirements in groups
+amst5710 - optional
+mae1130 - tba

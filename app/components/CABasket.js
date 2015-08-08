@@ -14,12 +14,17 @@
  */
 
 var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
     CABasketAdder = require('./CABasketAdder'),
     CABasketItem = require('./CABasketItem'),
     classNames = require('classnames'),
     _ = require('underscore');
 
 var CABasket = React.createClass({
+    propTypes: {
+        courses: React.PropTypes.object.isRequired,
+        semester: React.PropTypes.number.isRequired,
+    },
 
     render: function() {
         var courseItems = [],
@@ -27,8 +32,8 @@ var CABasket = React.createClass({
             rootClass = classNames('ca-basket',
                 { empty: !_.size(this.props.courses) });
 
-        // Get course keys in order.
-        var keys = _.sortBy(_.keys(courses)).reverse();
+        // Loop through courses in order.
+        var keys = ScheduleStore.getOrderedCourseKeys();
         _.each(keys, function(key) {
             courseItems.push(<CABasketItem key={key} course={courses[key]} />);
         });

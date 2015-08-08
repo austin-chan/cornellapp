@@ -328,6 +328,14 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     },
 
     /**
+     * Get an ordered list of the selected courses' keys.
+     * @return {array} Ordered list of course keys.
+     */
+    getOrderedCourseKeys: function() {
+        return _.sortBy(_.keys(_courses)).reverse();
+    },
+
+    /**
      * Get the selected group for a course.
      * @param {string} key Key for the course to retrieve group for.
      * @return {object} Selected group of the course.

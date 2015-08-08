@@ -17,6 +17,10 @@ var React = require('react/addons'),
     ScheduleActions = require('../actions/ScheduleActions');
 
 var CABasketAdder = React.createClass({
+    propTypes: {
+        semester: React.PropTypes.number.isRequired
+    },
+
     componentDidMount: function() {
         var input = React.findDOMNode(this.refs.input),
             self = this;
