@@ -20,3 +20,4 @@ cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups
 amst5710 - optional
 mae1130 - tba
+bioap4980 - no meetings

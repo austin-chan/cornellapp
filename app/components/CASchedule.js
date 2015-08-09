@@ -14,13 +14,24 @@
  */
 
 var React = require('react/addons'),
-    ScheduleStore = require('../stores/ScheduleStore'),
     CAScheduleItem = require('./CAScheduleItem'),
     _ = require('underscore');
 
 var CASchedule = React.createClass({
     propTypes: {
-        courses: React.PropTypes.object.isRequired
+        courses: React.PropTypes.array.isRequired,
+        size: React.PropTypes.string
+    },
+
+    getDefaultProps: function() {
+        return {
+            size: 'normal'
+        };
+    },
+
+    componentWillMount: function() {
+        this.hourHeight = this.props.size === 'normal' ? 75 : 120;
+        this.startTime = '08:00AM';
     },
 
     renderHourLabels: function() {
@@ -66,12 +77,14 @@ var CASchedule = React.createClass({
             courseItems = [];
 
         // Loop through courses in order.
-        var keys = ScheduleStore.getOrderedCourseKeys();
-        _.each(keys, function(key) {
+        _.each(courses, function(course) {
             courseItems.push(
-                <CAScheduleItem key={key} course={courses[key]} />
+                <CAScheduleItem key={course.selection.key}
+                    hourHeight={this.hourHeight}
+                    startTime={this.startTime}
+                    course={course} />
             );
-        });
+        }, this);
 
         return (
             <div className="ca-schedule">

@@ -3,5 +3,13 @@
     > .container {
         @include container(1080px);
         padding-bottom: 50px;
+
+        > .left {
+            @include span(3.6 of 12);
+        }
+
+        > .right {
+            @include span(8.4 of 12 last);
+        }
     }
 }

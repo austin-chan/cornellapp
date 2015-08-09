@@ -51,9 +51,13 @@ var CAApp = React.createClass({
             <div id="ca-app">
                 <CAHeader />
                 <div className="container">
-                    <CABasket courses={this.state.allCourses}
-                        semester={this.state.semester} />
-                    <CASchedule courses={this.state.allCourses} />
+                    <div className="left">
+                        <CABasket courses={this.state.allCourses}
+                            semester={this.state.semester} />
+                    </div>
+                    <div className="right">
+                        <CASchedule courses={this.state.allCourses} />
+                    </div>
                 </div>
             </div>
         );

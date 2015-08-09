@@ -1,7 +1,6 @@
-$rowHeight: 60px;
+$rowHeight: 75px;
 
 .ca-schedule {
-    @include span(8.4 of 12 last);
     padding-top: 30px;
 
     > .left {
@@ -16,7 +15,7 @@ $rowHeight: 60px;
 
     .day-labels {
         @extend .cf;
-        padding-bottom: 14px;
+        padding: 0 8px 14px;
         font-weight: 300;
 
         .day-label {
@@ -56,8 +55,8 @@ $rowHeight: 60px;
     .courses-area {
         position: absolute;
         top: 0;
-        right: 0;
-        left: 0;
+        right: 4px;
+        left: 4px;
         bottom: 0;
     }
 }

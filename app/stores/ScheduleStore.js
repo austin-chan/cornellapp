@@ -246,6 +246,18 @@ function getSection(key, sectionId) {
 }
 
 /**
+ * Get all selected sections for a course.
+ * @param {string} key Key to get selected sections from.
+ * @return {array} List of selected sections for the course.
+ */
+function getSelectedSections(key) {
+    return _.map(_courses[key].selection.selectedSectionIds,
+        function(sectionId) {
+            return getSection(key, sectionId);
+    });
+}
+
+/**
  * Get all sections for a course of a certain ssrComponent type either
  * limited to the selected group or not.
  * @param {string} key Key for the course to retrieve sections from.
@@ -306,17 +318,21 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
 
     /**
      * Get all available colors for courses.
+     * @return {array} List of color strings.
      */
     getColors: function() {
         return _colors;
     },
 
     /**
-     * Get all of the courses in the schedule.
-     * @return {object}
+     * Get all of the courses in the schedule ordered from most recent to
+     * oldest.
+     * @return {array} Ordered list of course keys.
      */
     getCourses: function() {
-        return _courses;
+        return _.map(_.sortBy(_.keys(_courses)).reverse(), function(key) {
+            return _courses[key];
+        });
     },
 
     /**
@@ -325,14 +341,6 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      */
     getSemester: function() {
         return _semester;
-    },
-
-    /**
-     * Get an ordered list of the selected courses' keys.
-     * @return {array} Ordered list of course keys.
-     */
-    getOrderedCourseKeys: function() {
-        return _.sortBy(_.keys(_courses)).reverse();
     },
 
     /**
@@ -352,6 +360,15 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      */
     getSection: function(key, sectionId) {
         return getSection(key, sectionId);
+    },
+
+    /**
+     * Get all selected sections for a course.
+     * @param {string} key Key to get selected sections from.
+     * @return {array} List of selected sections for the course.
+     */
+    getSelectedSections: function(key) {
+        return getSelectedSections(key);
     },
 
     /**

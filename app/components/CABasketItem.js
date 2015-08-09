@@ -35,8 +35,7 @@ var CABasketItem = React.createClass({
     },
 
     render: function() {
-        var self = this,
-            course = this.props.course,
+        var course = this.props.course,
             group = ScheduleStore.getSelectedGroup(course.selection.key),
             active = course.selection.active,
             rootClass = classNames('ca-basket-item', course.selection.color,
@@ -95,19 +94,19 @@ var CABasketItem = React.createClass({
                         {sectionOption.ssrComponent} {sectionOption.section}
                     </option>
                 );
-            });
+            }, this);
 
             sectionLabels.push(
                 <span key={sectionType} className="section">
                     <span className="middot">&middot;</span>
                     <select className="freight-sans-pro"
                         value={selectedSectionId}
-                        onChange={self._onSectionSelect}>
+                        onChange={this._onSectionSelect}>
                         {options}
                     </select>
                 </span>
             );
-        });
+        }, this);
 
         return (
             <div className={rootClass}>
