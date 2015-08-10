@@ -9,8 +9,6 @@
  *
  * CAApp is the main component that contains all of the subcomponents in the
  * Cornellapp application. Component styles are located in _CAApp.scss.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),

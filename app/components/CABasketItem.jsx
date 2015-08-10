@@ -9,8 +9,6 @@
  *
  * CABasketItem is the component that displays course information for each
  * course in the schedule basket.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),

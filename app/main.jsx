@@ -9,8 +9,6 @@
  *
  * This file is the entry point to generate the client-side javascript bundle
  * using Browserify.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),

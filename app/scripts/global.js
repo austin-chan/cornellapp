@@ -9,6 +9,4 @@
  *
  * This file prepares the DOM with anything that needs to be applied globally
  * to the application.
- *
- * @jsx React.DOM
  */

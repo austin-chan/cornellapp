@@ -9,8 +9,6 @@
  *
  * CAHeader is handles the site's header. Component styles are located in
  * _CAHeader.scss.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons');

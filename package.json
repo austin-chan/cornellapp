@@ -28,7 +28,8 @@
     "pluralize": "^1.1.4",
     "react": "^0.13.3",
     "underscore": "^1.8.3",
-    "vcardparser": "^1.0.3"
+    "vcardparser": "^1.0.3",
+    "velocity-animate": "^1.2.2"
   },
   "devDependencies": {
     "browserify": "^11.0.1",

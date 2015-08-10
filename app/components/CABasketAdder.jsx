@@ -9,8 +9,6 @@
  *
  * CABasketAdder renders an input that can add courses to the course basket.
  * Component styles are located in _CABasketAdder.scss.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),

@@ -9,8 +9,6 @@
  *
  * CAToggle is a resusable component to render the application's standard
  * checkbox.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),

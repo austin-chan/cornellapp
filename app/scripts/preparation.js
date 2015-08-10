@@ -9,11 +9,10 @@
  *
  * This file prepares all the scripts that are run in the browser and is the
  * first file included in the bundle.
- *
- * @jsx React.DOM
  */
 
-global.$ = require('jquery');
+global.$ = global.jQuery = require('jquery');
 require('devbridge-autocomplete');
+require('velocity-animate');
 
 require('./global');

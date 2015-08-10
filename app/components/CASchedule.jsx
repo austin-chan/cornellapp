@@ -9,8 +9,6 @@
  *
  * CASchedule represents the schedule area of the application. Component styles
  * are located in _CASchedule.scss.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),
@@ -26,6 +24,12 @@ var CASchedule = React.createClass({
     getDefaultProps: function() {
         return {
             size: 'normal'
+        };
+    },
+
+    getInitialState: function() {
+        return {
+            isDragging: false
         };
     },
 
@@ -64,7 +68,6 @@ var CASchedule = React.createClass({
 
         // Loop through each day.
         dayOffsetMap = _.mapObject(dayOffsetMap, function(day) {
-
             // Add day class.
             $mockWrap.addClass(day);
 
@@ -85,10 +88,13 @@ var CASchedule = React.createClass({
 
         // Remove mock item from schedule.
         $mockItem.remove();
-
         this.dayOffsetMap = dayOffsetMap;
     },
 
+    /**
+     * Generate labels for all of the hours of the schedule.
+     * @return {object} Generated React markup for the hour labels.
+     */
     renderHourLabels: function() {
         var hourLabels = [],
             iterator = 8;
@@ -102,6 +108,10 @@ var CASchedule = React.createClass({
         return hourLabels;
     },
 
+    /**
+     * Generate seven labels for all of the days.
+     * @return {object} Generated React markup for the day labels.
+     */
     renderDayLabels: function() {
         var dayLabels = [],
             days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -113,6 +123,10 @@ var CASchedule = React.createClass({
         return dayLabels;
     },
 
+    /**
+     * Generate markup for all of the stripes of the schedule.
+     * @return {object} Generated React markup for the schedule rows.
+     */
     renderScheduleRows: function() {
         var scheduleRows = [];
 
@@ -143,9 +157,12 @@ var CASchedule = React.createClass({
                     scheduleEndTime={this.endTime}
                     course={course}
                     dayMap={this.dayMap}
-                    dayOffsetMap={this.dayOffsetMap} />
+                    dayOffsetMap={this.dayOffsetMap}
+                    onDragEnd={this._onSectionDragEnd} />
             );
         }, this);
+
+        var drag = this.state.isDragging ? 'yes' : '';
 
         return (
             <div className="ca-schedule">
@@ -162,6 +179,7 @@ var CASchedule = React.createClass({
                         </div>
                         <div className="courses-area" ref="coursesArea">
                             {courseItems}
+                            {drag}
                         </div>
                     </div>
                 </div>
@@ -169,8 +187,37 @@ var CASchedule = React.createClass({
         );
     },
 
-    _onSectionDrag: function() {
+    _onSectionDragStart: function() {
+        // this.s
+    },
 
+    /**
+     * Event handler for when a child item's drag end handler is trigger.
+     * @param {object} e Event object.
+     * @param {object} ui UI information about the draggable.
+     * @param {object} draggable The ref for the draggable element.
+     */
+    _onSectionDragEnd: function(e, ui, draggable) {
+        var draggableNode = React.findDOMNode(draggable);
+
+        // Reset the position to be prepared for velocity animation.
+        $(draggableNode).css({
+            transform: 'translate(0, 0)',
+        }).velocity({
+            translateX: ui.position.left,
+            translateY: ui.position.top,
+        }, 0);
+
+        $(draggableNode).velocity({
+            translateX: 0,
+            translateY: 0,
+        }, {
+            duration: 560,
+            easing: [108, 16],
+            complete: function() {
+                draggable.resetState();
+            }
+        });
     }
 });
 

@@ -9,8 +9,6 @@
  *
  * CAScheduleItem represents a rendering of a course section.
  * are located in _CAScheduleItem.scss.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),
@@ -27,7 +25,9 @@ var CAScheduleItem = React.createClass({
         scheduleStartTime: React.PropTypes.string.isRequired,
         scheduleEndTime: React.PropTypes.string.isRequired,
         dayMap: React.PropTypes.object.isRequired,
-        dayOffsetMap: React.PropTypes.object.isRequired
+        dayOffsetMap: React.PropTypes.object.isRequired,
+        onDragStart: React.PropTypes.func.isRequired,
+        onDragEnd: React.PropTypes.func.isRequired
     },
 
     /**
@@ -202,7 +202,11 @@ var CAScheduleItem = React.createClass({
 
             sectionsArray.push(
                 <Draggable key={section.section}
-                    bounds={this.boundsForSection(section)}>
+                    ref={section.section}
+                    zIndex={100}
+                    bounds={this.boundsForSection(section)}
+                    onStart={this._onStart.bind(null, section.section)}
+                    onStop={this._onStop.bind(null, section.section)}>
 
                     <div className="schedule-section">
                         {instances}
@@ -216,6 +220,23 @@ var CAScheduleItem = React.createClass({
                 {sectionsArray}
             </div>
         );
+    },
+
+    /**
+     * Event handler for drag start.
+     */
+    _onStart: function() {
+        this.props.onDragStart();
+    },
+
+    /**
+     * Event handler for drag stop.
+     * @param {string} refName Ref of the draggable element of the event.
+     * @param {object} e Event object.
+     * @param {object} ui UI information about the draggable.
+     */
+    _onStop: function(refName, e, ui) {
+        this.props.onDragEnd(e, ui, this.refs[refName]);
     }
 });
 

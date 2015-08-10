@@ -8,8 +8,6 @@
  *
  *
  * CAColorPanel is the color picking panel for course items.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),

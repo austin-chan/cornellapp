@@ -9,8 +9,6 @@
  *
  * CABasket lists all the courses a user has added. Component styles are located
  * in _CABasket.scss.
- *
- * @jsx React.DOM
  */
 
 var React = require('react/addons'),
