@@ -21,6 +21,7 @@ var React = require('react/addons'),
 
 /**
  * Retrieve schedule data from ScheduleStore.
+ * @return {object} All app state data.
  */
 function getAppState() {
     return {

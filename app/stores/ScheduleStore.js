@@ -309,6 +309,7 @@ function getSelectedSectionOfType(key, sectionType) {
  */
 function exists(course) {
     return _.any(_.values(_courses), function(c) {
+        c = c.raw;
         return course.catalogNbr === c.catalogNbr &&
             course.subject === c.subject;
     });
@@ -372,16 +373,18 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     },
 
     /**
-     * Get all sections for a course of a certain ssrComponent type either
-     * limited to the selected group or not.
+     * Get section options for a course of a certain ssrComponent type. If the
+     * section is not the course's primary type, limit the sections to the
+     * currently selected group. Otherwise get options from all groups.
      * @param {string} key Key for the course to retrieve sections from.
      * @param {string} sectionType The ssrComponent type to retrieve from.
-     * @param {boolean} inGroup Limit only to the selected group.
      * @return {array} List of sections of the type.
      */
-    getSectionsOfType: function(key, sectionType, inGroup) {
-        inGroup = typeof inGroup !== 'undefined' ? inGroup : false;
-        return getSectionsOfType(key, sectionType, inGroup);
+    getSectionOptionsOfType: function(key, sectionType) {
+        var primarySectionType = getSelectedGroup(key).componentsRequired[0];
+
+        return getSectionsOfType(key, sectionType,
+            sectionType === primarySectionType);
     },
 
     /**

@@ -32,6 +32,61 @@ var CASchedule = React.createClass({
     componentWillMount: function() {
         this.hourHeight = this.props.size === 'normal' ? 75 : 120;
         this.startTime = '08:00AM';
+        this.endTime = '11:00PM';
+        this.dayOffsetMap = {}; // will be overriden in componentDidMount
+        this.dayMap = {
+                M: 'monday',
+                T: 'tuesday',
+                W: 'wednesday',
+                R: 'thursday',
+                F: 'friday',
+                S: 'saturday',
+                Su: 'sunday'
+            };
+    },
+
+    /**
+     * Calculate the offsets for each day to create boundaries when dragging.
+     */
+    componentDidMount: function() {
+        var $scheduleArea = $(React.findDOMNode(this.refs.scheduleArea)),
+            $coursesArea = $(React.findDOMNode(this.refs.coursesArea)),
+            $mockItem = $('<div></div>').addClass('ca-schedule-item'),
+            $mockWrap = $('<div></div>').addClass('schedule-instance-wrap'),
+            $mockInstance = $('<div></div>').addClass('schedule-instance');
+
+        // Add a mock instance to the schedule.
+        $coursesArea.append($mockItem.append($mockWrap.append($mockInstance)));
+
+        var dayOffsetMap = JSON.parse(JSON.stringify(this.dayMap)),
+            coursesAreaRight = $scheduleArea.offset().left +
+                $scheduleArea.outerWidth();
+
+        // Loop through each day.
+        dayOffsetMap = _.mapObject(dayOffsetMap, function(day) {
+
+            // Add day class.
+            $mockWrap.addClass(day);
+
+            var mockInstanceRight = $mockInstance.offset().left +
+                $mockInstance.outerWidth(),
+                dayOffset = {
+                    // reversed diliberately, left should be a negative value
+                    left: $scheduleArea.offset().left -
+                        $mockInstance.offset().left,
+                    right: coursesAreaRight - mockInstanceRight
+                }
+
+            // Remove the day class.
+            $mockWrap.removeClass(day);
+
+            return dayOffset;
+        });
+
+        // Remove mock item from schedule.
+        $mockItem.remove();
+
+        this.dayOffsetMap = dayOffsetMap;
     },
 
     renderHourLabels: function() {
@@ -78,11 +133,17 @@ var CASchedule = React.createClass({
 
         // Loop through courses in order.
         _.each(courses, function(course) {
+            if (!course.selection.active)
+                return;
+
             courseItems.push(
                 <CAScheduleItem key={course.selection.key}
                     hourHeight={this.hourHeight}
-                    startTime={this.startTime}
-                    course={course} />
+                    scheduleStartTime={this.startTime}
+                    scheduleEndTime={this.endTime}
+                    course={course}
+                    dayMap={this.dayMap}
+                    dayOffsetMap={this.dayOffsetMap} />
             );
         }, this);
 
@@ -95,17 +156,21 @@ var CASchedule = React.createClass({
                     <div className="day-labels">
                         {dayLabels}
                     </div>
-                    <div className="schedule-area">
+                    <div className="schedule-area" ref="scheduleArea">
                         <div className="schedule-rows">
                             {scheduleRows}
                         </div>
-                        <div className="courses-area">
+                        <div className="courses-area" ref="coursesArea">
                             {courseItems}
                         </div>
                     </div>
                 </div>
             </div>
         );
+    },
+
+    _onSectionDrag: function() {
+
     }
 });
 

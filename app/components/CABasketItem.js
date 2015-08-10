@@ -69,8 +69,8 @@ var CABasketItem = React.createClass({
         // Loop through each section component for the course.
         _.each(allSectionTypes, function(sectionType, index) {
             var options = [],
-                sectionsOfType = ScheduleStore.getSectionsOfType(
-                    course.selection.key, sectionType, index !== 0),
+                sectionsOfType = ScheduleStore.getSectionOptionsOfType(
+                    course.selection.key, sectionType),
                 selectedSectionOfType = ScheduleStore.getSelectedSectionOfType(
                     course.selection.key, sectionType),
                 selectedSectionId = selectedSectionOfType ?
