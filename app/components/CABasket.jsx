@@ -13,7 +13,7 @@
 
 var React = require('react/addons'),
     CABasketAdder = require('./CABasketAdder'),
-    CABasketItem = require('./CABasketItem'),
+    CABasketCourse = require('./CABasketCourse'),
     classNames = require('classnames'),
     _ = require('underscore');
 
@@ -31,7 +31,7 @@ var CABasket = React.createClass({
 
         _.each(courses, function(course) {
             courseItems.push(
-                <CABasketItem key={course.selection.key}
+                <CABasketCourse key={course.selection.key}
                     course={course} />
             );
         });

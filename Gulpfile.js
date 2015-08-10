@@ -12,7 +12,8 @@ var gulp = require('gulp'),
 gulp.task('react', function() {
 
     return browserify({
-        entries: ['app/main.js']
+        entries: ['app/main.jsx'],
+        extensions:  [".js", ".jsx"]
     })
     .bundle()
     .on('error', function(err){
@@ -48,9 +49,10 @@ gulp.task('sass', function () {
 gulp.task('server', function () {
     nodemon({
         script: 'server.js',
+        ext: 'js jsx html',
         ignore: ['public/**', 'app/styles/**']
     });
-})
+});
 
 gulp.task('watch', function() {
 

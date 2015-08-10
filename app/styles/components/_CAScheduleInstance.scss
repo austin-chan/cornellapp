@@ -1,34 +1,27 @@
-.ca-schedule-item {
+.ca-schedule-instance {
+    position: absolute;
+    width: percentage(1 / 7);
+    @include user-select(none);
 
-    .schedule-section {
-        position: relative;
+    $day-map: (
+        'monday': 0,
+        'tuesday': 1,
+        'wednesday': 2,
+        'thursday': 3,
+        'friday': 4,
+        'saturday': 5,
+        'sunday': 6,
+    );
+
+    @each $day, $percent in $day-map {
+        &.#{$day} {
+            left: percentage($percent / 7);
+        }
     }
 
-    .schedule-instance-wrap {
-        position: absolute;
-        width: percentage(1 / 7);
-        @include user-select(none);
-
-        $day-map: (
-            'monday': 0,
-            'tuesday': 1,
-            'wednesday': 2,
-            'thursday': 3,
-            'friday': 4,
-            'saturday': 5,
-            'sunday': 6,
-        );
-
-        @each $day, $percent in $day-map {
-            &.#{$day} {
-                left: percentage($percent / 7);
-            }
-        }
-
-        &.compact {
-            .schedule-instance hr {
-                display: none;
-            }
+    &.compact {
+        .schedule-instance hr {
+            display: none;
         }
     }
 
@@ -80,12 +73,6 @@
         &:hover {
             border: 1px solid #f8f8f8;
             // border: 1px solid #515151;
-        }
-    }
-
-    @each $color-name, $color in $ca-colors {
-        &.#{$color-name} .schedule-instance {
-            background: $color;
         }
     }
 }

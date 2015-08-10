@@ -12,7 +12,10 @@
  */
 
 var React = require('react/addons'),
-    CAScheduleItem = require('./CAScheduleItem'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    CAScheduleCourse = require('./CAScheduleCourse'),
+    CAScheduleInstance = require('./CAScheduleInstance'),
+    moment = require('moment'),
     _ = require('underscore');
 
 var CASchedule = React.createClass({
@@ -55,12 +58,13 @@ var CASchedule = React.createClass({
     componentDidMount: function() {
         var $scheduleArea = $(React.findDOMNode(this.refs.scheduleArea)),
             $coursesArea = $(React.findDOMNode(this.refs.coursesArea)),
-            $mockItem = $('<div></div>').addClass('ca-schedule-item'),
-            $mockWrap = $('<div></div>').addClass('schedule-instance-wrap'),
-            $mockInstance = $('<div></div>').addClass('schedule-instance');
+            $mockCourse = $('<div></div>').addClass('ca-schedule-course'),
+            $mockInstance = $('<div></div>').addClass('ca-schedule-instance'),
+            $mockInstanceInner = $('<div></div>').addClass('schedule-instance');
 
         // Add a mock instance to the schedule.
-        $coursesArea.append($mockItem.append($mockWrap.append($mockInstance)));
+        $coursesArea.append($mockCourse.append($mockInstance.append(
+            $mockInstanceInner)));
 
         var dayOffsetMap = JSON.parse(JSON.stringify(this.dayMap)),
             coursesAreaRight = $scheduleArea.offset().left +
@@ -69,26 +73,55 @@ var CASchedule = React.createClass({
         // Loop through each day.
         dayOffsetMap = _.mapObject(dayOffsetMap, function(day) {
             // Add day class.
-            $mockWrap.addClass(day);
+            $mockInstance.addClass(day);
 
-            var mockInstanceRight = $mockInstance.offset().left +
-                $mockInstance.outerWidth(),
+            var mockInstanceRight = $mockInstanceInner.offset().left +
+                $mockInstanceInner.outerWidth(),
                 dayOffset = {
                     // reversed diliberately, left should be a negative value
                     left: $scheduleArea.offset().left -
-                        $mockInstance.offset().left,
+                        $mockInstanceInner.offset().left,
                     right: coursesAreaRight - mockInstanceRight
-                }
+                };
 
             // Remove the day class.
-            $mockWrap.removeClass(day);
+            $mockInstance.removeClass(day);
 
             return dayOffset;
         });
 
         // Remove mock item from schedule.
-        $mockItem.remove();
+        $mockCourse.remove();
         this.dayOffsetMap = dayOffsetMap;
+    },
+
+    /**
+     * Create a moment object for a time string. The day for the moment object
+     * is set to January 1, 2000. Example: "04:30PM".
+     * @param {string} time String representation of a time of day.
+     * @return {object} Moment object representation of the time.
+     */
+    momentForTime: function(time) {
+        var splitTime = time.split(/[^0-9]/),
+            isAfterNoon = time.toUpperCase().indexOf('PM') !== -1 &&
+                time.substring(0, 2) !== '12';
+
+        return moment(new Date(2000, 0, 1,
+            parseInt(splitTime[0]) + 12 * isAfterNoon,
+            parseInt(splitTime[1])));
+    },
+
+    /**
+     * Calculate number of pixels between two times. "04:30PM" and "03:30PM"
+     * returns one unit of this.props.hourHeight.
+     * @param {string} endTime Later time.
+     * @param {string} startTime Earlier time.
+     * @return {number} Number of pixels that should be rendered between the
+     *      two times.
+     */
+    pixelsBetweenTimes: function(endTime, startTime) {
+        return this.hourHeight * this.momentForTime(endTime)
+            .diff(this.momentForTime(startTime), 'hour', true);
     },
 
     /**
@@ -138,12 +171,49 @@ var CASchedule = React.createClass({
         return scheduleRows;
     },
 
+    renderDropTargets: function() {
+        var sectionOptions = ScheduleStore.getSectionOptionsOfType(
+                this.state.dragCourse.selection.key,
+                this.state.dragSectionType),
+            instances = [];
+
+        _.each(sectionOptions, function(sectionOption) {
+            var meetings = sectionOption.meetings;
+
+            // Loop through each meeting of the section.
+            _.each(meetings, function(meeting, meetingIndex) {
+                // Filter empty strings, handles TBA cases.
+                var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
+                    _.identity);
+
+                // Loop through each letter in the pattern of the meeting.
+                _.each(days, function(day) {
+                    instances.push(
+                        <CAScheduleInstance
+                            key={sectionOption.section + meetingIndex + day}
+                            course={this.state.dragCourse}
+                            section={sectionOption}
+                            meeting={meeting}
+                            day={this.dayMap[day]}
+                            hourHeight={this.hourHeight}
+                            scheduleStartTime={this.startTime}
+                            pixelsBetweenTimes={this.pixelsBetweenTimes}
+                            />
+                    );
+                }, this);
+            }, this);
+        }, this);
+
+        return instances;
+    },
+
     render: function() {
         var hourLabels = this.renderHourLabels(),
             dayLabels = this.renderDayLabels(),
             scheduleRows = this.renderScheduleRows(),
             courses = this.props.courses,
-            courseItems = [];
+            courseItems = [],
+            dropTargets;
 
         // Loop through courses in order.
         _.each(courses, function(course) {
@@ -151,18 +221,23 @@ var CASchedule = React.createClass({
                 return;
 
             courseItems.push(
-                <CAScheduleItem key={course.selection.key}
+                <CAScheduleCourse key={course.selection.key}
                     hourHeight={this.hourHeight}
                     scheduleStartTime={this.startTime}
                     scheduleEndTime={this.endTime}
+                    pixelsBetweenTimes={this.pixelsBetweenTimes}
                     course={course}
                     dayMap={this.dayMap}
                     dayOffsetMap={this.dayOffsetMap}
+                    onDragStart={this._onSectionDragStart}
                     onDragEnd={this._onSectionDragEnd} />
             );
         }, this);
 
-        var drag = this.state.isDragging ? 'yes' : '';
+        if (this.state.isDragging)
+            dropTargets = this.renderDropTargets();
+
+        console.log(dropTargets);
 
         return (
             <div className="ca-schedule">
@@ -179,7 +254,7 @@ var CASchedule = React.createClass({
                         </div>
                         <div className="courses-area" ref="coursesArea">
                             {courseItems}
-                            {drag}
+                            {dropTargets}
                         </div>
                     </div>
                 </div>
@@ -187,36 +262,49 @@ var CASchedule = React.createClass({
         );
     },
 
-    _onSectionDragStart: function() {
-        // this.s
+    /**
+     * Event handler for when an item's instance's drag start handler is
+     * triggered.
+     * @param {object} course Course object being dragged.
+     * @param {string} sectionType Type of section being dragged.
+     */
+    _onSectionDragStart: function(course, sectionType) {
+        this.setState({
+            isDragging: true,
+            dragCourse: course,
+            dragSectionType: sectionType
+        });
     },
 
     /**
-     * Event handler for when a child item's drag end handler is trigger.
+     * Event handler for when a item's instance's drag end handler is triggered.
      * @param {object} e Event object.
      * @param {object} ui UI information about the draggable.
      * @param {object} draggable The ref for the draggable element.
      */
     _onSectionDragEnd: function(e, ui, draggable) {
+        this.setState({
+            isDragging: false
+        });
+
         var draggableNode = React.findDOMNode(draggable);
 
         // Reset the position to be prepared for velocity animation.
         $(draggableNode).css({
             transform: 'translate(0, 0)',
-        }).velocity({
-            translateX: ui.position.left,
-            translateY: ui.position.top,
-        }, 0);
+        });
+
+        draggable.resetState();
 
         $(draggableNode).velocity({
+            translateX: ui.position.left,
+            translateY: ui.position.top,
+        }, 0).velocity({
             translateX: 0,
             translateY: 0,
         }, {
             duration: 560,
-            easing: [108, 16],
-            complete: function() {
-                draggable.resetState();
-            }
+            easing: [108, 16]
         });
     }
 });

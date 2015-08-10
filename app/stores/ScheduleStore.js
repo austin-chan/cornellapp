@@ -19,7 +19,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var CHANGE_EVENT = 'schedule_change';
 
 var _courses = {},
-    _semester = 2608;
+    _semester = 2608,
     _colors = ['blue', 'purple', 'light-blue', 'red', 'green', 'yellow',
         'pink'];
 
@@ -35,7 +35,7 @@ function add(course) {
     _courses[selection.key] = {
         raw: course,
         selection: selection
-    }
+    };
 
     console.log(_courses[selection.key]);
 }

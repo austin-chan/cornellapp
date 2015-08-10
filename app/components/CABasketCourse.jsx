@@ -7,7 +7,7 @@
  * tree.
  *
  *
- * CABasketItem is the component that displays course information for each
+ * CABasketCourse is the component that displays course information for each
  * course in the schedule basket.
  */
 
@@ -21,7 +21,7 @@ var React = require('react/addons'),
     pluralize = require('pluralize'),
     _ = require('underscore');
 
-var CABasketItem = React.createClass({
+var CABasketCourse = React.createClass({
     propTypes: {
         course: React.PropTypes.object.isRequired
     },
@@ -37,26 +37,27 @@ var CABasketItem = React.createClass({
             group = ScheduleStore.getSelectedGroup(course.selection.key),
             active = course.selection.active,
             rootClass = classNames('ca-basket-item', course.selection.color,
-                { inactive: !course.selection.active });
+                { inactive: !course.selection.active }),
+            credits,
 
         // Description for the course item.
-        var description = course.raw.description.length ?
-            strutil.shorten(course.raw.description, 140, 3) :
-            'No description available.';
+            description = course.raw.description.length ?
+                strutil.shorten(course.raw.description, 140, 3) :
+                'No description available.',
 
         // Header for the course item.
-        var headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
+            headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
                 ': ' + course.raw.titleLong;
+
         headerTitle = strutil.shorten(headerTitle, 36, 2);
 
         // Label to display credit count.
-        if (group.unitsMinimum == group.unitsMaximum) {
-            var credits = group.unitsMinimum + ' ' +
+        if (group.unitsMinimum == group.unitsMaximum)
+            credits = group.unitsMinimum + ' ' +
                 pluralize('credits', group.unitsMinimum);
-        } else {
-            var credits = group.unitsMinimum + '-' + group.unitsMaximum +
+        else
+            credits = group.unitsMinimum + '-' + group.unitsMaximum +
                 'credits';
-        }
 
         // Section dropdowns to change the sections.
         var sectionLabels = [],
@@ -194,4 +195,4 @@ var CABasketItem = React.createClass({
 
 });
 
-module.exports = CABasketItem;
+module.exports = CABasketCourse;

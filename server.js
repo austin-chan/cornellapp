@@ -21,20 +21,19 @@ var express = require('express'),
     bookshelf = require('bookshelf')(knex),
     models = require('./app/models')(bookshelf);
 
-
 // App configuration.
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/app/views');
 app.set('models', models);
 app.set('knex', knex);
 app.set('config', config);
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(express.static(__dirname + '/public'));
 
 
 // Include the JSX compiler.
-require("node-jsx").install({ extension: '.js' });
+require("node-jsx").install({ extension: '.jsx' });
 
 
 // Declare all site routes.

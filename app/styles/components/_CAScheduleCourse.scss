@@ -1,0 +1,12 @@
+.ca-schedule-course {
+
+    .schedule-section {
+        position: relative;
+    }
+
+    @each $color-name, $color in $ca-colors {
+        &.#{$color-name} .schedule-instance {
+            background: $color;
+        }
+    }
+}
