@@ -24,11 +24,11 @@
             border: 1px solid #C5C5C5;
             box-shadow: none;
             cursor: default;
-            @include transition(.13s all ease-in-out);
+            @include transition(.07s all ease-in-out);
 
             * {
                 color: #C3C3C3 !important;
-                @include transition(.13s all ease-in-out);
+                @include transition(.07s all ease-in-out);
             }
         }
     }

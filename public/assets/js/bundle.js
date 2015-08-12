@@ -666,9 +666,9 @@ module.exports = CAHeader;
 
 var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    ScheduleActions = require('../actions/ScheduleActions'),
     CAScheduleCourse = require('./CAScheduleCourse'),
     CAScheduleDropTargets = require('./CAScheduleDropTargets'),
-    moment = require('moment'),
     _ = require('underscore');
 
 var CASchedule = React.createClass({displayName: "CASchedule",
@@ -694,19 +694,13 @@ var CASchedule = React.createClass({displayName: "CASchedule",
         this.startTime = '08:00AM';
         this.endTime = '11:00PM';
         this.dayOffsetMap = {}; // will be overriden in componentDidMount
-        this.dayMap = {
-                M: 'monday',
-                T: 'tuesday',
-                W: 'wednesday',
-                R: 'thursday',
-                F: 'friday',
-                S: 'saturday',
-                Su: 'sunday'
-            };
+        this.dayMap = ScheduleStore.getDayMap();
     },
 
     /**
      * Calculate the offsets for each day to create boundaries when dragging.
+     * This is achieved by rendering mock elements, calculating their
+     * dimensions, and removing them really quickly.
      */
     componentDidMount: function() {
         var $scheduleArea = $(React.findDOMNode(this.refs.scheduleArea)),
@@ -719,7 +713,9 @@ var CASchedule = React.createClass({displayName: "CASchedule",
         $coursesArea.append($mockCourse.append($mockInstance.append(
             $mockInstanceInner)));
 
-        var dayOffsetMap = JSON.parse(JSON.stringify(this.dayMap)),
+        // Copy the day map to later replace values with dimension values.
+        var dayOffsetMap = JSON.parse(JSON.stringify(
+                ScheduleStore.getDayMap())),
             coursesAreaRight = $scheduleArea.offset().left +
                 $scheduleArea.outerWidth();
 
@@ -816,19 +812,17 @@ var CASchedule = React.createClass({displayName: "CASchedule",
             courseItems = [],
             dropTargets;
 
-        // Loop through courses in order.
-        _.each(courses, function(course) {
+        // Loop through courses in reverse order.
+        _.each(courses.reverse(), function(course) {
             if (!course.selection.active)
                 return;
 
             courseItems.push(
                 React.createElement(CAScheduleCourse, {key: course.selection.key, 
-                    hourHeight: this.hourHeight, 
                     scheduleStartTime: this.startTime, 
                     scheduleEndTime: this.endTime, 
                     pixelsBetweenTimes: this.pixelsBetweenTimes, 
                     course: course, 
-                    dayMap: this.dayMap, 
                     dayOffsetMap: this.dayOffsetMap, 
                     onDragStart: this._onSectionDragStart, 
                     onDragEnd: this._onSectionDragEnd})
@@ -840,10 +834,8 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                 React.createElement(CAScheduleDropTargets, {
                     course: this.state.dragCourse, 
                     sectionType: this.state.dragSectionType, 
-                    hourHeight: this.hourHeight, 
                     scheduleStartTime: this.startTime, 
-                    pixelsBetweenTimes: this.pixelsBetweenTimes, 
-                    dayMap: this.dayMap});
+                    pixelsBetweenTimes: this.pixelsBetweenTimes});
 
         return (
             React.createElement("div", {className: "ca-schedule"}, 
@@ -889,35 +881,47 @@ var CASchedule = React.createClass({displayName: "CASchedule",
      * @param {object} draggable The ref for the draggable element.
      */
     _onSectionDragEnd: function(e, ui, draggable) {
-        this.setState({
-            isDragging: false
-        });
-
-        var draggableNode = React.findDOMNode(draggable);
-
-        // Reset the position to be prepared for velocity animation.
+        // Reset the position back to identity matrix.
         $(draggableNode).css({
             transform: 'translate(0, 0)',
         });
 
+        // Necessary function call for the Draggable component API.
         draggable.resetState();
 
-        $(draggableNode).velocity({
-            translateX: ui.position.left,
-            translateY: ui.position.top,
-        }, 0).velocity({
-            translateX: 0,
-            translateY: 0,
-        }, {
-            duration: 560,
-            easing: [108, 16]
+        // If highlighting a target section.
+        var $activeTargetSection = $(e.target).closest('.drop-target-section');
+        if ($activeTargetSection.length)
+            // Trigger section change.
+            ScheduleActions.selectSection(this.state.dragCourse.selection.key,
+                '' + $activeTargetSection.data('section-id'));
+
+        // Or spring the section back to resting position.
+        else {
+            var draggableNode = React.findDOMNode(draggable);
+
+            // Animate the section back.
+            $(draggableNode).velocity({
+                translateX: ui.position.left,
+                translateY: ui.position.top,
+            }, 0).velocity({
+                translateX: 0,
+                translateY: 0,
+            }, {
+                duration: 550,
+                easing: [108, 16]
+            });
+        }
+
+        this.setState({
+            isDragging: false
         });
     }
 });
 
 module.exports = CASchedule;
 
-},{"../stores/ScheduleStore":18,"./CAScheduleCourse":9,"./CAScheduleDropTargets":10,"moment":28,"react/addons":35,"underscore":208}],9:[function(require,module,exports){
+},{"../actions/ScheduleActions":1,"../stores/ScheduleStore":18,"./CAScheduleCourse":9,"./CAScheduleDropTargets":10,"react/addons":35,"underscore":208}],9:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -941,11 +945,9 @@ var React = require('react/addons'),
 var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
     propTypes: {
         course: React.PropTypes.object.isRequired,
-        hourHeight: React.PropTypes.number.isRequired,
         scheduleStartTime: React.PropTypes.string.isRequired,
         scheduleEndTime: React.PropTypes.string.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
-        dayMap: React.PropTypes.object.isRequired,
         dayOffsetMap: React.PropTypes.object.isRequired,
         onDragStart: React.PropTypes.func.isRequired,
         onDragEnd: React.PropTypes.func.isRequired
@@ -1002,8 +1004,7 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
                     course: this.props.course, 
                     section: section, 
                     meeting: meeting, 
-                    day: this.props.dayMap[day], 
-                    hourHeight: this.props.hourHeight, 
+                    day: ScheduleStore.getDayMap()[day], 
                     scheduleStartTime: this.props.scheduleStartTime, 
                     pixelsBetweenTimes: this.props.pixelsBetweenTimes})
             );
@@ -1015,12 +1016,18 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
     render: function() {
         var course = this.props.course,
             sections = ScheduleStore.getSelectedSections(course.selection.key),
-            rootClass = classNames('ca-schedule-course', course.selection.color),
+            rootClass = classNames('ca-schedule-course',
+                course.selection.color),
             sectionsArray = [];
 
         // Loop through each section of the course.
         _.each(sections, function(section) {
-            var instances = this.renderSection(section);
+            var instances = this.renderSection(section),
+                hasOptions = ScheduleStore.getSectionOptionsOfType(
+                    course.selection.key, section.ssrComponent).length > 1,
+                sectionClass = classNames('schedule-section', {
+                    'no-options': !hasOptions
+                });
 
             sectionsArray.push(
                 React.createElement(Draggable, {key: section.section, 
@@ -1031,7 +1038,7 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
                         section.ssrComponent), 
                     onStop: this._onStop.bind(null, section.section)}, 
 
-                    React.createElement("div", {className: "schedule-section"}, 
+                    React.createElement("div", {className: sectionClass}, 
                         instances
                     )
                 )
@@ -1092,15 +1099,21 @@ var CAScheduleDropTargets = React.createClass({displayName: "CAScheduleDropTarge
         return {
             course: React.PropTypes.object.isRequired,
             sectionType: React.PropTypes.string.isRequired,
-            hourHeight: React.PropTypes.number.isRequired,
             scheduleStartTime: React.PropTypes.string.isRequired,
-            pixelsBetweenTimes: React.PropTypes.func.isRequired,
-            dayMap: React.PropTypes.object.isRequired
+            pixelsBetweenTimes: React.PropTypes.func.isRequired
         };
     },
 
-    conflictsWithSections: function() {
-
+    /**
+     * Determine if the section conflicts with any of the sections in
+     * sectionList.
+     * @param {object} section Section object to check with.
+     * @param {array} sectionList Array of section objects to check against.
+     * @return {boolean} False if there are no conflicts, true if there are
+     *      conflicts.
+     */
+    conflictsWithSections: function(section, sectionList) {
+        return ScheduleStore.conflictInSections(sectionList.concat(section));
     },
 
     render: function() {
@@ -1113,9 +1126,16 @@ var CAScheduleDropTargets = React.createClass({displayName: "CAScheduleDropTarge
             addedSections = [],
             sections = [];
 
+        addedSections.push(ScheduleStore.getSelectedSectionOfType(
+            course.selection.key, this.props.sectionType));
+
         // Loop through all section choices.
         _.each(sectionOptions, function(sectionOption) {
             var instances = [];
+
+            // If sectionOption doesn't fit with the already added sections.
+            if (this.conflictsWithSections(sectionOption, addedSections))
+                return;
 
             // Loop through all instances of the section.
             ScheduleStore.iterateInstancesInSection(sectionOption,
@@ -1127,8 +1147,7 @@ var CAScheduleDropTargets = React.createClass({displayName: "CAScheduleDropTarge
                             course: course, 
                             section: sectionOption, 
                             meeting: meeting, 
-                            day: this.props.dayMap[day], 
-                            hourHeight: this.props.hourHeight, 
+                            day: ScheduleStore.getDayMap()[day], 
                             scheduleStartTime: this.props.scheduleStartTime, 
                             pixelsBetweenTimes: this.props.pixelsBetweenTimes}
                             )
@@ -1138,6 +1157,7 @@ var CAScheduleDropTargets = React.createClass({displayName: "CAScheduleDropTarge
             sections.push(
                 React.createElement("div", {key: sectionOption.section, 
                     ref: sectionOption.section, 
+                    "data-section-id": sectionOption.section, 
                     className: "drop-target-section", 
                     onMouseEnter: this._onSectionMouseEnter
                         .bind(null, sectionOption.section), 
@@ -1193,6 +1213,7 @@ module.exports = CAScheduleDropTargets;
  */
 
 var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
     classNames = require('classnames');
 
 var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
@@ -1202,7 +1223,6 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
             section: React.PropTypes.object.isRequired,
             meeting: React.PropTypes.object.isRequired,
             day: React.PropTypes.string.isRequired,
-            hourHeight: React.PropTypes.number.isRequired,
             scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
         };
@@ -1230,7 +1250,9 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
             topAmount = this.props.pixelsBetweenTimes(meeting.timeStart,
                 this.props.scheduleStartTime),
             rootClass = classNames('ca-schedule-instance', this.props.day, {
-                compact: heightAmount < this.props.hourHeight
+                // If instance is less than 1 hour long.
+                compact: ScheduleStore.timeDifference(meeting.timeEnd,
+                    meeting.timeStart) < 1
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',
@@ -1265,7 +1287,7 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
 
 module.exports = CAScheduleInstance;
 
-},{"classnames":22,"react/addons":35}],12:[function(require,module,exports){
+},{"../stores/ScheduleStore":18,"classnames":22,"react/addons":35}],12:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1427,6 +1449,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     ScheduleConstants = require('../constants/ScheduleConstants'),
     assign = require('object-assign'),
+    moment = require('moment'),
     _ = require('underscore');
 
 var CHANGE_EVENT = 'schedule_change';
@@ -1434,7 +1457,16 @@ var CHANGE_EVENT = 'schedule_change';
 var _courses = {},
     _semester = 2608,
     _colors = ['blue', 'purple', 'light-blue', 'red', 'green', 'yellow',
-        'pink'];
+        'pink'],
+    _dayMap = {
+        M: 'monday',
+        T: 'tuesday',
+        W: 'wednesday',
+        R: 'thursday',
+        F: 'friday',
+        S: 'saturday',
+        Su: 'sunday'
+    };
 
 /**
  * Add a course to the schedule.
@@ -1564,32 +1596,47 @@ function defaultSelection(course) {
  */
 function defaultSectionIdSelections(group) {
     var sections = [],
+        allSelectedSections = getAllSelectedSections(),
         components = JSON.parse(group.componentsRequired).concat(
             JSON.parse(group.componentsOptional));
 
-    // Loop through each required component.
+    // Loop through each required and optional component.
     for (var c = 0; c < components.length; c++) {
         var component = components[c];
-        sections.push(defaultSectionInGroupOfType(group, component).section);
+
+        sections.push(defaultSectionInGroupOfType(group, component,
+            allSelectedSections.concat(sections)));
     }
 
-    return sections;
+    return _.map(sections, function(s){
+        return s.section;
+    });
 }
 
 /**
  * Generates the default section choice for a section type in a group.
+ * Attempting to avoid section selection schedule conflicts as much as possible.
  * @param {object} group Group object to retrieve section from.
  * @param {string} sectionType Type of section to choose a default value for.
+ * @param {array} addedSections Existing already added sections to attempt to
+ *      avoid conflicting with.
  * @return {object} Chosen default section object.
  */
-function defaultSectionInGroupOfType(group, sectionType) {
-    // Loop through available sections.
-    for (var s = 0; s < group.sections.length; s++) {
-        var section = group.sections[s];
-        if (section.ssrComponent === sectionType) {
+function defaultSectionInGroupOfType(group, sectionType, addedSections) {
+    var sections = getSectionsOfType(null, sectionType, group);
+
+    // Loop through all section options and pick the first one that doesn't
+    // conflict with the schedule.
+    for (var s = 0; s < sections.length; s++) {
+        var section = sections[s];
+
+        if (!conflictInSections(addedSections.concat(section))) {
             return section;
         }
     }
+
+    // None of the sections don't conflict. Just choose the first option.
+    return sections[0];
 }
 
 /**
@@ -1671,18 +1718,31 @@ function getSelectedSections(key) {
 }
 
 /**
+ * Get all selected sections contained in the schedule.
+ * @return {array} List of all selected section objects.
+ */
+function getAllSelectedSections() {
+    // Map each course with each of its selected section objects.
+    var sectionsMap = _.mapObject(_courses, function(course, key) {
+        return getSelectedSections(key);
+    });
+
+    return _.flatten(_.values(sectionsMap));
+}
+
+/**
  * Get all sections for a course of a certain ssrComponent type either
  * limited to the selected group or not.
  * @param {string} key Key for the course to retrieve sections from.
  * @param {string} sectionType The ssrComponent type to retrieve from.
- * @param {boolean} inGroup Limit only to the selected group.
+ * @param {boolean|object} inGroup Limit only to the supplied group if a group
+ *      object is supplied. Otherwise retrieve sections from all groups in the
+ *      course.
  * @return {array} List of sections of the type.
  */
 function getSectionsOfType(key, sectionType, inGroup) {
-    var course = _courses[key],
-        sections = [];
-
-    groups = inGroup ? [getSelectedGroup(key)] : course.raw.groups;
+    var sections = [],
+        groups = inGroup ? [inGroup] : _courses[key].raw.groups;
 
     // Loop through each group.
     _.each(groups, function(group) {
@@ -1741,19 +1801,18 @@ function momentForTime(time) {
 }
 
 /**
- * Calculate the number of unit of time measurements between two times. with
+ * Calculate the number of unit of time measurements between two times with
  * float precision.
  * @param {string} bTime Time string minuend.
  * @param {string} aTime Time string subtrahend.
  * @param {string} unit Unit of measurment to measure the difference in.
- *      Defaults to 'hour'.
+ *      Defaults to 'hours'.
  * @return {number} The difference in time measured in number of unit.
  */
 function timeDifference(bTime, aTime, unit) {
-    unit = typeof unit !== 'undefined' ?  unit : 'hour';
+    unit = typeof unit !== 'undefined' ?  unit : 'hours';
 
-    return this.momentForTime(bTime).diff(this.momentForTime(aTime), unit,
-        true);
+    return momentForTime(bTime).diff(momentForTime(aTime), unit, true);
 }
 
 /**
@@ -1772,15 +1831,48 @@ function timeDifference(bTime, aTime, unit) {
  */
 function generateConflictMap(sectionList) {
     // Create an array with seven subarrays, each with 288 zeroes initialized.
-    var map = _.times(7, function() {
-        return _.times(288, function() { return 0; });
+    var midnight = "12:00AM",
+        map = _.times(7, function() {
+            return _.times(288, function() { return 0; });
+        });
+
+    // Loop through all sections in the list.
+    _.each(sectionList, function(section) {
+        iterateInstancesInSection(section,
+            function(meeting, meetingIndex, day) {
+
+            var dayIndex = _.keys(_dayMap).indexOf(day),
+                // Calculate corresponding map indices for the meeting start and
+                // end times.
+                startIndex = timeDifference(meeting.timeStart, midnight,
+                    'minutes'),
+                endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
+
+            startIndex = Math.round(startIndex / 5);
+            endIndex = Math.round(endIndex / 5);
+
+            // Loop through all 5 minute periods in between the start and end
+            // time and mark it as conflicted (1) or conflicted (2).
+            for (var i = startIndex; i < endIndex; i++) {
+                map[dayIndex][i] = Math.min(map[dayIndex][i] + 1, 2);
+            }
+
+        });
     });
 
-    _.each(sectionList, function(section) {
-        _.each(section.meetings, function(meeting) {
+    return map;
+}
 
-        }, this);
-    }, this);
+/**
+ * Determine if there are any conflicts with any of the sections in
+ * sectionList.
+ * @param {array} sectionList Array of section objects to check against
+ *      each other.
+ * @return {boolean} False if there are no conflicts, true if there are
+ *      conflicts.
+ */
+function conflictInSections(sectionList) {
+    return _.flatten(generateConflictMap(sectionList)).indexOf(2) !== -1;
 }
 
 /**
@@ -1788,6 +1880,8 @@ function generateConflictMap(sectionList) {
  * supplied.
  * @param {object} section Section object to iterate through.
  * @param {function} callback Callback function to perform on each iteration.
+ *      The callback receives three parameters: the meeting object, the meeting
+ *      index in the section, and the day string.
  */
 function iterateInstancesInSection(section, callback) {
     // Loop through each meeting of the section.
@@ -1826,6 +1920,15 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      */
     getColors: function() {
         return _colors;
+    },
+
+    /**
+     * Get the day map that represents the possible day options in the pattern
+     * attribute of all meetings options.
+     * @return {object} Day map representation of possible day options.
+     */
+    getDayMap: function() {
+        return _dayMap;
     },
 
     /**
@@ -1878,10 +1981,11 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @return {array} List of sections of the type.
      */
     getSectionOptionsOfType: function(key, sectionType) {
-        var primarySectionType = getSelectedGroup(key).componentsRequired[0];
+        var primarySectionType = getSelectedGroup(key).componentsRequired[0],
+            isPrimary = sectionType === primarySectionType;
 
         return getSectionsOfType(key, sectionType,
-            sectionType === primarySectionType);
+            isPrimary ? [getSelectedGroup(key)] : false);
     },
 
     /**
@@ -1913,16 +2017,14 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     iterateInstancesInSection: iterateInstancesInSection,
 
     /**
-     * Determine if the section conflicts with any of the sections in
+     * Determine if there are any conflicts with any of the sections in
      * sectionList.
-     * @param {object} section Section object to check with.
-     * @param {array} sectionList Array of section objects to check against.
+     * @param {array} sectionList Array of section objects to check against
+     *      each other.
      * @return {boolean} False if there are no conflicts, true if there are
      *      conflicts.
      */
-    conflictsWithSections: function(section, sectionList) {
-
-    },
+    conflictInSections: conflictInSections,
 
     /**
      * Publish a change to all listeners.
@@ -1986,7 +2088,7 @@ AppDispatcher.register(function(action) {
 
 module.exports = ScheduleStore;
 
-},{"../constants/ScheduleConstants":13,"../dispatcher/AppDispatcher":14,"events":20,"object-assign":29,"underscore":208}],19:[function(require,module,exports){
+},{"../constants/ScheduleConstants":13,"../dispatcher/AppDispatcher":14,"events":20,"moment":28,"object-assign":29,"underscore":208}],19:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.

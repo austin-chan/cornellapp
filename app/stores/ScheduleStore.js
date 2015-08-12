@@ -14,6 +14,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     ScheduleConstants = require('../constants/ScheduleConstants'),
     assign = require('object-assign'),
+    moment = require('moment'),
     _ = require('underscore');
 
 var CHANGE_EVENT = 'schedule_change';
@@ -21,7 +22,16 @@ var CHANGE_EVENT = 'schedule_change';
 var _courses = {},
     _semester = 2608,
     _colors = ['blue', 'purple', 'light-blue', 'red', 'green', 'yellow',
-        'pink'];
+        'pink'],
+    _dayMap = {
+        M: 'monday',
+        T: 'tuesday',
+        W: 'wednesday',
+        R: 'thursday',
+        F: 'friday',
+        S: 'saturday',
+        Su: 'sunday'
+    };
 
 /**
  * Add a course to the schedule.
@@ -151,32 +161,47 @@ function defaultSelection(course) {
  */
 function defaultSectionIdSelections(group) {
     var sections = [],
+        allSelectedSections = getAllSelectedSections(),
         components = JSON.parse(group.componentsRequired).concat(
             JSON.parse(group.componentsOptional));
 
-    // Loop through each required component.
+    // Loop through each required and optional component.
     for (var c = 0; c < components.length; c++) {
         var component = components[c];
-        sections.push(defaultSectionInGroupOfType(group, component).section);
+
+        sections.push(defaultSectionInGroupOfType(group, component,
+            allSelectedSections.concat(sections)));
     }
 
-    return sections;
+    return _.map(sections, function(s){
+        return s.section;
+    });
 }
 
 /**
  * Generates the default section choice for a section type in a group.
+ * Attempting to avoid section selection schedule conflicts as much as possible.
  * @param {object} group Group object to retrieve section from.
  * @param {string} sectionType Type of section to choose a default value for.
+ * @param {array} addedSections Existing already added sections to attempt to
+ *      avoid conflicting with.
  * @return {object} Chosen default section object.
  */
-function defaultSectionInGroupOfType(group, sectionType) {
-    // Loop through available sections.
-    for (var s = 0; s < group.sections.length; s++) {
-        var section = group.sections[s];
-        if (section.ssrComponent === sectionType) {
+function defaultSectionInGroupOfType(group, sectionType, addedSections) {
+    var sections = getSectionsOfType(null, sectionType, group);
+
+    // Loop through all section options and pick the first one that doesn't
+    // conflict with the schedule.
+    for (var s = 0; s < sections.length; s++) {
+        var section = sections[s];
+
+        if (!conflictInSections(addedSections.concat(section))) {
             return section;
         }
     }
+
+    // None of the sections don't conflict. Just choose the first option.
+    return sections[0];
 }
 
 /**
@@ -258,18 +283,31 @@ function getSelectedSections(key) {
 }
 
 /**
+ * Get all selected sections contained in the schedule.
+ * @return {array} List of all selected section objects.
+ */
+function getAllSelectedSections() {
+    // Map each course with each of its selected section objects.
+    var sectionsMap = _.mapObject(_courses, function(course, key) {
+        return getSelectedSections(key);
+    });
+
+    return _.flatten(_.values(sectionsMap));
+}
+
+/**
  * Get all sections for a course of a certain ssrComponent type either
  * limited to the selected group or not.
  * @param {string} key Key for the course to retrieve sections from.
  * @param {string} sectionType The ssrComponent type to retrieve from.
- * @param {boolean} inGroup Limit only to the selected group.
+ * @param {boolean|object} inGroup Limit only to the supplied group if a group
+ *      object is supplied. Otherwise retrieve sections from all groups in the
+ *      course.
  * @return {array} List of sections of the type.
  */
 function getSectionsOfType(key, sectionType, inGroup) {
-    var course = _courses[key],
-        sections = [];
-
-    groups = inGroup ? [getSelectedGroup(key)] : course.raw.groups;
+    var sections = [],
+        groups = inGroup ? [inGroup] : _courses[key].raw.groups;
 
     // Loop through each group.
     _.each(groups, function(group) {
@@ -328,19 +366,18 @@ function momentForTime(time) {
 }
 
 /**
- * Calculate the number of unit of time measurements between two times. with
+ * Calculate the number of unit of time measurements between two times with
  * float precision.
  * @param {string} bTime Time string minuend.
  * @param {string} aTime Time string subtrahend.
  * @param {string} unit Unit of measurment to measure the difference in.
- *      Defaults to 'hour'.
+ *      Defaults to 'hours'.
  * @return {number} The difference in time measured in number of unit.
  */
 function timeDifference(bTime, aTime, unit) {
-    unit = typeof unit !== 'undefined' ?  unit : 'hour';
+    unit = typeof unit !== 'undefined' ?  unit : 'hours';
 
-    return this.momentForTime(bTime).diff(this.momentForTime(aTime), unit,
-        true);
+    return momentForTime(bTime).diff(momentForTime(aTime), unit, true);
 }
 
 /**
@@ -359,15 +396,48 @@ function timeDifference(bTime, aTime, unit) {
  */
 function generateConflictMap(sectionList) {
     // Create an array with seven subarrays, each with 288 zeroes initialized.
-    var map = _.times(7, function() {
-        return _.times(288, function() { return 0; });
+    var midnight = "12:00AM",
+        map = _.times(7, function() {
+            return _.times(288, function() { return 0; });
+        });
+
+    // Loop through all sections in the list.
+    _.each(sectionList, function(section) {
+        iterateInstancesInSection(section,
+            function(meeting, meetingIndex, day) {
+
+            var dayIndex = _.keys(_dayMap).indexOf(day),
+                // Calculate corresponding map indices for the meeting start and
+                // end times.
+                startIndex = timeDifference(meeting.timeStart, midnight,
+                    'minutes'),
+                endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
+
+            startIndex = Math.round(startIndex / 5);
+            endIndex = Math.round(endIndex / 5);
+
+            // Loop through all 5 minute periods in between the start and end
+            // time and mark it as conflicted (1) or conflicted (2).
+            for (var i = startIndex; i < endIndex; i++) {
+                map[dayIndex][i] = Math.min(map[dayIndex][i] + 1, 2);
+            }
+
+        });
     });
 
-    _.each(sectionList, function(section) {
-        _.each(section.meetings, function(meeting) {
+    return map;
+}
 
-        }, this);
-    }, this);
+/**
+ * Determine if there are any conflicts with any of the sections in
+ * sectionList.
+ * @param {array} sectionList Array of section objects to check against
+ *      each other.
+ * @return {boolean} False if there are no conflicts, true if there are
+ *      conflicts.
+ */
+function conflictInSections(sectionList) {
+    return _.flatten(generateConflictMap(sectionList)).indexOf(2) !== -1;
 }
 
 /**
@@ -375,6 +445,8 @@ function generateConflictMap(sectionList) {
  * supplied.
  * @param {object} section Section object to iterate through.
  * @param {function} callback Callback function to perform on each iteration.
+ *      The callback receives three parameters: the meeting object, the meeting
+ *      index in the section, and the day string.
  */
 function iterateInstancesInSection(section, callback) {
     // Loop through each meeting of the section.
@@ -413,6 +485,15 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      */
     getColors: function() {
         return _colors;
+    },
+
+    /**
+     * Get the day map that represents the possible day options in the pattern
+     * attribute of all meetings options.
+     * @return {object} Day map representation of possible day options.
+     */
+    getDayMap: function() {
+        return _dayMap;
     },
 
     /**
@@ -465,10 +546,11 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @return {array} List of sections of the type.
      */
     getSectionOptionsOfType: function(key, sectionType) {
-        var primarySectionType = getSelectedGroup(key).componentsRequired[0];
+        var primarySectionType = getSelectedGroup(key).componentsRequired[0],
+            isPrimary = sectionType === primarySectionType;
 
         return getSectionsOfType(key, sectionType,
-            sectionType === primarySectionType);
+            isPrimary ? [getSelectedGroup(key)] : false);
     },
 
     /**
@@ -500,16 +582,14 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     iterateInstancesInSection: iterateInstancesInSection,
 
     /**
-     * Determine if the section conflicts with any of the sections in
+     * Determine if there are any conflicts with any of the sections in
      * sectionList.
-     * @param {object} section Section object to check with.
-     * @param {array} sectionList Array of section objects to check against.
+     * @param {array} sectionList Array of section objects to check against
+     *      each other.
      * @return {boolean} False if there are no conflicts, true if there are
      *      conflicts.
      */
-    conflictsWithSections: function(section, sectionList) {
-
-    },
+    conflictInSections: conflictInSections,
 
     /**
      * Publish a change to all listeners.

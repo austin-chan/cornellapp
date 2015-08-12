@@ -13,9 +13,9 @@
 
 var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    ScheduleActions = require('../actions/ScheduleActions'),
     CAScheduleCourse = require('./CAScheduleCourse'),
     CAScheduleDropTargets = require('./CAScheduleDropTargets'),
-    moment = require('moment'),
     _ = require('underscore');
 
 var CASchedule = React.createClass({
@@ -41,19 +41,13 @@ var CASchedule = React.createClass({
         this.startTime = '08:00AM';
         this.endTime = '11:00PM';
         this.dayOffsetMap = {}; // will be overriden in componentDidMount
-        this.dayMap = {
-                M: 'monday',
-                T: 'tuesday',
-                W: 'wednesday',
-                R: 'thursday',
-                F: 'friday',
-                S: 'saturday',
-                Su: 'sunday'
-            };
+        this.dayMap = ScheduleStore.getDayMap();
     },
 
     /**
      * Calculate the offsets for each day to create boundaries when dragging.
+     * This is achieved by rendering mock elements, calculating their
+     * dimensions, and removing them really quickly.
      */
     componentDidMount: function() {
         var $scheduleArea = $(React.findDOMNode(this.refs.scheduleArea)),
@@ -66,7 +60,9 @@ var CASchedule = React.createClass({
         $coursesArea.append($mockCourse.append($mockInstance.append(
             $mockInstanceInner)));
 
-        var dayOffsetMap = JSON.parse(JSON.stringify(this.dayMap)),
+        // Copy the day map to later replace values with dimension values.
+        var dayOffsetMap = JSON.parse(JSON.stringify(
+                ScheduleStore.getDayMap())),
             coursesAreaRight = $scheduleArea.offset().left +
                 $scheduleArea.outerWidth();
 
@@ -163,19 +159,17 @@ var CASchedule = React.createClass({
             courseItems = [],
             dropTargets;
 
-        // Loop through courses in order.
-        _.each(courses, function(course) {
+        // Loop through courses in reverse order.
+        _.each(courses.reverse(), function(course) {
             if (!course.selection.active)
                 return;
 
             courseItems.push(
                 <CAScheduleCourse key={course.selection.key}
-                    hourHeight={this.hourHeight}
                     scheduleStartTime={this.startTime}
                     scheduleEndTime={this.endTime}
                     pixelsBetweenTimes={this.pixelsBetweenTimes}
                     course={course}
-                    dayMap={this.dayMap}
                     dayOffsetMap={this.dayOffsetMap}
                     onDragStart={this._onSectionDragStart}
                     onDragEnd={this._onSectionDragEnd} />
@@ -187,10 +181,8 @@ var CASchedule = React.createClass({
                 <CAScheduleDropTargets
                     course={this.state.dragCourse}
                     sectionType={this.state.dragSectionType}
-                    hourHeight={this.hourHeight}
                     scheduleStartTime={this.startTime}
-                    pixelsBetweenTimes={this.pixelsBetweenTimes}
-                    dayMap={this.dayMap} />;
+                    pixelsBetweenTimes={this.pixelsBetweenTimes} />;
 
         return (
             <div className="ca-schedule">
@@ -236,28 +228,40 @@ var CASchedule = React.createClass({
      * @param {object} draggable The ref for the draggable element.
      */
     _onSectionDragEnd: function(e, ui, draggable) {
-        this.setState({
-            isDragging: false
-        });
-
-        var draggableNode = React.findDOMNode(draggable);
-
-        // Reset the position to be prepared for velocity animation.
+        // Reset the position back to identity matrix.
         $(draggableNode).css({
             transform: 'translate(0, 0)',
         });
 
+        // Necessary function call for the Draggable component API.
         draggable.resetState();
 
-        $(draggableNode).velocity({
-            translateX: ui.position.left,
-            translateY: ui.position.top,
-        }, 0).velocity({
-            translateX: 0,
-            translateY: 0,
-        }, {
-            duration: 560,
-            easing: [108, 16]
+        // If highlighting a target section.
+        var $activeTargetSection = $(e.target).closest('.drop-target-section');
+        if ($activeTargetSection.length)
+            // Trigger section change.
+            ScheduleActions.selectSection(this.state.dragCourse.selection.key,
+                '' + $activeTargetSection.data('section-id'));
+
+        // Or spring the section back to resting position.
+        else {
+            var draggableNode = React.findDOMNode(draggable);
+
+            // Animate the section back.
+            $(draggableNode).velocity({
+                translateX: ui.position.left,
+                translateY: ui.position.top,
+            }, 0).velocity({
+                translateX: 0,
+                translateY: 0,
+            }, {
+                duration: 550,
+                easing: [108, 16]
+            });
+        }
+
+        this.setState({
+            isDragging: false
         });
     }
 });

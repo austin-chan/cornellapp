@@ -3,7 +3,7 @@
 exports.up = function(knex, Promise) {
 	return Promise.all([
 		knex.schema.createTable('users', function(table) {
-			table.increments();
+			table.increments().unsigned();
 			table.string('netid', 16);
 			table.string('name');
 		}),
@@ -14,7 +14,7 @@ exports.up = function(knex, Promise) {
 			table.integer('strm').notNullable();
 		}),
 		knex.schema.createTable('courses', function(table) {
-			table.increments();
+			table.increments().unsigned();
 			table.integer('crseId').unsigned().notNullable();
 			table.integer('crseOfferNbr').unsigned().notNullable();
 			table.integer('strm').unsigned().notNullable();
@@ -40,7 +40,7 @@ exports.up = function(knex, Promise) {
 			table.string('catalogWhenOffered').notNullable();
 		}),
 		knex.schema.createTable('groups', function(table) {
-			table.increments();
+			table.increments().unsigned();
 			table.integer('courseId').unsigned().notNullable();
 			table.string('componentsOptional', 2048).notNullable();
 			table.string('componentsRequired', 2048).notNullable();
@@ -78,7 +78,7 @@ exports.up = function(knex, Promise) {
 			table.string('topicDescription').notNullable();
 		}),
 		knex.schema.createTable('meetings', function(table) {
-			table.increments();
+			table.increments().unsigned();
 			table.integer('sectionId').unsigned().notNullable();
 			table.string('bldgDescr').notNullable();
 			table.integer('classMtgNbr').notNullable();
@@ -96,7 +96,7 @@ exports.up = function(knex, Promise) {
 			table.string('professorLabel');
 		}),
 		knex.schema.createTable('professors', function(table) {
-			table.string('label').primary();
+			table.string('label').primary().notNullable();
 			table.string('netid').notNullable();
 			table.string('firstName').notNullable();
 			table.string('middleName').notNullable();

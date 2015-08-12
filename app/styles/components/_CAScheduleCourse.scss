@@ -3,6 +3,17 @@
     .schedule-section {
         position: relative;
 
+        &.no-options {
+
+            .schedule-instance {
+                cursor: default !important;
+
+                &:hover {
+                    border: none !important;
+                }
+            }
+        }
+
         &:active {
             pointer-events: none;
         }

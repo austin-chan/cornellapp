@@ -13,6 +13,7 @@
  */
 
 var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
     classNames = require('classnames');
 
 var CAScheduleInstance = React.createClass({
@@ -22,7 +23,6 @@ var CAScheduleInstance = React.createClass({
             section: React.PropTypes.object.isRequired,
             meeting: React.PropTypes.object.isRequired,
             day: React.PropTypes.string.isRequired,
-            hourHeight: React.PropTypes.number.isRequired,
             scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
         };
@@ -50,7 +50,9 @@ var CAScheduleInstance = React.createClass({
             topAmount = this.props.pixelsBetweenTimes(meeting.timeStart,
                 this.props.scheduleStartTime),
             rootClass = classNames('ca-schedule-instance', this.props.day, {
-                compact: heightAmount < this.props.hourHeight
+                // If instance is less than 1 hour long.
+                compact: ScheduleStore.timeDifference(meeting.timeEnd,
+                    meeting.timeStart) < 1
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',

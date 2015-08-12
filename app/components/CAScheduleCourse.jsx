@@ -21,11 +21,9 @@ var React = require('react/addons'),
 var CAScheduleCourse = React.createClass({
     propTypes: {
         course: React.PropTypes.object.isRequired,
-        hourHeight: React.PropTypes.number.isRequired,
         scheduleStartTime: React.PropTypes.string.isRequired,
         scheduleEndTime: React.PropTypes.string.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
-        dayMap: React.PropTypes.object.isRequired,
         dayOffsetMap: React.PropTypes.object.isRequired,
         onDragStart: React.PropTypes.func.isRequired,
         onDragEnd: React.PropTypes.func.isRequired
@@ -82,8 +80,7 @@ var CAScheduleCourse = React.createClass({
                     course={this.props.course}
                     section={section}
                     meeting={meeting}
-                    day={this.props.dayMap[day]}
-                    hourHeight={this.props.hourHeight}
+                    day={ScheduleStore.getDayMap()[day]}
                     scheduleStartTime={this.props.scheduleStartTime}
                     pixelsBetweenTimes={this.props.pixelsBetweenTimes} />
             );
@@ -95,12 +92,18 @@ var CAScheduleCourse = React.createClass({
     render: function() {
         var course = this.props.course,
             sections = ScheduleStore.getSelectedSections(course.selection.key),
-            rootClass = classNames('ca-schedule-course', course.selection.color),
+            rootClass = classNames('ca-schedule-course',
+                course.selection.color),
             sectionsArray = [];
 
         // Loop through each section of the course.
         _.each(sections, function(section) {
-            var instances = this.renderSection(section);
+            var instances = this.renderSection(section),
+                hasOptions = ScheduleStore.getSectionOptionsOfType(
+                    course.selection.key, section.ssrComponent).length > 1,
+                sectionClass = classNames('schedule-section', {
+                    'no-options': !hasOptions
+                });
 
             sectionsArray.push(
                 <Draggable key={section.section}
@@ -111,7 +114,7 @@ var CAScheduleCourse = React.createClass({
                         section.ssrComponent)}
                     onStop={this._onStop.bind(null, section.section)}>
 
-                    <div className="schedule-section">
+                    <div className={sectionClass}>
                         {instances}
                     </div>
                 </Draggable>
