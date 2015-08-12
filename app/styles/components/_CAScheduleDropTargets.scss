@@ -1,0 +1,35 @@
+.ca-schedule-drop-targets {
+
+    @each $color-name, $color in $ca-colors {
+        &.#{$color-name} .drop-target-section.hover .schedule-instance {
+            background: lighten($color, 8) !important;
+        }
+    }
+
+    .drop-target-section.hover {
+
+        .schedule-instance {
+            border: none !important;
+
+            * {
+                color: white !important;
+            }
+        }
+    }
+
+    .ca-schedule-instance {
+
+        .schedule-instance {
+            background: #FAFAFA;
+            border: 1px solid #C5C5C5;
+            box-shadow: none;
+            cursor: default;
+            @include transition(.13s all ease-in-out);
+
+            * {
+                color: #C3C3C3 !important;
+                @include transition(.13s all ease-in-out);
+            }
+        }
+    }
+}

@@ -2,6 +2,10 @@
 
     .schedule-section {
         position: relative;
+
+        &:active {
+            pointer-events: none;
+        }
     }
 
     @each $color-name, $color in $ca-colors {

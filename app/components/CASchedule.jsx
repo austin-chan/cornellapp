@@ -14,7 +14,7 @@
 var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
     CAScheduleCourse = require('./CAScheduleCourse'),
-    CAScheduleInstance = require('./CAScheduleInstance'),
+    CAScheduleDropTargets = require('./CAScheduleDropTargets'),
     moment = require('moment'),
     _ = require('underscore');
 
@@ -96,22 +96,6 @@ var CASchedule = React.createClass({
     },
 
     /**
-     * Create a moment object for a time string. The day for the moment object
-     * is set to January 1, 2000. Example: "04:30PM".
-     * @param {string} time String representation of a time of day.
-     * @return {object} Moment object representation of the time.
-     */
-    momentForTime: function(time) {
-        var splitTime = time.split(/[^0-9]/),
-            isAfterNoon = time.toUpperCase().indexOf('PM') !== -1 &&
-                time.substring(0, 2) !== '12';
-
-        return moment(new Date(2000, 0, 1,
-            parseInt(splitTime[0]) + 12 * isAfterNoon,
-            parseInt(splitTime[1])));
-    },
-
-    /**
      * Calculate number of pixels between two times. "04:30PM" and "03:30PM"
      * returns one unit of this.props.hourHeight.
      * @param {string} endTime Later time.
@@ -120,8 +104,8 @@ var CASchedule = React.createClass({
      *      two times.
      */
     pixelsBetweenTimes: function(endTime, startTime) {
-        return this.hourHeight * this.momentForTime(endTime)
-            .diff(this.momentForTime(startTime), 'hour', true);
+        return this.hourHeight *
+            ScheduleStore.timeDifference(endTime, startTime);
     },
 
     /**
@@ -171,42 +155,6 @@ var CASchedule = React.createClass({
         return scheduleRows;
     },
 
-    renderDropTargets: function() {
-        var sectionOptions = ScheduleStore.getSectionOptionsOfType(
-                this.state.dragCourse.selection.key,
-                this.state.dragSectionType),
-            instances = [];
-
-        _.each(sectionOptions, function(sectionOption) {
-            var meetings = sectionOption.meetings;
-
-            // Loop through each meeting of the section.
-            _.each(meetings, function(meeting, meetingIndex) {
-                // Filter empty strings, handles TBA cases.
-                var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
-                    _.identity);
-
-                // Loop through each letter in the pattern of the meeting.
-                _.each(days, function(day) {
-                    instances.push(
-                        <CAScheduleInstance
-                            key={sectionOption.section + meetingIndex + day}
-                            course={this.state.dragCourse}
-                            section={sectionOption}
-                            meeting={meeting}
-                            day={this.dayMap[day]}
-                            hourHeight={this.hourHeight}
-                            scheduleStartTime={this.startTime}
-                            pixelsBetweenTimes={this.pixelsBetweenTimes}
-                            />
-                    );
-                }, this);
-            }, this);
-        }, this);
-
-        return instances;
-    },
-
     render: function() {
         var hourLabels = this.renderHourLabels(),
             dayLabels = this.renderDayLabels(),
@@ -235,9 +183,14 @@ var CASchedule = React.createClass({
         }, this);
 
         if (this.state.isDragging)
-            dropTargets = this.renderDropTargets();
-
-        console.log(dropTargets);
+            dropTargets =
+                <CAScheduleDropTargets
+                    course={this.state.dragCourse}
+                    sectionType={this.state.dragSectionType}
+                    hourHeight={this.hourHeight}
+                    scheduleStartTime={this.startTime}
+                    pixelsBetweenTimes={this.pixelsBetweenTimes}
+                    dayMap={this.dayMap} />;
 
         return (
             <div className="ca-schedule">

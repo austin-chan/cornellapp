@@ -7,8 +7,9 @@
  * tree.
  *
  *
- * CAScheduleInstance represents a rendering of a singular course meeting.
- * are located in _CAScheduleInstance.scss.
+ * CAScheduleInstance represents an instance, which is the rendering of a
+ * single course meeting. Visually, an instance is just one block on the
+ * schedule. Component styles are located in _CAScheduleInstance.scss.
  */
 
 var React = require('react/addons'),

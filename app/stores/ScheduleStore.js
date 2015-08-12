@@ -301,6 +301,96 @@ function getSelectedSectionOfType(key, sectionType) {
     return selectedSectionId ? getSection(key, selectedSectionId) : undefined;
 }
 
+/**
+ * Create a moment object for a time string. The day for the moment object
+ * is set to January 1, 2000. Example: "04:30PM".
+ * @param {string} time String representation of a time of day.
+ * @return {object} Moment object representation of the time.
+ */
+function momentForTime(time) {
+    // If doesn't have two digits before colon for some reason.
+    if (time.indexOf(':') < 2)
+        time = '0' + time;
+
+    // Convert 12 hour to 24 hour time.
+    // Taken from http://stackoverflow.com/a/17555888.
+    var hours = parseInt(time.substr(0, 2));
+    time = time.toUpperCase();
+    if(time.indexOf('AM') !== -1 && hours == 12)
+        time = time.replace('12', '0');
+    if(time.indexOf('PM') !== -1 && hours < 12)
+        time = time.replace(hours, (hours + 12));
+
+    var splitTime = time.replace(/(AM|PM)/, '').split(/[^0-9]/);
+
+    return moment(new Date(2000, 0, 1, parseInt(splitTime[0]),
+        parseInt(splitTime[1])));
+}
+
+/**
+ * Calculate the number of unit of time measurements between two times. with
+ * float precision.
+ * @param {string} bTime Time string minuend.
+ * @param {string} aTime Time string subtrahend.
+ * @param {string} unit Unit of measurment to measure the difference in.
+ *      Defaults to 'hour'.
+ * @return {number} The difference in time measured in number of unit.
+ */
+function timeDifference(bTime, aTime, unit) {
+    unit = typeof unit !== 'undefined' ?  unit : 'hour';
+
+    return this.momentForTime(bTime).diff(this.momentForTime(aTime), unit,
+        true);
+}
+
+/**
+ * Generate a map representation of the interlapping of all the meetings
+ * contained in the sections in sectionList.
+ * @param {array} sectionList Array of sections to generate the conflict map
+ *      for.
+ * @return {array} Conflict map representation of all the sections. The map
+ *      is structured as an array of 7 arrays, one for each day of the week.
+ *      Each index of the subarrays represents a 5 minute period, and the
+ *      subarrays' length is 288 representing a full 24 hours of the day. A
+ *      value of 0 in the subarray indicates that no meeting takes place during
+ *      that 5 minute period. A value of 1 indicates that one meeting takes
+ *      place, and a value of 2 indicates that there is a conflict during that
+ *      period, or at least 2 meetings overlap during that period.
+ */
+function generateConflictMap(sectionList) {
+    // Create an array with seven subarrays, each with 288 zeroes initialized.
+    var map = _.times(7, function() {
+        return _.times(288, function() { return 0; });
+    });
+
+    _.each(sectionList, function(section) {
+        _.each(section.meetings, function(meeting) {
+
+        }, this);
+    }, this);
+}
+
+/**
+ * Iterate through each instance of a section and perform a callback function
+ * supplied.
+ * @param {object} section Section object to iterate through.
+ * @param {function} callback Callback function to perform on each iteration.
+ */
+function iterateInstancesInSection(section, callback) {
+    // Loop through each meeting of the section.
+    _.each(section.meetings, function(meeting, meetingIndex) {
+
+        // Filter empty strings, handles TBA cases.
+        var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
+            _.identity);
+
+        // Loop through each letter in the pattern of the meeting.
+        _.each(days, function(day) {
+
+            callback(meeting, meetingIndex, day);
+        });
+    });
+}
 
 /**
  * Determines if course already has been added to the schedule.
@@ -349,9 +439,7 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @param {string} key Key for the course to retrieve group for.
      * @return {object} Selected group of the course.
      */
-    getSelectedGroup: function(key) {
-        return getSelectedGroup(key);
-    },
+    getSelectedGroup: getSelectedGroup,
 
     /**
      * Get a particular section for a group.
@@ -359,18 +447,14 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @param {string} sectionId Section ID to retrieve.
      * @return {object} Section object that was requested.
      */
-    getSection: function(key, sectionId) {
-        return getSection(key, sectionId);
-    },
+    getSection: getSection,
 
     /**
      * Get all selected sections for a course.
      * @param {string} key Key to get selected sections from.
      * @return {array} List of selected sections for the course.
      */
-    getSelectedSections: function(key) {
-        return getSelectedSections(key);
-    },
+    getSelectedSections: getSelectedSections,
 
     /**
      * Get section options for a course of a certain ssrComponent type. If the
@@ -394,8 +478,37 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @return {object} Selected section object of the type or undefined if no
      *      sections of the type are selected.
      */
-    getSelectedSectionOfType: function(key, sectionType) {
-        return getSelectedSectionOfType(key, sectionType);
+    getSelectedSectionOfType: getSelectedSectionOfType,
+
+    /**
+     * Calculate the number of unit of time measurements between two times. with
+     * float precision.
+     * @param {string} bTime Time string minuend.
+     * @param {string} aTime Time string subtrahend.
+     * @param {string} unit Unit of measurment to measure the difference in.
+     *      Defaults to 'hour'.
+     * @return {number} The difference in time measured in number of unit.
+     */
+    timeDifference: timeDifference,
+
+    /**
+     * Iterate through each instance of a section and perform a callback function
+     * supplied.
+     * @param {object} section Section object to iterate through.
+     * @param {function} callback Callback function to perform on each iteration.
+     */
+    iterateInstancesInSection: iterateInstancesInSection,
+
+    /**
+     * Determine if the section conflicts with any of the sections in
+     * sectionList.
+     * @param {object} section Section object to check with.
+     * @param {array} sectionList Array of section objects to check against.
+     * @return {boolean} False if there are no conflicts, true if there are
+     *      conflicts.
+     */
+    conflictsWithSections: function(section, sectionList) {
+
     },
 
     /**

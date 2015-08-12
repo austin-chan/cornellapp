@@ -47,14 +47,10 @@ var CAScheduleCourse = React.createClass({
                 bottom: 9999
             };
 
-        // Loop through each meeting of the section.
-        _.each(meetings, function(meeting, meetingIndex) {
-            // Filter empty strings, handles TBA cases.
-            var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
-                _.identity);
+        // Loop through all instances of the section.
+        ScheduleStore.iterateInstancesInSection(section,
+            _.bind(function(meeting, meetingIndex, day) {
 
-            // Loop through each letter in the pattern of the meeting.
-            _.each(days, function(day) {
                 var horizontalMap = this.props.dayOffsetMap[day],
                     top = this.props.pixelsBetweenTimes(
                         this.props.scheduleStartTime, meeting.timeStart),
@@ -65,9 +61,8 @@ var CAScheduleCourse = React.createClass({
                 bounds.left = Math.max(horizontalMap.left, bounds.left);
                 bounds.right = Math.min(horizontalMap.right, bounds.right);
                 bounds.bottom = Math.min(bottom, bounds.bottom);
-            }, this);
-        }, this);
-        console.log(bounds);
+        }, this));
+
         return bounds;
     },
 
@@ -76,29 +71,23 @@ var CAScheduleCourse = React.createClass({
      * @param {object} section Section object to render.
      */
     renderSection: function(section) {
-        var meetings = section.meetings,
-            instances = [];
+        var instances = [];
 
-        // Loop through each meeting of the section.
-        _.each(meetings, function(meeting, meetingIndex) {
-            // Filter empty strings, handles TBA cases.
-            var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
-                _.identity);
+        // Loop through all instances of the section.
+        ScheduleStore.iterateInstancesInSection(section,
+            _.bind(function(meeting, meetingIndex, day) {
 
-            // Loop through each letter in the pattern of the meeting.
-            _.each(days, function(day) {
-                instances.push(
-                    <CAScheduleInstance key={meetingIndex + day}
-                        course={this.props.course}
-                        section={section}
-                        meeting={meeting}
-                        day={this.props.dayMap[day]}
-                        hourHeight={this.props.hourHeight}
-                        scheduleStartTime={this.props.scheduleStartTime}
-                        pixelsBetweenTimes={this.props.pixelsBetweenTimes} />
-                );
-            }, this);
-        }, this);
+            instances.push(
+                <CAScheduleInstance key={meetingIndex + day}
+                    course={this.props.course}
+                    section={section}
+                    meeting={meeting}
+                    day={this.props.dayMap[day]}
+                    hourHeight={this.props.hourHeight}
+                    scheduleStartTime={this.props.scheduleStartTime}
+                    pixelsBetweenTimes={this.props.pixelsBetweenTimes} />
+            );
+        }, this));
 
         return instances;
     },
@@ -147,12 +136,12 @@ var CAScheduleCourse = React.createClass({
 
     /**
      * Event handler for drag stop.
-     * @param {string} refName Ref of the draggable element of the event.
+     * @param {string} ref Ref of the draggable element of the event.
      * @param {object} e Event object.
      * @param {object} ui UI information about the draggable.
      */
-    _onStop: function(refName, e, ui) {
-        this.props.onDragEnd(e, ui, this.refs[refName]);
+    _onStop: function(ref, e, ui) {
+        this.props.onDragEnd(e, ui, this.refs[ref]);
     }
 });
 
