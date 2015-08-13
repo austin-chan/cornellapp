@@ -23,7 +23,7 @@ module.exports = function(config) {
 		return _.find(config.semesters, function(semester) {
 			return semester.slug == config.semester;
 		});
-	}
+	};
 
 	return m;
-}
+};

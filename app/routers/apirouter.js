@@ -11,7 +11,7 @@
  */
 
 var strutil = require('../utils/strutil'),
-	util = require('util');
+	cornellutil = require('../utils/cornellutil');
 
 module.exports = function(app, blockValidationErrors) {
 
@@ -24,7 +24,7 @@ module.exports = function(app, blockValidationErrors) {
 		req.sanitizeQuery('query').trim();
 		req.checkQuery('strm', 'Provide a strm.').notEmpty().isInt();
 		req.checkQuery('query', 'Provide a query.').notEmpty();
-		blockValidationErrors(req);
+		blockValidationErrors(req, res);
 
 		apiutil.searchCourses(req.query, 10, function(err, courses) {
 			if (err) {
@@ -49,9 +49,7 @@ module.exports = function(app, blockValidationErrors) {
 		req.checkParams('active', 'Provide an active.').notEmpty().isBoolean();
 		req.checkParams('selectedSectionIds', 'Provide a selectedSectionIds.')
 			.notEmpty();
-		blockValidationErrors(req);
-
-		var q = req.query;
+		blockValidationErrors(req, res);
 
 		apiutil.createSelection(req.params, function(err) {
 			if (err) {
@@ -61,6 +59,19 @@ module.exports = function(app, blockValidationErrors) {
 			}
 
 			res.send('ok'); // default code 200
+		});
+	});
+
+	// Route for getting a full name for a netid
+	app.get('/api/fetch-name', function(req, res) {
+		req.checkQuery('netid', 'Provide a netid.').notEmpty();
+		blockValidationErrors(req, res);
+
+		cornellutil.fetchName(req.query.netid, function(name) {
+			if (name === null)
+				name = '';
+
+			res.send(name);
 		});
 	});
 

@@ -84,7 +84,7 @@ module.exports = function(models, knex) {
 		copyCourse.groups = enrollGroups;
 		for (var i = 0; i < copyCourse.groups.length; i++) {
 			var group = copyCourse.groups[i];
-			var sections = extractProperty(group, 'classSections')
+			var sections = extractProperty(group, 'classSections');
 			group = sanitizeGroupObject(group);
 			group.sections = sections;
 

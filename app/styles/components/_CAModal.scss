@@ -11,26 +11,24 @@
             visibility: visible;
 
             .modal-content {
-                @include transform(scale(1));
+                @include transform(scale(1) rotateX(0deg));
                 opacity: 1;
             }
         }
     }
 
-    &.transition {
-
-    }
-
     .overlay {
-        background-color: rgba(99, 99, 99, 0.2);
+        background-color: rgba(99, 99, 99, 0.38);
         position: fixed;
         visibility: hidden;
+        cursor: pointer;
         opacity: 0;
         z-index: 400;
         top: 0;
         bottom: 0;
         left: 0;
         right: 0;
+        @include transition(all .17s linear);
     }
 
     .modal {
@@ -44,6 +42,7 @@
         visibility: hidden;
         @include backface-visibility(hidden);
         @include transform(translateX(-50%) translateY(-50%));
+        @include perspective(1300px);
 
         .modal-content {
             opacity: 0;
@@ -51,8 +50,8 @@
             box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.20);
             border-radius: 6px;
             padding: 22px 28px;
-            @include transform(scale(0.7));
-            @include transition(all .3s);
+            @include transform(scale(0.78) rotateX(-50deg));
+            @include transition(all .3s $ios-easing);
 
             h3 {
                 font-weight: 500;

@@ -38,6 +38,13 @@ function signup() {
     _modalType = 'signup';
 }
 
+/**
+ * Deactivate all modals and catalog.
+ */
+function close() {
+    _active = false;
+}
+
 var ModalStore = assign({}, EventEmitter.prototype, {
     /**
      * Get the state of the modal to render.
@@ -103,6 +110,11 @@ AppDispatcher.register(function(action) {
 
         case ModalConstants.SIGNUP:
             signup();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.CLOSE:
+            close();
             ModalStore.emitChange();
             break;
 

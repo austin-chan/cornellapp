@@ -31,7 +31,7 @@ m.shorten = function(str, len, dots) {
         str = str.substring(0, len - dots) + dotStr;
 
     return str;
-}
+};
 
 /**
  * Determines if the input string only consists of numbers and letters, either
@@ -42,7 +42,7 @@ m.shorten = function(str, len, dots) {
  */
 m.isAlphanumeric = function(str) {
 	return /^[a-z0-9]+$/i.test(str) || str === '';
-}
+};
 
 /**
  * Determines if a string is empty or only contains white-space.
@@ -51,7 +51,7 @@ m.isAlphanumeric = function(str) {
  */
 m.isWhiteEmpty = function(str) {
 	return str.trim() === '';
-}
+};
 
 /**
  * Get the first alphanumeric substring from a string. This function ignores
@@ -65,7 +65,7 @@ m.isWhiteEmpty = function(str) {
 m.firstAlphabeticSubstring = function(str) {
 	var match = str.trim().match(/^[a-z]+/i);
 	return match === null ? null : match[0];
-}
+};
 
 /**
  * Get the first numeric substring from a string. This function ignores
@@ -80,6 +80,6 @@ m.firstAlphabeticSubstring = function(str) {
 m.firstNumericSubstring = function(str) {
 	var match = str.match(/[0-9]+/);
 	return match === null ? null : match[0].substring(0, 4);
-}
+};
 
 module.exports = m;

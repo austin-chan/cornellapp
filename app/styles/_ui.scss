@@ -1,3 +1,5 @@
+@import "spinner";
+
 .ca-outline-button {
     background: none;
     border: 1px solid #F2F2F2;
@@ -91,6 +93,7 @@
 }
 
 .ca-red-button {
+    position: relative;
     text-transform: uppercase;
     border: none;
     outline: none;
@@ -105,8 +108,29 @@
     font-family: 'bunt';
     @include transition(all .13s ease-in-out);
 
+    .spin-loader {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-left: -4px;
+        margin-top: -5px;
+    }
+
     &:hover {
         background: lighten(#D17E7B, 8%);
+    }
+
+    &.loading {
+        background: lighten(#D17E7B, 8%);
+
+        .label {
+            visibility: hidden;
+        }
+
+        .spin-loader {
+            display: block;
+        }
     }
 }
 

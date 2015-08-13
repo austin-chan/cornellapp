@@ -12,7 +12,8 @@
  */
 
 var React = require('react/addons'),
-    CAApp = React.createFactory(require('./components/CAApp'));
+    CAApp = React.createFactory(require('./components/CAApp')),
+    util = require('util');
 
 module.exports = function(app) {
 
@@ -42,7 +43,7 @@ module.exports = function(app) {
  * Print out any validation errors with a 400 status and cancel the request.
  * @param {object} req Request object to check validation errors for.
  */
-function blockValidationErrors(req) {
+function blockValidationErrors(req, res) {
     var errors = req.validationErrors();
     if (errors) {
         res.send(util.inspect(errors), 400);

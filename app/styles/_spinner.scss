@@ -1,0 +1,107 @@
+/**
+ * Taken from Loaders.css.
+ * https://github.com/ConnorAtherton/loaders.css
+ */
+
+$primary-color: #fff !default;
+$ball-size: 15px !default;
+$margin: 2px !default;
+$line-height: 35px !default;
+$line-width: 4px !default;
+
+@function delay($interval, $count, $index) {
+    @return ($index * $interval) - ($interval * $count);
+}
+
+@-webkit-keyframes line-spin-fade-loader {
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes line-spin-fade-loader {
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+$radius: 6px;
+
+@keyframes line-spin-fade-loader {
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@mixin line-spin-fade-loader($n:8, $start:1) {
+    @for $i from $start through $n {
+        > div:nth-child(#{$i}) {
+            $iter: 360 / $n;
+            $quarter: ($radius / 2) + ($radius / 5.5);
+
+            @if $i == 1 {
+                top: $radius;
+                left: 0;
+            } @else if $i == 2 {
+                top: $quarter;
+                left: $quarter;
+                transform: rotate(-45deg);
+            } @else if $i == 3 {
+                top: 0;
+                left: $radius;
+                transform: rotate(90deg);
+            } @else if $i == 4 {
+                top: -$quarter;
+                left: $quarter;
+                transform: rotate(45deg);
+            } @else if $i == 5 {
+                top: -$radius;
+                left: 0;
+            } @else if $i == 6 {
+                top: -$quarter;
+                left: -$quarter;
+                transform: rotate(-45deg);
+            } @else if $i == 7 {
+                top: 0;
+                left: -$radius;
+                transform: rotate(90deg);
+            } @else if $i == 8 {
+                top: $quarter;
+                left: -$quarter;
+                transform: rotate(45deg);
+            }
+
+            animation: line-spin-fade-loader 1.2s delay(0.12s, $n, $i)
+                infinite ease-in-out;
+        }
+    }
+}
+
+.spin-loader {
+    @include line-spin-fade-loader();
+    position: relative;
+    top: -10px;
+    left: -4px;
+
+    > div {
+        border-radius: 2px;
+        margin: $margin;
+        background-color: white;
+        animation-fill-mode: both;
+
+        position: absolute;
+        width: 2px;
+        height: 5px;
+    }
+}

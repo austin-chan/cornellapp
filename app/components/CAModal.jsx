@@ -13,6 +13,8 @@
 
 var React = require('react/addons'),
     CAModalLogin = require('./CAModalLogin'),
+    CAModalSignup = require('./CAModalSignup'),
+    ModalActions = require('../actions/ModalActions'),
     classNames = require('classnames');
 
 var CAModal = React.createClass({
@@ -24,9 +26,10 @@ var CAModal = React.createClass({
     },
 
     renderContent: function() {
-        if (this.props.type === 'login') {
+        if (this.props.type === 'login')
             return <CAModalLogin />;
-        }
+        if (this.props.type === 'signup')
+            return <CAModalSignup />;
     },
 
     render: function() {
@@ -34,13 +37,9 @@ var CAModal = React.createClass({
             show: this.props.active
         });
 
-        console.log(this.props.active);
-
         return (
             <div className={rootClass}>
-                <div className="overlay">
-
-                </div>
+                <div className="overlay" onClick={this._onClose}></div>
                 <div className="modal">
                     <div className="modal-content">
                         {this.renderContent()}
@@ -48,6 +47,13 @@ var CAModal = React.createClass({
                 </div>
             </div>
         );
+    },
+
+    /**
+     * Event handler for closing the modal.
+     */
+    _onClose: function() {
+        ModalActions.close();
     }
 });
 

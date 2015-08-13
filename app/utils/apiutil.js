@@ -19,7 +19,7 @@ module.exports = function(models) {
 	 * Perform a search with a semester and a query string for relevant courses
 	 * and return the courses. This function returns a maximum of course entries
 	 * specified by the limit argument.
-	 * @param {object} q Params object from the request object.
+	 * @param {object} p Params object from the request object.
 	 * @param {number} limit Maximum number of course entries to return.
 	 * @param {function} callback Callback to call when the operation is
 	 *     complete. The first argument passed to callback is an error if an
@@ -27,9 +27,9 @@ module.exports = function(models) {
 	 *     course entries that matched the search. If no matching courses are
 	 *     found, an empty array is passed as the second argument.
 	 */
-	m.searchCourses = function(q, limit, callback) {
-		var strm = q.strm,
-			query = q.query,
+	m.searchCourses = function(p, limit, callback) {
+		var strm = p.strm,
+			query = p.query,
 			firstAlphabetic = strutil.firstAlphabeticSubstring(query),
 			firstNumeric = strutil.firstNumericSubstring(query),
 			firstQuery,
@@ -194,15 +194,15 @@ module.exports = function(models) {
 
 	/**
 	 * Perform a course selection creation operation for a user.
-	 * @param {object} q Params object from the request object.
+	 * @param {object} p Params object from the request object.
 	 * @param {function} callback Callback function to be called when the
 	 * 		operation is complete. The function will be called with one
 	 *		parameter, an error, if an error occurs. Otherwise, no parameters
 	 *		will be passed.
 	 */
-	m.createSelection = function(q, callback) {
+	m.createSelection = function(p, callback) {
 		// Make sure user exists.
-		new models.user({ id: q.userId }).fetch().then(function(user) {
+		new models.user({ id: p.userId }).fetch().then(function(user) {
 			if (user === null) {
 				callback('User doesn\'t exist');
 				return;
@@ -212,7 +212,7 @@ module.exports = function(models) {
 		});
 
 		// Make sure course exists.
-		new models.course({ crseId: q.crseId, strm: q.strm }).fetch()
+		new models.course({ crseId: p.crseId, strm: p.strm }).fetch()
 			.then(function(course) {
 			if (course === null) {
 				callback('Course doesn\'t exist');
@@ -223,7 +223,7 @@ module.exports = function(models) {
 		});
 
 		// Make sure selection doesn't already exist for the course.
-		new models.selection({ crseId: q.crseId, strm: q.strm }).fetch()
+		new models.selection({ crseId: p.crseId, strm: p.strm }).fetch()
 			.then(function(selection) {
 			if ( selection !== null) {
 				callback('Course is already selected');
@@ -238,7 +238,7 @@ module.exports = function(models) {
 		function success() {
 			successCount--;
 			if (successCount === 0) {
-				new models.selection(q).save().then(function(selection) {
+				new models.selection(p).save().then(function(selection) {
 					if (selection === null) {
 						callback('something went wrong saving the selection');
 						return;
