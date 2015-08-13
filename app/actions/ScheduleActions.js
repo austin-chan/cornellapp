@@ -10,10 +10,10 @@
  * Describes all actions possible to the schedule.
  */
 
-var AppDispatcher = require('../dispatcher/AppDispatcher');
-var ScheduleConstants = require('../constants/ScheduleConstants');
+var AppDispatcher = require('../dispatcher/AppDispatcher'),
+    ScheduleConstants = require('../constants/ScheduleConstants');
 
-module.exports = {
+var ScheduleActions = {
     /**
      * Add a course to the schedule.
      * @param {object} course Course to add to the schedule.
@@ -90,4 +90,6 @@ module.exports = {
             sectionType: sectionType,
         });
     }
-}
+};
+
+module.exports = ScheduleActions;

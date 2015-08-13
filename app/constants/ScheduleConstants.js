@@ -7,7 +7,7 @@
  * tree.
  *
  *
- * Describes constants the Flux dispatcher uses.
+ * Constants for the Flux dispatcher to use during schedule actions.
  */
 
 module.exports = {

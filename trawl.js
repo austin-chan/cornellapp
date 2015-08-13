@@ -70,7 +70,7 @@ async.waterfall([
 
 	// get all subjects for semester
 	function(semesterEntry, callback) {
-		console.log('Retrieving list of available subjects')
+		console.log('Retrieving list of available subjects');
 		cornellutil.getSubjects(semester, function(subjects) {
 			if (!subjects || !subjects.length) {
 				callback(semester + ' is not an available semester.');
@@ -134,8 +134,8 @@ async.waterfall([
 
 	// analyze the courses against the course entries
 	function(courses, courseEntries, callback) {
-		console.log('Analyzing ' + courses.length + ' courses against '
-			+ courseEntries.length + ' existing database entries');
+		console.log('Analyzing ' + courses.length + ' courses against ' +
+			courseEntries.length + ' existing database entries');
 
 		var pairsToUpdate = []; // course API object and course entry tuples
 
@@ -160,7 +160,7 @@ async.waterfall([
 				index++;
 			}
 
-			if (++count % 100 == 0) {
+			if (++count % 100 === 0) {
 				console.log('Analyzed ' + count + ' of ' + totalCourseLength +
 					' courses');
 			}
@@ -192,7 +192,7 @@ async.waterfall([
 					return;
 				}
 
-				if (++count % 100 == 0) {
+				if (++count % 100 === 0) {
 					console.log('Updated ' + count + ' of ' +
 						pairsToUpdate.length + ' courses');
 				}
@@ -222,7 +222,7 @@ async.waterfall([
 		var count = 0;
 		async.each(courseEntries, function(courseEntry, callback) {
 			courseutil.deleteCourse(courseEntry, function(err) {
-				if (++count % 100 == 0) {
+				if (++count % 100 === 0) {
 					console.log('Deleted ' + count + ' of ' +
 						courseEntries.length + ' courses');
 				}
@@ -251,9 +251,9 @@ async.waterfall([
 		var count = 0;
 		async.each(courses, function(course, callback) {
 			courseutil.insertCourse(course, function(err) {
-				if (++count % 100 == 0) {
-					console.log('Inserted ' + count + ' of ' + courses.length
-						+ ' courses');
+				if (++count % 100 === 0) {
+					console.log('Inserted ' + count + ' of ' + courses.length +
+						' courses');
 				}
 
 				callback(err);

@@ -1,0 +1,84 @@
+.ca-modal {
+
+    &.show {
+
+        .overlay {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal {
+            visibility: visible;
+
+            .modal-content {
+                @include transform(scale(1));
+                opacity: 1;
+            }
+        }
+    }
+
+    &.transition {
+
+    }
+
+    .overlay {
+        background-color: rgba(99, 99, 99, 0.2);
+        position: fixed;
+        visibility: hidden;
+        opacity: 0;
+        z-index: 400;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 50%;
+        z-index: 500;
+        max-width: 630px;
+        min-width: 320px;
+        visibility: hidden;
+        @include backface-visibility(hidden);
+        @include transform(translateX(-50%) translateY(-50%));
+
+        .modal-content {
+            opacity: 0;
+            background: #F8F8F8;
+            box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.20);
+            border-radius: 6px;
+            padding: 22px 28px;
+            @include transform(scale(0.7));
+            @include transition(all .3s);
+
+            h3 {
+                font-weight: 500;
+                font-size: 23px;
+                color: #6E6E6E;
+                margin-bottom: 18px;
+                line-height: 34px;
+            }
+
+            input {
+                display: block;
+                width: 380px;
+                margin-bottom: 5px;
+            }
+
+            .input-group {
+                padding-bottom: 10px;
+            }
+
+            .button-group {
+                padding-top: 10px;
+
+                .ca-simple-button {
+                    margin-left: 6px;
+                }
+            }
+        }
+    }
+}

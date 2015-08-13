@@ -19,8 +19,7 @@ module.exports = function(models) {
 	 * Perform a search with a semester and a query string for relevant courses
 	 * and return the courses. This function returns a maximum of course entries
 	 * specified by the limit argument.
-	 * @param {string} semester Semester slug to perform the query on.
-	 * @param {string} query String to search for courses with
+	 * @param {object} q Params object from the request object.
 	 * @param {number} limit Maximum number of course entries to return.
 	 * @param {function} callback Callback to call when the operation is
 	 *     complete. The first argument passed to callback is an error if an
@@ -28,8 +27,10 @@ module.exports = function(models) {
 	 *     course entries that matched the search. If no matching courses are
 	 *     found, an empty array is passed as the second argument.
 	 */
-	m.searchCourses = function(strm, query, limit, callback) {
-		var firstAlphabetic = strutil.firstAlphabeticSubstring(query),
+	m.searchCourses = function(q, limit, callback) {
+		var strm = q.strm,
+			query = q.query,
+			firstAlphabetic = strutil.firstAlphabeticSubstring(query),
 			firstNumeric = strutil.firstNumericSubstring(query),
 			firstQuery,
 			withRelated = {
@@ -60,7 +61,7 @@ module.exports = function(models) {
 		async.waterfall([
 			function(callback) {
 				firstQuery.then(function(courses) {
-					if (courses == null)
+					if (courses === null)
 						courses = [];
 
 					var queryIds = !courses.length ? [] :
@@ -84,7 +85,7 @@ module.exports = function(models) {
 							qb.whereNotIn('id', queryIds);
 
 					}).fetchAll(withRelated).then(function(additionalCourses) {
-						if (additionalCourses == null) {
+						if (additionalCourses === null) {
 							if (!courses.length)
 								courses = [];
 						} else {
@@ -123,7 +124,7 @@ module.exports = function(models) {
 							qb.whereNotIn('id', queryIds);
 
 					}).fetchAll(withRelated).then(function(additionalCourses) {
-						if (additionalCourses == null) {
+						if (additionalCourses === null) {
 							if (!courses.length)
 								courses = [];
 						} else {
@@ -162,7 +163,7 @@ module.exports = function(models) {
 							qb.whereNotIn('id', queryIds);
 
 					}).fetchAll(withRelated).then(function(additionalCourses) {
-						if (additionalCourses == null) {
+						if (additionalCourses === null) {
 							if (!courses.length)
 								courses = [];
 						} else {
@@ -189,7 +190,65 @@ module.exports = function(models) {
 		], function(err, result) {
 			callback(null, result);
 		});
-	}
+	};
+
+	/**
+	 * Perform a course selection creation operation for a user.
+	 * @param {object} q Params object from the request object.
+	 * @param {function} callback Callback function to be called when the
+	 * 		operation is complete. The function will be called with one
+	 *		parameter, an error, if an error occurs. Otherwise, no parameters
+	 *		will be passed.
+	 */
+	m.createSelection = function(q, callback) {
+		// Make sure user exists.
+		new models.user({ id: q.userId }).fetch().then(function(user) {
+			if (user === null) {
+				callback('User doesn\'t exist');
+				return;
+			}
+
+			success();
+		});
+
+		// Make sure course exists.
+		new models.course({ crseId: q.crseId, strm: q.strm }).fetch()
+			.then(function(course) {
+			if (course === null) {
+				callback('Course doesn\'t exist');
+				return;
+			}
+
+			success();
+		});
+
+		// Make sure selection doesn't already exist for the course.
+		new models.selection({ crseId: q.crseId, strm: q.strm }).fetch()
+			.then(function(selection) {
+			if ( selection !== null) {
+				callback('Course is already selected');
+				return;
+			}
+
+			success();
+		});
+
+		// All checks must pass.
+		var successCount = 3;
+		function success() {
+			successCount--;
+			if (successCount === 0) {
+				new models.selection(q).save().then(function(selection) {
+					if (selection === null) {
+						callback('something went wrong saving the selection');
+						return;
+					}
+
+					callback();
+				});
+			}
+		}
+	};
 
 	return m;
-}
+};

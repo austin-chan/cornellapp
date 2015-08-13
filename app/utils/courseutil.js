@@ -37,7 +37,7 @@ module.exports = function(models, knex) {
 			copyCourseEntry = courseEntry.toJSON();
 
 		// delete ids and relation ids for the entry
-		delete copyCourseEntry['id'];
+		delete copyCourseEntry.id;
 		var groups = extractProperty(copyCourseEntry, 'groups');
 		// console.log(typeof copyCourseEntry.catalogOutcomes);
 		copyCourseEntry = sanitizeCourseObject(copyCourseEntry);
@@ -45,32 +45,32 @@ module.exports = function(models, knex) {
 		copyCourseEntry.groups = groups;
 		for (var i = 0; i < copyCourseEntry.groups.length; i++) {
 			var group = copyCourseEntry.groups[i];
-			delete group['id'];
-			delete group['courseId'];
+			delete group.id;
+			delete group.courseId;
 			var sections = extractProperty(group, 'sections');
 			group = sanitizeGroupObject(group);
 			group.sections = sections;
 
 			for(var j = 0; j < group.sections.length; j++) {
 				var section = group.sections[j];
-				delete section['id'];
-				delete section['groupId'];
+				delete section.id;
+				delete section.groupId;
 				var meetings = extractProperty(section, 'meetings');
 				section = sanitizeSectionObject(section);
 				section.meetings = meetings;
 
 				for(var k = 0; k < section.meetings.length; k++) {
 					var meeting = section.meetings[k];
-					delete meeting['id'];
-					delete meeting['sectionId'];
+					delete meeting.id;
+					delete meeting.sectionId;
 					var professors = extractProperty(meeting, 'professors');
 					meeting = sanitizeMeetingObject(meeting);
 					meeting.professors = professors;
 
 					for(var l = 0; l < meeting.professors.length; l++) {
 						var professor = meeting.professors[l];
-						delete professor['_pivot_professorLabel'];
-						delete professor['_pivot_meetingId'];
+						delete professor._pivot_professorLabel;
+						delete professor._pivot_meetingId;
 						meeting.professors[l] =
 							sanitizeProfessorObject(professor);
 					}
@@ -116,7 +116,7 @@ module.exports = function(models, knex) {
 		// console.log(_.isEqual(copyCourseEntry, copyCourse));
 		// process.exit();
 		return _.isEqual(copyCourseEntry, copyCourse);
-	}
+	};
 
 	/**
 	 * Update a course entry in the database to reflect the values in a course
@@ -148,7 +148,7 @@ module.exports = function(models, knex) {
 
 			callback();
 		});
-	}
+	};
 
 	/**
 	 * Delete a course entry from the database and cascade the delete down to
@@ -230,7 +230,7 @@ module.exports = function(models, knex) {
 
 			callback();
 		});
-	}
+	};
 
 	/**
 	 * Save a course into the database as a new entry. Create the new entry from
@@ -305,8 +305,8 @@ module.exports = function(models, knex) {
 
 								callback(null, [savedSection, meetings]);
 							}).catch(function(err) {
-								callback('creating class section entries. '
-									+ err);
+								callback('creating class section entries. ' +
+									err);
 							});
 						}, function(err, sectionMeetings) {
 							if (err) {
@@ -390,8 +390,8 @@ module.exports = function(models, knex) {
 								function(err) {
 
 								if (err) {
-									callback('creating professor entries. '
-										+ err);
+									callback('creating professor entries. ' +
+										err);
 									return;
 								}
 
@@ -410,8 +410,8 @@ module.exports = function(models, knex) {
 									callback();
 								}).catch(function(err) {
 									callback('creating ' +
-										'meeting_professors_joins entries. '
-										+ err);
+										'meeting_professors_joins entries. ' +
+										err);
 								});
 							}, function(err) {
 								if (err) {
@@ -447,7 +447,7 @@ module.exports = function(models, knex) {
 
 			callback();
 		});
-	}
+	};
 
 	/**
 	 * Create a professor entry in the database if it does not exist already.
@@ -501,8 +501,8 @@ module.exports = function(models, knex) {
 	 * @return {string} Label that was generated for the professor.
 	 */
 	function generateProfessorLabel(professor) {
-		return professor.netid + professor.firstName + professor.middleName
-			+ professor.lastName;
+		return professor.netid + professor.firstName + professor.middleName +
+			professor.lastName;
 	}
 
 	/**
@@ -513,7 +513,7 @@ module.exports = function(models, knex) {
 	 * @param {string} key Property key to possibly flatten.
 	 */
 	function jsonFlatten(course, key) {
-		if (typeof course[key] == 'array' || typeof course[key] == 'object') {
+		if (typeof course[key] === 'array' || typeof course[key] == 'object') {
 			course[key] = !course[key] || !course[key].length ? '[]' :
 				JSON.stringify(course[key]);
 		}
@@ -585,7 +585,7 @@ module.exports = function(models, knex) {
 	m.sanitizeSemesterObject = function(semester) {
 		removeAllNullKeys(semester);
 		return validateObject(semester, models.semester.validator);
-	}
+	};
 
 	/**
 	 * Convenience function to sanitize a course object from the Cornell Courses
@@ -642,11 +642,11 @@ module.exports = function(models, knex) {
 	 * @param {object} professor Professor object to sanitize.
 	 */
 	function sanitizeProfessorObject(professor) {
-		delete professor['instrAssignSeq'];
+		delete professor.instrAssignSeq;
 		professor.label = generateProfessorLabel(professor);
 		removeAllNullKeys(professor);
 		return validateObject(professor, models.professor.validator);
 	}
 
 	return m;
-}
+};

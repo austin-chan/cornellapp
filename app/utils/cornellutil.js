@@ -41,7 +41,7 @@ m.getRosters = function(callback) {
 	}, function() {
 		callback(null);
 	});
-}
+};
 
 /**
  * Retrieves the roster object for a semester by its semester slug. This
@@ -63,7 +63,7 @@ m.getRoster = function(semester, callback) {
 		}
 		callback(null);
 	});
-}
+};
 
 /**
  * Determines if a roster is availble by its semester slug. This is done by
@@ -80,8 +80,7 @@ m.isAvailableRoster = function(semester, callback) {
 	m.getRoster(semester, function(roster) {
 		return roster !== null;
 	});
-}
-
+};
 
 /**
  * Returns a list of all subject tags for a given semester by its slug.
@@ -105,7 +104,7 @@ m.getSubjects = function(semester, callback) {
 	}, function() {
 		callback(null);
 	});
-}
+};
 
 /**
  * Retreives all class data for a subject during a semester. The return value is
@@ -128,7 +127,7 @@ m.getCourses = function(semester, subject, callback) {
 		callback(null);
 	});
 
-}
+};
 
 /**
  * Retrieves the corresponding full name from a netid. If the netid does not
@@ -157,13 +156,13 @@ m.fetchName = function(netid, callback) {
 		        callback(null);
 		    }
 
-		    callback(json['fn']);
+		    callback(json.fn);
 		});
 	}, function() {
 		callback(null);
 
 	});
-}
+};
 
 /**
  * Convenience function to perform an HTTP or HTTPS GET request.

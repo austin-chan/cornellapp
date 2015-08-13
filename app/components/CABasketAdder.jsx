@@ -25,7 +25,7 @@ var CABasketAdder = React.createClass({
 
         $(input).autocomplete({
             params: {
-                semester: function() {
+                strm: function() {
                     return self.props.semester;
                 }
             },

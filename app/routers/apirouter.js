@@ -10,26 +10,24 @@
  * Router submodule for handling all api routes.
  */
 
-module.exports = function(app) {
+var strutil = require('../utils/strutil'),
+	util = require('util');
+
+module.exports = function(app, blockValidationErrors) {
 
 	var knex = app.get('knex'),
 		models = app.get('models'),
-		strutil = require('../utils/strutil'),
 		apiutil = require('../utils/apiutil')(models);
 
+	// Route for searching for courses to add.
 	app.get('/api/search/courses', function(req, res) {
-		var params = req.query;
+		req.sanitizeQuery('query').trim();
+		req.checkQuery('strm', 'Provide a strm.').notEmpty().isInt();
+		req.checkQuery('query', 'Provide a query.').notEmpty();
+		blockValidationErrors(req);
 
-		if (!params.semester || !params.query) {
-			res.status(400);
-			res.send('Provide semester and query parameters with this route.');
-		}
-
-		apiutil.searchCourses(params.semester, params.query.trim(),
-			10, function(err, courses) {
-
+		apiutil.searchCourses(req.query, 10, function(err, courses) {
 			if (err) {
-				console.log(err);
 				res.status(400);
 				res.send('An error occurred performing the course search.');
 				return;
@@ -38,6 +36,32 @@ module.exports = function(app) {
 			res.send(courses);
 		});
 
+	});
+
+	// Route for adding a course.
+	app.post('/api/selection', function(req, res) {
+		req.sanitizeParams('query').trim();
+		req.checkParams('userId', 'Provide an userId.').notEmpty().isInt();
+		req.checkParams('crseId', 'Provide a crseId.').notEmpty().isInt();
+		req.checkParams('strm', 'Provide a strm.').notEmpty().isInt();
+		req.checkParams('key', 'Provide a key.').notEmpty();
+		req.checkParams('color', 'Provide a color.').notEmpty();
+		req.checkParams('active', 'Provide an active.').notEmpty().isBoolean();
+		req.checkParams('selectedSectionIds', 'Provide a selectedSectionIds.')
+			.notEmpty();
+		blockValidationErrors(req);
+
+		var q = req.query;
+
+		apiutil.createSelection(req.params, function(err) {
+			if (err) {
+				res.status(400);
+				res.send('An error occurred adding the course.');
+				return;
+			}
+
+			res.send('ok'); // default code 200
+		});
 	});
 
 };

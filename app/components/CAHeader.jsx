@@ -11,7 +11,8 @@
  * _CAHeader.scss.
  */
 
-var React = require('react/addons');
+var React = require('react/addons'),
+    ModalActions = require('../actions/ModalActions');
 
 var CAHeader = React.createClass({
     render: function() {
@@ -28,10 +29,12 @@ var CAHeader = React.createClass({
                     <div className="left">
                         <p className="logo museo-sans">Cornellapp</p>
                         <div className="account-buttons">
-                            <button className="ca-outline-button">
+                            <button className="ca-outline-button"
+                                onClick={this._onSignup}>
                                 Sign Up
                             </button>
-                            <button className="ca-outline-button">
+                            <button className="ca-outline-button"
+                                onClick={this._onLogin}>
                                 Log In
                             </button>
                         </div>
@@ -49,6 +52,20 @@ var CAHeader = React.createClass({
                 </div>
             </header>
         );
+    },
+
+    /**
+     * Event handler for clicking the log in button.
+     */
+    _onLogin: function() {
+        ModalActions.login();
+    },
+
+    /**
+     * Event handler for clicking the log in button.
+     */
+    _onSignup: function() {
+        ModalActions.signup();
     }
 });
 

@@ -15,7 +15,9 @@ var React = require('react/addons'),
     CAHeader = require('./CAHeader'),
     CABasket = require('./CABasket'),
     CASchedule = require('./CASchedule'),
-    ScheduleStore = require('../stores/ScheduleStore');
+    CAModal = require('./CAModal'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    ModalStore = require('../stores/ModalStore');
 
 /**
  * Retrieve schedule data from ScheduleStore.
@@ -24,7 +26,9 @@ var React = require('react/addons'),
 function getAppState() {
     return {
         allCourses: ScheduleStore.getCourses(),
-        semester: ScheduleStore.getSemester()
+        semester: ScheduleStore.getSemester(),
+        modal: ModalStore.getModalState(),
+        catalog: ModalStore.getCatalogState()
     };
 }
 
@@ -35,10 +39,12 @@ var CAApp = React.createClass({
 
     componentDidMount: function() {
         ScheduleStore.addChangeListener(this._onChange);
+        ModalStore.addChangeListener(this._onChange);
     },
 
     componentWillUnmount: function() {
         ScheduleStore.removeChangeListener(this._onChange);
+        ModalStore.removeChangeListener(this._onChange);
     },
 
     _onChange: function() {
@@ -58,6 +64,8 @@ var CAApp = React.createClass({
                         <CASchedule courses={this.state.allCourses} />
                     </div>
                 </div>
+                <CAModal active={this.state.modal.active}
+                    type={this.state.modal.type} />
             </div>
         );
     }

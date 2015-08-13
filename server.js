@@ -16,6 +16,7 @@ var express = require('express'),
     app = module.exports = express(),
     port = process.env.PORT || 3000,
     bodyParser = require('body-parser'),
+    expressValidator = require('express-validator'),
     config = require('config'),
     knex = require('knex')(config.knex),
     bookshelf = require('bookshelf')(knex),
@@ -29,6 +30,7 @@ app.set('knex', knex);
 app.set('config', config);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(expressValidator());
 app.use(express.static(__dirname + '/public'));
 
 

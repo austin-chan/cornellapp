@@ -34,6 +34,18 @@ module.exports = function(app) {
     });
 
     // "/api"
-    require('./routers/apirouter')(app);
+    require('./routers/apirouter')(app, blockValidationErrors);
 
 };
+
+/**
+ * Print out any validation errors with a 400 status and cancel the request.
+ * @param {object} req Request object to check validation errors for.
+ */
+function blockValidationErrors(req) {
+    var errors = req.validationErrors();
+    if (errors) {
+        res.send(util.inspect(errors), 400);
+        return;
+    }
+}
