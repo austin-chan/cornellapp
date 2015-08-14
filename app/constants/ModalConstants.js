@@ -13,5 +13,6 @@
 module.exports = {
     LOGIN: 'MODAL_LOGIN',
     SIGNUP: 'MODAL_SIGNUP',
-    CLOSE: 'MODAL_CLOSE'
+    CLOSE: 'MODAL_CLOSE',
+    ACTIVATION: 'MODAL_ACTIVATION'
 };

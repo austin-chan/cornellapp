@@ -33,8 +33,8 @@ var authenticationrouter = function(app, blockValidationErrors) {
     });
 
     // Route for signing up.
-    app.post('/api/signup', function(req, res) {
-        passport.authenticate('local-signup', function(err, user) {
+    app.post('/api/signup', function(req, res, next) {
+        passport.authenticate('local-signup', function(err, user, info) {
             // Handle invalid authentications.
             if (err)
                 return res.json({ error: err });
@@ -48,7 +48,7 @@ var authenticationrouter = function(app, blockValidationErrors) {
                     user: user.omit('password').omit('activation_key')
                 });
             });
-        })(req, res);
+        })(req, res, next);
     });
 
     // Route for logging out.

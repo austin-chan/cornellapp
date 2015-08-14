@@ -13,7 +13,7 @@
 
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
-    _ = require('underscore');
+    classNames = require('classnames');
 
 var CAModalSignup = React.createClass({
     getInitialState: function() {
@@ -24,13 +24,63 @@ var CAModalSignup = React.createClass({
     },
 
     /**
+     * Autofocus the first input on mount.
+     */
+    componentDidMount: function() {
+        var netidField = React.findDOMNode(this.refs.netidField);
+
+        setTimeout(function() {
+            netidField.focus();
+        }, 50);
+    },
+
+    /**
+     * Abort any pending requests.
+     */
+    componentWillUnmount: function() {
+        if (this.jqXHR && this.jqXHR.readyState !== 4)
+            this.jqXHR.abort();
+
+        if (this.jqXHRName && this.jqXHRName.readyState !== 4)
+            this.jqXHRName.abort();
+    },
+
+    /**
+     * Render an error message.
+     * @param {string} error Error message to display.
+     */
+    displayErrorMessage: function(errorMessage) {
+        this.setState({
+            errorMessage: errorMessage
+        });
+    },
+
+    /**
      * Fill in the name field from the netid if the name field is empty and not
      * in focus. Feels like magic.
      */
-    autoFillName: function(name) {
+    receiveNameSuggestion: function(name) {
+        if (!name.length)
+            return;
+
         var nameField = React.findDOMNode(this.refs.nameField);
         if (!$(nameField).is(':focus') && !$.trim(nameField.value).length)
             nameField.value = name;
+    },
+
+    /**
+     * Receive and parse the response from an attempt to signup.
+     * @param {object} data Response data for the signup attempt.
+     */
+    receiveSignupResponse: function(data) {
+        this.setState({
+            loading: false
+        });
+
+        if (data.error)
+            return this.displayErrorMessage(data.error);
+
+        ModalActions.activation();
     },
 
     render: function() {
@@ -52,14 +102,14 @@ var CAModalSignup = React.createClass({
                 <form ref="form" onSubmit={this._onLogin}>
                     <div className="input-group">
                         <input className="ca-clear-input" type="text"
-                            ref="netidField" placeholder="NetID"
+                            name="netid" ref="netidField" placeholder="NetID"
                             onKeyDown={this._onKeyDown}
                             onBlur={this._onBlurNetid} required />
                         <input className="ca-clear-input" type="password"
-                            placeholder="Password" onKeyDown={this._onKeyDown}
-                            required/>
+                            name="password" placeholder="Password"
+                            onKeyDown={this._onKeyDown} required/>
                         <input className="ca-clear-input" type="text"
-                            ref="nameField" placeholder="Full Name"
+                            name="name" ref="nameField" placeholder="Full Name"
                             onKeyDown={this._onKeyDown} required/>
                     </div>
                     {errorMessage}
@@ -91,8 +141,9 @@ var CAModalSignup = React.createClass({
 
     /**
      * Event handler for logging in instead.
+     * @param {object} e Event object.
      */
-    _onLogin: function() {
+    _onLogin: function(e) {
         e.preventDefault();
         ModalActions.login();
     },
@@ -112,10 +163,7 @@ var CAModalSignup = React.createClass({
         $.ajax({
             url: '/api/fetch-name',
             data: { netid: netidValue },
-            success: _.bind(function(name) {
-                if (name.length)
-                    this.autoFillName(name);
-            }, this)
+            success: this.receiveNameSuggestion
         });
     },
 
@@ -143,7 +191,7 @@ var CAModalSignup = React.createClass({
             type: 'post',
             url: '/api/signup',
             data: $(form).serializeObject(),
-            success: this.receiveLoginResponse
+            success: this.receiveSignupResponse
         });
 
         this.setState({

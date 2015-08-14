@@ -16,8 +16,8 @@ var randomstring = require('randomstring'),
 var user = function(bookshelf, models) {
     return bookshelf.Model.extend({
         tableName: 'users',
-        correctHash: function(hash) {
-            return bcrypt.compareSync(hash, this.get(password));
+        correctPassword: function(password) {
+            return bcrypt.compareSync(password, this.get(password));
         }
     }, {
         /**

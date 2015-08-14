@@ -34,6 +34,15 @@ var ModalActions = {
     },
 
     /**
+     * Activate the account activation modal to appear.
+     */
+    activation: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.ACTIVATION
+        });
+    },
+
+    /**
      * Close any open modals or catalog.
      */
     close: function() {

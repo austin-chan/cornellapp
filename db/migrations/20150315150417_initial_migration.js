@@ -6,6 +6,7 @@ exports.up = function(knex, Promise) {
 			table.increments().unsigned();
 			table.string('netid', 16).notNullable();
 			table.string('name').notNullable();
+			table.string('password').notNullable();
 			table.boolean('active').notNullable();
 			table.string('activation_key', 32).notNullable();
 		}),

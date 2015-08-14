@@ -14,6 +14,7 @@
 var React = require('react/addons'),
     CAModalLogin = require('./CAModalLogin'),
     CAModalSignup = require('./CAModalSignup'),
+    CAModalActivation = require('./CAModalActivation'),
     ModalActions = require('../actions/ModalActions'),
     classNames = require('classnames');
 
@@ -30,6 +31,8 @@ var CAModal = React.createClass({
             return <CAModalLogin />;
         if (this.props.type === 'signup')
             return <CAModalSignup />;
+        if (this.props.type === 'signup')
+            return <CAModalActivation />;
     },
 
     render: function() {

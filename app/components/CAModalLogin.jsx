@@ -118,6 +118,7 @@ var CAModalLogin = React.createClass({
 
     /**
      * Event handler for signing up instead.
+     * @param {object} e Event object.
      */
     _onSignup: function(e) {
         e.preventDefault();

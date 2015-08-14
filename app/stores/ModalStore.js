@@ -39,6 +39,14 @@ function signup() {
 }
 
 /**
+ * Activate the account activation modal to appear.
+ */
+function activation() {
+    _active = 'modal';
+    _modalType = 'activation';
+}
+
+/**
  * Deactivate all modals and catalog.
  */
 function close() {
@@ -78,6 +86,11 @@ var ModalStore = assign({}, EventEmitter.prototype, {
     signup: signup,
 
     /**
+     * Activate the account activation modal to appear.
+     */
+    activation: activation,
+
+    /**
      * Publish a change to all listeners.
      */
     emitChange: function() {
@@ -110,6 +123,11 @@ AppDispatcher.register(function(action) {
 
         case ModalConstants.SIGNUP:
             signup();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.ACTIVATION:
+            activation();
             ModalStore.emitChange();
             break;
 
