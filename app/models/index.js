@@ -11,9 +11,10 @@
  * bookshelf object as an argument to initialize all of the models.
  */
 
-module.exports = function(bookshelf) {
+var models = function(bookshelf) {
 	var m = {};
 
+	m.user = require('./user.js')(bookshelf, m);
 	m.semester = require('./semester.js')(bookshelf, m);
 	m.course = require('./course.js')(bookshelf, m);
 	m.group = require('./group.js')(bookshelf, m);
@@ -24,4 +25,6 @@ module.exports = function(bookshelf) {
 	m.professor = require('./professor.js')(bookshelf, m);
 
 	return m;
-}
+};
+
+module.exports = models;

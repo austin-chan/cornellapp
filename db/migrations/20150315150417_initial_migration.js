@@ -4,8 +4,10 @@ exports.up = function(knex, Promise) {
 	return Promise.all([
 		knex.schema.createTable('users', function(table) {
 			table.increments().unsigned();
-			table.string('netid', 16);
-			table.string('name');
+			table.string('netid', 16).notNullable();
+			table.string('name').notNullable();
+			table.boolean('active').notNullable();
+			table.string('activation_key', 32).notNullable();
 		}),
 		knex.schema.createTable('semesters', function(table) {
 			table.string('descr').notNullable();

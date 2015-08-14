@@ -16,8 +16,11 @@ var React = require('react/addons'),
     _ = require('underscore');
 
 var CAModalSignup = React.createClass({
-    componentWillMount: function() {
-        this.loading = false;
+    getInitialState: function() {
+        return {
+            loading: false,
+            errorMessage: ''
+        };
     },
 
     /**
@@ -26,50 +29,62 @@ var CAModalSignup = React.createClass({
      */
     autoFillName: function(name) {
         var nameField = React.findDOMNode(this.refs.nameField);
-console.log(!$(nameField).is(':focus'));
-console.log(!$.trim(nameField.value).length);
-        if (!$(nameField).is(':focus') && !$.trim(nameField.value).length) {
+        if (!$(nameField).is(':focus') && !$.trim(nameField.value).length)
             nameField.value = name;
-            console.log(name);
-        }
     },
 
     render: function() {
+        var errorMessage,
+            submitButtonClass = classNames('ca-red-button', {
+                loading: this.state.loading
+            });
+
+        if (this.state.errorMessage)
+            errorMessage = (
+                <p className="error-message">
+                    {this.state.errorMessage}
+                </p>
+            );
+
         return (
             <div className="ca-modal-signup">
                 <h3>Sign up with Cornellapp</h3>
-                <div className="input-group">
-                    <input className="ca-clear-input" type="text"
-                        ref="netidField" placeholder="NetID"
-                        onKeyDown={this._onKeyDown}
-                        onBlur={this._onBlurNetid} />
-                    <input className="ca-clear-input" type="password"
-                        placeholder="Password" onKeyDown={this._onKeyDown} />
-                    <input className="ca-clear-input" type="text"
-                        ref="nameField" placeholder="Full Name"
-                        onKeyDown={this._onKeyDown} />
-                </div>
-                <div className="button-group">
-                    <button className="ca-red-button"
-                        onClick={this._onSignup}
-                        ref="signupButton">
-                        <span className="label">Sign Up</span>
-                        <div className="spin-loader">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                        </div>
-                    </button>
-                    <button className="ca-simple-button condensed"
-                        onClick={this._onLogin}>
-                        Or Log In Instead
-                    </button>
-                </div>
+                <form ref="form" onSubmit={this._onLogin}>
+                    <div className="input-group">
+                        <input className="ca-clear-input" type="text"
+                            ref="netidField" placeholder="NetID"
+                            onKeyDown={this._onKeyDown}
+                            onBlur={this._onBlurNetid} required />
+                        <input className="ca-clear-input" type="password"
+                            placeholder="Password" onKeyDown={this._onKeyDown}
+                            required/>
+                        <input className="ca-clear-input" type="text"
+                            ref="nameField" placeholder="Full Name"
+                            onKeyDown={this._onKeyDown} required/>
+                    </div>
+                    {errorMessage}
+                    <div className="button-group">
+                        <button className={submitButtonClass}
+                            onClick={this._onSignup}
+                            ref="submit">
+                            <span className="label">Sign Up</span>
+                            <div className="spin-loader">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </button>
+                        <button className="ca-simple-button condensed"
+                            onClick={this._onLogin}>
+                            Or Log In Instead
+                        </button>
+                    </div>
+                </form>
             </div>
         );
     },
@@ -78,6 +93,7 @@ console.log(!$.trim(nameField.value).length);
      * Event handler for logging in instead.
      */
     _onLogin: function() {
+        e.preventDefault();
         ModalActions.login();
     },
 
@@ -108,21 +124,31 @@ console.log(!$.trim(nameField.value).length);
      */
     _onKeyDown: function(e) {
         if (e.key === 'Enter')
-            this._onSignup();
+            React.findDOMNode(this.refs.submit).click();
     },
 
     /**
      * Event handler for attempting a sign up.
      */
-    _onSignup: function() {
+    _onSignup: function(e) {
+        e.preventDefault();
+
         // Prevent double submitting.
-        if (this.loading)
+        if (this.state.loading)
             return;
 
-        var signupButton = React.findDOMNode(this.refs.signupButton);
-        $(signupButton).addClass('loading');
+        var form = React.findDOMNode(this.refs.form);
 
-        this.loading = true;
+        this.jqXHR = $.ajax({
+            type: 'post',
+            url: '/api/signup',
+            data: $(form).serializeObject(),
+            success: this.receiveLoginResponse
+        });
+
+        this.setState({
+            loading: true
+        });
     }
 });
 

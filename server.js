@@ -17,6 +17,7 @@ var express = require('express'),
     port = process.env.PORT || 3000,
     bodyParser = require('body-parser'),
     expressValidator = require('express-validator'),
+    passport = require('passport'),
     config = require('config'),
     knex = require('knex')(config.knex),
     bookshelf = require('bookshelf')(knex),
@@ -27,16 +28,20 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname + '/app/views');
 app.set('models', models);
 app.set('knex', knex);
+app.set('passport', passport);
 app.set('config', config);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(expressValidator());
 app.use(express.static(__dirname + '/public'));
 
+// Initialize authentication.
+require('./app/initialization/authentication')(passport, models);
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Include the JSX compiler.
 require("node-jsx").install({ extension: '.jsx' });
-
 
 // Declare all site routes.
 require('./app/routes')(app);

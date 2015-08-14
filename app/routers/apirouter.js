@@ -13,8 +13,7 @@
 var strutil = require('../utils/strutil'),
 	cornellutil = require('../utils/cornellutil');
 
-module.exports = function(app, blockValidationErrors) {
-
+var apirouter = function(app, blockValidationErrors) {
 	var knex = app.get('knex'),
 		models = app.get('models'),
 		apiutil = require('../utils/apiutil')(models);
@@ -24,18 +23,18 @@ module.exports = function(app, blockValidationErrors) {
 		req.sanitizeQuery('query').trim();
 		req.checkQuery('strm', 'Provide a strm.').notEmpty().isInt();
 		req.checkQuery('query', 'Provide a query.').notEmpty();
-		blockValidationErrors(req, res);
 
-		apiutil.searchCourses(req.query, 10, function(err, courses) {
-			if (err) {
-				res.status(400);
-				res.send('An error occurred performing the course search.');
-				return;
-			}
+		blockValidationErrors(req, res, function() {
+			apiutil.searchCourses(req.query, 10, function(err, courses) {
+				if (err) {
+					res.status(400);
+					res.send('An error occurred performing the course search.');
+					return;
+				}
 
-			res.send(courses);
+				res.send(courses);
+			});
 		});
-
 	});
 
 	// Route for adding a course.
@@ -49,30 +48,35 @@ module.exports = function(app, blockValidationErrors) {
 		req.checkParams('active', 'Provide an active.').notEmpty().isBoolean();
 		req.checkParams('selectedSectionIds', 'Provide a selectedSectionIds.')
 			.notEmpty();
-		blockValidationErrors(req, res);
 
-		apiutil.createSelection(req.params, function(err) {
-			if (err) {
-				res.status(400);
-				res.send('An error occurred adding the course.');
-				return;
-			}
+		blockValidationErrors(req, res, function() {
+			apiutil.createSelection(req.params, function(err) {
+				if (err) {
+					res.status(400);
+					res.send('An error occurred adding the course.');
+					return;
+				}
 
-			res.send('ok'); // default code 200
+				res.send('ok'); // default code 200
+			});
 		});
 	});
 
 	// Route for getting a full name for a netid
 	app.get('/api/fetch-name', function(req, res) {
 		req.checkQuery('netid', 'Provide a netid.').notEmpty();
-		blockValidationErrors(req, res);
 
-		cornellutil.fetchName(req.query.netid, function(name) {
-			if (name === null)
-				name = '';
+		blockValidationErrors(req, res, function() {
+			cornellutil.fetchName(req.query.netid, function(name) {
+				if (name === null)
+					name = '';
 
-			res.send(name);
+				res.send(name);
+			});
 		});
 	});
 
+    require('./authenticationrouter')(app, blockValidationErrors);
 };
+
+module.exports = apirouter;

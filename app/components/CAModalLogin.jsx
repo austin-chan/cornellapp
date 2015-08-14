@@ -12,44 +12,106 @@
  */
 
 var React = require('react/addons'),
-    ModalActions = require('../actions/ModalActions');
+    ModalActions = require('../actions/ModalActions'),
+    classNames = require('classnames');
 
 var CAModalLogin = React.createClass({
-    componentWillMount: function() {
-        this.loading = false;
+    getInitialState: function() {
+        return {
+            loading: false,
+            errorMessage: ''
+        };
+    },
+
+    /**
+     * Autofocus the first input on mount.
+     */
+    componentDidMount: function() {
+        var netidField = React.findDOMNode(this.refs.netidField);
+
+        setTimeout(function() {
+            netidField.focus();
+        }, 50);
+    },
+
+    /**
+     * Abort any pending requests.
+     */
+    componentWillUnmount: function() {
+        if (this.jqXHR && this.jqXHR.readyState !== 4)
+            this.jqXHR.abort();
+    },
+
+    /**
+     * Render an error message.
+     * @param {string} error Error message to display.
+     */
+    displayErrorMessage: function(errorMessage) {
+        this.setState({
+            errorMessage: errorMessage
+        });
+    },
+
+    /**
+     * Receive and parse the response from an attempt to login.
+     * @param {object} data Response data for the login attempt.
+     */
+    receiveLoginResponse: function(data) {
+        this.setState({
+            loading: false
+        });
+
+        if (data.error)
+            return this.displayErrorMessage(data.error);
     },
 
     render: function() {
+        var errorMessage,
+            submitButtonClass = classNames('ca-red-button', {
+                loading: this.state.loading
+            });
+
+        if (this.state.errorMessage)
+            errorMessage = (
+                <p className="error-message">
+                    {this.state.errorMessage}
+                </p>
+            );
+
         return (
             <div className="ca-modal-login">
                 <h3>Log in to Cornellapp</h3>
-                <div className="input-group">
-                    <input className="ca-clear-input" type="text"
-                        placeholder="NetID" onKeyDown={this._onKeyDown} />
-                    <input className="ca-clear-input" type="password"
-                        placeholder="Password" onKeyDown={this._onKeyDown} />
-                </div>
-                <div className="button-group">
-                    <button className="ca-red-button"
-                        onClick={this._onLogin}
-                        ref="loginButton">
-                        <span className="label">Log In</span>
-                        <div className="spin-loader">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                        </div>
-                    </button>
-                    <button className="ca-simple-button condensed"
-                        onClick={this._onSignup}>
-                        Or Sign Up Instead
-                    </button>
-                </div>
+                <form ref="form" onSubmit={this._onLogin}>
+                    <div className="input-group">
+                        <input className="ca-clear-input" type="text"
+                            ref="netidField" name="netid" placeholder="NetID"
+                            onKeyDown={this._onKeyDown} required />
+                        <input className="ca-clear-input" type="password"
+                            name="password" placeholder="Password"
+                            onKeyDown={this._onKeyDown} required />
+                    </div>
+                    {errorMessage}
+                    <div className="button-group">
+                        <button className={submitButtonClass}
+                            ref="submit" type="Submit">
+                            <span className="label">Log In</span>
+                            <div className="spin-loader">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </button>
+                        <button className="ca-simple-button condensed"
+                            onClick={this._onSignup}>
+                            Or Sign Up Instead
+                        </button>
+                    </div>
+                </form>
             </div>
         );
     },
@@ -57,7 +119,8 @@ var CAModalLogin = React.createClass({
     /**
      * Event handler for signing up instead.
      */
-    _onSignup: function() {
+    _onSignup: function(e) {
+        e.preventDefault();
         ModalActions.signup();
     },
 
@@ -66,21 +129,31 @@ var CAModalLogin = React.createClass({
      */
     _onKeyDown: function(e) {
         if (e.key === 'Enter')
-            this._onLogin();
+            React.findDOMNode(this.refs.submit).click();
     },
 
     /**
-     * Event handler for attempting a log in.
+     * Event handler for submitting the log in form.
      */
-    _onLogin: function() {
+    _onLogin: function(e) {
+        e.preventDefault();
+
         // Prevent double submitting.
-        if (this.loading)
+        if (this.state.loading)
             return;
 
-        var loginButton = React.findDOMNode(this.refs.loginButton);
-        $(loginButton).addClass('loading');
+        var form = React.findDOMNode(this.refs.form);
 
-        this.loading = true;
+        this.jqXHR = $.ajax({
+            type: 'post',
+            url: '/api/login',
+            data: $(form).serializeObject(),
+            success: this.receiveLoginResponse
+        });
+
+        this.setState({
+            loading: true
+        });
     }
 });
 

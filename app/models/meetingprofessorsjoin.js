@@ -10,8 +10,10 @@
  * The model class for meeting-professors joins.
  */
 
-module.exports = function(bookshelf, models) {
+var meetingprofessorsjoin = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'meeting_professors_joins'
 	});
-}
+};
+
+module.exports = meetingprofessorsjoin;

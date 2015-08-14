@@ -10,23 +10,20 @@ var gulp = require('gulp'),
     nodemon = require('gulp-nodemon');
 
 gulp.task('react', function() {
-
     return browserify({
-        entries: ['app/main.jsx'],
+        entries: ['app/scripts/main.jsx'],
         extensions:  [".js", ".jsx"]
     })
     .bundle()
     .on('error', function(err){
         console.log(err.message);
     })
-    .pipe(source('app/main.js'))
+    .pipe(source('app/scripts/main.js'))
     .pipe(rename('bundle.js'))
     .pipe(gulp.dest('./public/assets/js'));
-
 });
 
 gulp.task('uglify', function() {
-
     return gulp.src([
         'public/assets/js/main.js'
     ])
@@ -37,7 +34,6 @@ gulp.task('uglify', function() {
     .pipe(uglify())
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./public/assets/js-built'));
-
 });
 
 gulp.task('sass', function () {
@@ -55,12 +51,9 @@ gulp.task('server', function () {
 });
 
 gulp.task('watch', function() {
-
     // gulp.watch('public/assets/js/*', ['uglify']);
     gulp.watch(['app/!(styles)/**', 'app/main.js'], ['react']);
     gulp.watch(['app/styles/**'], ['sass']);
-
 });
 
 gulp.task('default', ['server', 'watch', 'react', 'sass']);
-// gulp.task('default', ['watch']);

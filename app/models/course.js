@@ -10,9 +10,9 @@
  * The model class for courses.
  */
 
-var Joi = require('joi')
+var Joi = require('joi');
 
-module.exports = function(bookshelf, models) {
+var course = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'courses',
 		semester: function() {
@@ -24,6 +24,9 @@ module.exports = function(bookshelf, models) {
 			return this.hasMany(models.group, 'courseId');
 		}
 	}, {
+        /**
+         * Instance creation object parameter validation schema.
+         */
 		validator: Joi.object({
 			crseId: Joi.number().required(),
 			crseOfferNbr: Joi.number().required(),
@@ -50,4 +53,6 @@ module.exports = function(bookshelf, models) {
 			catalogWhenOffered: Joi.string().allow('').default(''),
 		}).options({ stripUnknown: true })
 	});
-}
+};
+
+module.exports = course;

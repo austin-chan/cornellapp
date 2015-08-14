@@ -14,5 +14,4 @@
 global.$ = global.jQuery = require('jquery');
 require('devbridge-autocomplete');
 require('velocity-animate');
-
-require('./global');
+require('form-serializer');

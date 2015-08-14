@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "async": "^0.9.0",
+    "bcrypt": "^0.8.5",
     "body-parser": "^1.12.0",
     "bookshelf": "^0.7.9",
     "chalk": "^1.0.0",
@@ -30,6 +31,7 @@
     "passport": "^0.2.2",
     "passport-local": "^1.0.0",
     "pluralize": "^1.1.4",
+    "randomstring": "^1.0.7",
     "react": "^0.13.3",
     "underscore": "^1.8.3",
     "vcardparser": "^1.0.3",
@@ -39,6 +41,7 @@
     "browserify": "^11.0.1",
     "devbridge-autocomplete": "^1.2.21",
     "envify": "^3.4.0",
+    "form-serializer": "^2.5.0",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-nodemon": "^2.0.3",

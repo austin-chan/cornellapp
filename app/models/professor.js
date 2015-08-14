@@ -12,10 +12,13 @@
 
 var Joi = require('joi');
 
-module.exports = function(bookshelf, models) {
+var professor = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'professors'
     }, {
+        /**
+         * Instance creation object parameter validation schema.
+         */
         validator: Joi.object({
             label: Joi.string().allow('').default(''),
             netid: Joi.string().allow('').default(''),
@@ -24,4 +27,6 @@ module.exports = function(bookshelf, models) {
             lastName: Joi.string().allow('').default(''),
         }).options({ stripUnknown: true })
     });
-}
+};
+
+module.exports = professor;

@@ -12,7 +12,7 @@
 
 var Joi = require('joi');
 
-module.exports = function(bookshelf, models) {
+var group = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'groups',
 		course: function() {
@@ -24,7 +24,10 @@ module.exports = function(bookshelf, models) {
 			return this.hasMany(models.section, 'groupId');
 		}
 	}, {
-	validator: Joi.object({
+        /**
+         * Instance creation object parameter validation schema.
+         */
+		validator: Joi.object({
 			courseId: Joi.number(),
 			componentsOptional: Joi.string().default('[]'),
 			componentsRequired: Joi.string().default('[]'),
@@ -40,4 +43,6 @@ module.exports = function(bookshelf, models) {
 			unitsMinimum: Joi.number().precision(2)
 		}).options({ stripUnknown: true })
 	});
-}
+};
+
+module.exports = group;

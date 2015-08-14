@@ -12,9 +12,9 @@
  */
 
 var React = require('react/addons'),
-    CAApp = require('./components/CAApp'),
+    CAApp = require('../components/CAApp'),
     mountNode = document.getElementById('cornell-app-mount');
 
-require('./scripts/preparation');
+require('./preparation');
 
 React.render(<CAApp />, mountNode);

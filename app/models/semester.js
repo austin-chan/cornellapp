@@ -12,7 +12,7 @@
 
 var Joi = require('joi');
 
-module.exports = function(bookshelf, models) {
+var semester = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'semesters',
 		courses: function() {
@@ -21,6 +21,9 @@ module.exports = function(bookshelf, models) {
 			return relation;
 		}
 	}, {
+        /**
+         * Instance creation object parameter validation schema.
+         */
         validator: Joi.object({
             descr: Joi.string().required(),
             lastModifiedDttm: Joi.string().required(),
@@ -28,4 +31,6 @@ module.exports = function(bookshelf, models) {
             strm: Joi.number().required()
         }).options({ stripUnknown: true })
     });
-}
+};
+
+module.exports = semester;

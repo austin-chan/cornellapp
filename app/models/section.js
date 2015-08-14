@@ -12,7 +12,7 @@
 
 var Joi = require('joi');
 
-module.exports = function(bookshelf, models) {
+var section = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'sections',
 		group: function() {
@@ -24,6 +24,9 @@ module.exports = function(bookshelf, models) {
 			return this.hasMany(models.meeting, 'sectionId');
 		}
 	}, {
+        /**
+         * Instance creation object parameter validation schema.
+         */
         validator: Joi.object({
         	groupId: Joi.number(),
             addConsent: Joi.string().allow('').default(''),
@@ -46,4 +49,6 @@ module.exports = function(bookshelf, models) {
             topicDescription : Joi.string().allow('').default('')
         }).options({ stripUnknown: true })
     });
-}
+};
+
+module.exports = section;

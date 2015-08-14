@@ -63,12 +63,18 @@
 
             input {
                 display: block;
-                width: 380px;
+                width: 300px;
                 margin-bottom: 5px;
             }
 
             .input-group {
                 padding-bottom: 10px;
+            }
+
+            .error-message {
+                font-size: 12px;
+                padding-bottom: 10px;
+                color: #F36262;
             }
 
             .button-group {
