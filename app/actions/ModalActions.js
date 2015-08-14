@@ -35,10 +35,12 @@ var ModalActions = {
 
     /**
      * Activate the account activation modal to appear.
+     * @param {string} netid Netid of account waiting to be activated.
      */
-    activation: function() {
+    activation: function(netid) {
         AppDispatcher.dispatch({
-            actionType: ModalConstants.ACTIVATION
+            actionType: ModalConstants.ACTIVATION,
+            netid: netid
         });
     },
 

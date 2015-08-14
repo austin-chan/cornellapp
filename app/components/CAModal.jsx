@@ -22,7 +22,8 @@ var CAModal = React.createClass({
     propTypes: function() {
         return {
             active: React.PropTypes.boolean.isRequired,
-            type: React.PropTypes.string.isRequired
+            type: React.PropTypes.string.isRequired,
+            data: React.PropTypes.object.isRequired
         };
     },
 
@@ -31,12 +32,12 @@ var CAModal = React.createClass({
             return <CAModalLogin />;
         if (this.props.type === 'signup')
             return <CAModalSignup />;
-        if (this.props.type === 'signup')
-            return <CAModalActivation />;
+        if (this.props.type === 'activation')
+            return <CAModalActivation netid={this.props.data.netid} />;
     },
 
     render: function() {
-        var rootClass = classNames('ca-modal', {
+        var rootClass = classNames('ca-modal', this.props.type, {
             show: this.props.active
         });
 
@@ -56,6 +57,10 @@ var CAModal = React.createClass({
      * Event handler for closing the modal.
      */
     _onClose: function() {
+        // Prevent users from dismissing the activation modal.
+        if (this.props.type === 'activation')
+            return;
+
         ModalActions.close();
     }
 });

@@ -65,7 +65,7 @@ var CAApp = React.createClass({
                     </div>
                 </div>
                 <CAModal active={this.state.modal.active}
-                    type={this.state.modal.type} />
+                    type={this.state.modal.type} data={this.state.modal.data} />
             </div>
         );
     }

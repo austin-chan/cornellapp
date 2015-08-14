@@ -1,5 +1,9 @@
 .ca-modal {
 
+    &.activation .overlay {
+        cursor: default;
+    }
+
     &.show {
 
         .overlay {

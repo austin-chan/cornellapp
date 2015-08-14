@@ -66,18 +66,16 @@ var authentication = function(passport, models) {
         passwordField : 'password',
         passReqToCallback: true
     }, function(req, netid, password, done) {
-        console.log('ooo');
         req.checkBody('netid', 'Provide a valid netID.').notEmpty()
             .isAlphanumeric();
         req.checkBody('password', 'Provide a password.').notEmpty();
         req.checkBody('name', 'Provide a name.').notEmpty();
-        console.log('sdd');
 
         blockValidationErrors(req, done, function() {
-            console.log('here');
             // Check that an activated user doesn't already exist with the
             // NetID.
-            new models.user({ netid: netid }).fetch().then(function(user) {
+            new models.user({ netid: netid, active: true }).fetch()
+                .then(function(user) {
                 if (user)
                     return done('An account is associated with that NetID.');
 

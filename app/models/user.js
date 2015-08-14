@@ -17,7 +17,7 @@ var user = function(bookshelf, models) {
     return bookshelf.Model.extend({
         tableName: 'users',
         correctPassword: function(password) {
-            return bcrypt.compareSync(password, this.get(password));
+            return bcrypt.compareSync(password, this.get('password'));
         }
     }, {
         /**

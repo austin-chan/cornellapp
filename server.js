@@ -32,13 +32,13 @@ app.set('passport', passport);
 app.set('config', config);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(expressValidator());
 app.use(express.static(__dirname + '/public'));
 
 // Initialize authentication.
 require('./app/initialization/authentication')(passport, models);
-app.use(passport.initialize());
-app.use(passport.session());
 
 // Include the JSX compiler.
 require("node-jsx").install({ extension: '.jsx' });

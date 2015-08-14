@@ -16,15 +16,20 @@ var React = require('react/addons'),
     classNames = require('classnames');
 
 var CAModalActivation = React.createClass({
+    propTypes: {
+        netid: React.PropTypes.string.isRequired
+    },
+
     render: function() {
         return (
-            <div>
-                <i className="icon-drafts"></i>
-                <p>Open the Confirmation Email Sent to
-                    bae237@cornell.edu to Complete Sign Up</p>
-                <button className="ca-simple-button">
-                    OPEN CMAIL IN A NEW TAB
-                </button>
+            <div className="ca-modal-activation">
+                <i className="icon icon-drafts"></i>
+                <p>Open the Confirmation Email Sent to<br/>
+                    {this.props.netid}@cornell.edu to Complete Sign Up</p>
+                <a href="http://cmail.cornell.edu" target="_blank"
+                    className="ca-simple-button">
+                    Open CMail in a New Tab
+                </a>
             </div>
         );
     }

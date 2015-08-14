@@ -20,7 +20,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var CHANGE_EVENT = 'schedule_change';
 
 var _active = false,
-    _modalType;
+    _modalType,
+    _modalData;
 
 /**
  * Activate the login modal to appear.
@@ -28,6 +29,7 @@ var _active = false,
 function login() {
     _active = 'modal';
     _modalType = 'login';
+    _modalData = {};
 }
 
 /**
@@ -36,14 +38,19 @@ function login() {
 function signup() {
     _active = 'modal';
     _modalType = 'signup';
+    _modalData = {};
 }
 
 /**
  * Activate the account activation modal to appear.
+ * @param {string} netid Netid of account waiting to be activated.
  */
-function activation() {
+function activation(netid) {
     _active = 'modal';
     _modalType = 'activation';
+    _modalData = {
+        netid: netid
+    };
 }
 
 /**
@@ -61,7 +68,8 @@ var ModalStore = assign({}, EventEmitter.prototype, {
     getModalState: function() {
         return {
             active: _active === 'modal',
-            type: _modalType
+            type: _modalType,
+            data: _modalData
         };
     },
 
@@ -127,7 +135,7 @@ AppDispatcher.register(function(action) {
             break;
 
         case ModalConstants.ACTIVATION:
-            activation();
+            activation(action.netid);
             ModalStore.emitChange();
             break;
 

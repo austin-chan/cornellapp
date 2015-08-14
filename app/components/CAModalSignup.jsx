@@ -80,7 +80,7 @@ var CAModalSignup = React.createClass({
         if (data.error)
             return this.displayErrorMessage(data.error);
 
-        ModalActions.activation();
+        ModalActions.activation(this.submittedNetid);
     },
 
     render: function() {
@@ -185,12 +185,15 @@ var CAModalSignup = React.createClass({
         if (this.state.loading)
             return;
 
-        var form = React.findDOMNode(this.refs.form);
+        var form = React.findDOMNode(this.refs.form),
+            formObj = $(form).serializeObject();
+        // Save netid to possibly pass to activation modal.
+        this.submittedNetid = $.trim(formObj.netid);
 
         this.jqXHR = $.ajax({
             type: 'post',
             url: '/api/signup',
-            data: $(form).serializeObject(),
+            data: formObj,
             success: this.receiveSignupResponse
         });
 

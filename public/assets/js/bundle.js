@@ -36,10 +36,12 @@ var ModalActions = {
 
     /**
      * Activate the account activation modal to appear.
+     * @param {string} netid Netid of account waiting to be activated.
      */
-    activation: function() {
+    activation: function(netid) {
         AppDispatcher.dispatch({
-            actionType: ModalConstants.ACTIVATION
+            actionType: ModalConstants.ACTIVATION,
+            netid: netid
         });
     },
 
@@ -220,7 +222,7 @@ var CAApp = React.createClass({displayName: "CAApp",
                     )
                 ), 
                 React.createElement(CAModal, {active: this.state.modal.active, 
-                    type: this.state.modal.type})
+                    type: this.state.modal.type, data: this.state.modal.data})
             )
         );
     }
@@ -759,7 +761,8 @@ var CAModal = React.createClass({displayName: "CAModal",
     propTypes: function() {
         return {
             active: React.PropTypes.boolean.isRequired,
-            type: React.PropTypes.string.isRequired
+            type: React.PropTypes.string.isRequired,
+            data: React.PropTypes.object.isRequired
         };
     },
 
@@ -768,12 +771,12 @@ var CAModal = React.createClass({displayName: "CAModal",
             return React.createElement(CAModalLogin, null);
         if (this.props.type === 'signup')
             return React.createElement(CAModalSignup, null);
-        if (this.props.type === 'signup')
-            return React.createElement(CAModalActivation, null);
+        if (this.props.type === 'activation')
+            return React.createElement(CAModalActivation, {netid: this.props.data.netid});
     },
 
     render: function() {
-        var rootClass = classNames('ca-modal', {
+        var rootClass = classNames('ca-modal', this.props.type, {
             show: this.props.active
         });
 
@@ -793,6 +796,10 @@ var CAModal = React.createClass({displayName: "CAModal",
      * Event handler for closing the modal.
      */
     _onClose: function() {
+        // Prevent users from dismissing the activation modal.
+        if (this.props.type === 'activation')
+            return;
+
         ModalActions.close();
     }
 });
@@ -818,14 +825,19 @@ var React = require('react/addons'),
     classNames = require('classnames');
 
 var CAModalActivation = React.createClass({displayName: "CAModalActivation",
+    propTypes: {
+        netid: React.PropTypes.string.isRequired
+    },
+
     render: function() {
         return (
-            React.createElement("div", null, 
-                React.createElement("i", {className: "icon-drafts"}), 
-                React.createElement("p", null, "Open the Confirmation Email Sent to" + ' ' +
-                    "bae237@cornell.edu to Complete Sign Up"), 
-                React.createElement("button", {className: "ca-simple-button"}, 
-                    "OPEN CMAIL IN A NEW TAB"
+            React.createElement("div", {className: "ca-modal-activation"}, 
+                React.createElement("i", {className: "icon icon-drafts"}), 
+                React.createElement("p", null, "Open the Confirmation Email Sent to", React.createElement("br", null), 
+                    this.props.netid, "@cornell.edu to Complete Sign Up"), 
+                React.createElement("a", {href: "http://cmail.cornell.edu", target: "_blank", 
+                    className: "ca-simple-button"}, 
+                    "Open CMail in a New Tab"
                 )
             )
         );
@@ -1080,7 +1092,7 @@ var CAModalSignup = React.createClass({displayName: "CAModalSignup",
         if (data.error)
             return this.displayErrorMessage(data.error);
 
-        ModalActions.activation();
+        ModalActions.activation(this.submittedNetid);
     },
 
     render: function() {
@@ -1185,12 +1197,15 @@ var CAModalSignup = React.createClass({displayName: "CAModalSignup",
         if (this.state.loading)
             return;
 
-        var form = React.findDOMNode(this.refs.form);
+        var form = React.findDOMNode(this.refs.form),
+            formObj = $(form).serializeObject();
+        // Save netid to possibly pass to activation modal.
+        this.submittedNetid = $.trim(formObj.netid);
 
         this.jqXHR = $.ajax({
             type: 'post',
             url: '/api/signup',
-            data: $(form).serializeObject(),
+            data: formObj,
             success: this.receiveSignupResponse
         });
 
@@ -2012,7 +2027,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var CHANGE_EVENT = 'schedule_change';
 
 var _active = false,
-    _modalType;
+    _modalType,
+    _modalData;
 
 /**
  * Activate the login modal to appear.
@@ -2020,6 +2036,7 @@ var _active = false,
 function login() {
     _active = 'modal';
     _modalType = 'login';
+    _modalData = {};
 }
 
 /**
@@ -2028,14 +2045,19 @@ function login() {
 function signup() {
     _active = 'modal';
     _modalType = 'signup';
+    _modalData = {};
 }
 
 /**
  * Activate the account activation modal to appear.
+ * @param {string} netid Netid of account waiting to be activated.
  */
-function activation() {
+function activation(netid) {
     _active = 'modal';
     _modalType = 'activation';
+    _modalData = {
+        netid: netid
+    };
 }
 
 /**
@@ -2053,7 +2075,8 @@ var ModalStore = assign({}, EventEmitter.prototype, {
     getModalState: function() {
         return {
             active: _active === 'modal',
-            type: _modalType
+            type: _modalType,
+            data: _modalData
         };
     },
 
@@ -2119,7 +2142,7 @@ AppDispatcher.register(function(action) {
             break;
 
         case ModalConstants.ACTIVATION:
-            activation();
+            activation(action.netid);
             ModalStore.emitChange();
             break;
 

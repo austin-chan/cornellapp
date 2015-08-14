@@ -20,13 +20,13 @@ var authenticationrouter = function(app, blockValidationErrors) {
             if (err)
                 return res.json({ error: err });
 
-            req.logIn(user, function(err) {
+            req.login(user, function(err) {
                 if (err)
                     return res.json({ error: err });
 
                 return res.json({
                     error: null,
-                    user: user.omit('password').omit('activation_key')
+                    user: user.omit(['password', 'activation_key'])
                 });
             });
         })(req, res, next);
@@ -45,7 +45,7 @@ var authenticationrouter = function(app, blockValidationErrors) {
 
                 return res.json({
                     error: null,
-                    user: user.omit('password').omit('activation_key')
+                    user: user.omit(['password', 'activation_key'])
                 });
             });
         })(req, res, next);
