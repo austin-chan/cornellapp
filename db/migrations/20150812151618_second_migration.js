@@ -3,11 +3,11 @@
 exports.up = function(knex, Promise) {
     return Promise.all([
         knex.schema.createTable('selections', function(table) {
-            table.increments().unsigned();
+            table.increments('id');
+            table.string('tag').notNullable(); // crseId + strm + subject
             table.integer('userId').unsigned();
-            table.integer('crseId').unsigned().notNullable();
-            table.integer('strm').notNullable();
             table.string('key', 16).notNullable();
+            table.integer('strm').unsigned().notNullable();
             table.string('color').notNullable();
             table.boolean('active').notNullable();
             table.string('selectedSectionIds').notNullable();

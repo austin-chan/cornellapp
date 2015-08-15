@@ -38,10 +38,9 @@ module.exports = function(models, knex) {
 
 		// delete ids and relation ids for the entry
 		delete copyCourseEntry.id;
+		delete copyCourseEntry.crseId_strm_subject;
 		var groups = extractProperty(copyCourseEntry, 'groups');
-		// console.log(typeof copyCourseEntry.catalogOutcomes);
 		copyCourseEntry = sanitizeCourseObject(copyCourseEntry);
-		// console.log(typeof copyCourseEntry.catalogOutcomes);
 		copyCourseEntry.groups = groups;
 		for (var i = 0; i < copyCourseEntry.groups.length; i++) {
 			var group = copyCourseEntry.groups[i];
@@ -253,6 +252,9 @@ module.exports = function(models, knex) {
 		async.waterfall([
 			// save course object
 			function(callback) {
+				course.crseId_strm_subject =
+					course.crseId + '_' + course.strm + '_' + course.subject;
+
 				new models.course(course).save().then(function(savedCourse) {
 					callback(null, savedCourse);
 				}).catch(function(err) {
@@ -580,7 +582,7 @@ module.exports = function(models, knex) {
 	 * Convenience function to sanitize a semester object from the Cornell
 	 * Courses API to prepare it for insertion into the database.
 	 * @param {object} semester Semester object to sanitize.
-	 * @return {object} Santized semester object.
+	 * @return {object} Sanitized semester object.
 	 */
 	m.sanitizeSemesterObject = function(semester) {
 		removeAllNullKeys(semester);

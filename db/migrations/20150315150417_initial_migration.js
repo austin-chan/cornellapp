@@ -21,6 +21,7 @@ exports.up = function(knex, Promise) {
 			table.integer('crseId').unsigned().notNullable();
 			table.integer('crseOfferNbr').unsigned().notNullable();
 			table.integer('strm').unsigned().notNullable();
+			table.string('crseId_strm_subject').notNullable();
 			table.string('subject', 16).notNullable();
 			table.string('titleLong').notNullable();
 			table.string('titleShort').notNullable();

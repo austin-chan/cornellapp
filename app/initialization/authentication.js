@@ -24,8 +24,10 @@ var authentication = function(passport, models) {
      * Deserialize the session user.
      */
     passport.deserializeUser(function(id, done) {
-        new models.user({ id: id }).fetch().then(function(user) {
-            done(err, user);
+        new models.user({ id: id }).fetch({
+            withRelated: ['selections.course']
+        }).then(function(user) {
+            done(null, user);
         });
     });
 
@@ -77,7 +79,8 @@ var authentication = function(passport, models) {
             new models.user({ netid: netid, active: true }).fetch()
                 .then(function(user) {
                 if (user)
-                    return done('An account is associated with that NetID.');
+                    return done('An account is already associated with that ' +
+                        'NetID.');
 
                 // Create an unactivated user.
                 new models.user({

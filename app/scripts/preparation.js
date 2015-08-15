@@ -15,3 +15,5 @@ global.$ = global.jQuery = require('jquery');
 require('devbridge-autocomplete');
 require('velocity-animate');
 require('form-serializer');
+
+global.context = JSON.parse(document.getElementById('context').textContent);

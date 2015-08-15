@@ -5,10 +5,15 @@
  * argument of the semester name to update: 'node trawl FA15'
  */
 
+// Initialize environment variables for local environment.
+try {
+    require('dotenv').load();
+} catch(e) {}
+
 var async = require('async'),
 	_ = require('underscore'),
 	chalk = require('chalk'),
-	config = require('config'),
+	config = require('./config'),
 	knex = require('knex')(config.knex),
 	bookshelf = require('bookshelf')(knex),
 	models = require('./app/models')(bookshelf),

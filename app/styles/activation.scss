@@ -1,0 +1,44 @@
+@import "reset";
+@import "fonts";
+@import "bourbon/bourbon";
+
+body {
+    background: #F3F3F4;
+    font-family: 'bunt';
+    text-align: center;
+
+    * {
+        cursor: default;
+    }
+}
+
+header {
+    font-size: 30px;
+    color: #C03D32;
+    padding-top: 25px;
+}
+
+.message {
+    position: fixed;
+    padding-bottom: 200px;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    max-width: 630px;
+    min-width: 320px;
+    @include transform(translateX(-50%) translateY(-50%));
+
+    .main {
+        color: #979797;
+        font-size: 22px;
+        letter-spacing: .02em;
+    }
+
+    .secondary {
+        color: #C1C1C1;
+        font-size: 14px;
+        letter-spacing: .03em;
+        font-weight: 300;
+        margin-top: 6px;
+    }
+}

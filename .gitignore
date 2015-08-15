@@ -1,2 +1,4 @@
 node_modules
 .elasticbeanstalk
+.ebextensions/variables.config
+.env

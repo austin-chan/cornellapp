@@ -89,6 +89,15 @@ var ScheduleActions = {
             key: key,
             sectionType: sectionType,
         });
+    },
+
+    /**
+     * Reinitialize the course list as empty in the event of logout.
+     */
+    clear: function() {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CLEAR
+        });
     }
 };
 

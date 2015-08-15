@@ -12,32 +12,54 @@
  */
 
 var React = require('react/addons'),
-    ModalActions = require('../actions/ModalActions');
+    ScheduleActions = require('../actions/ScheduleActions'),
+    ModalActions = require('../actions/ModalActions'),
+    UserActions = require('../actions/UserActions');
 
 var CAHeader = React.createClass({
-    render: function() {
-        var context = {};
+    propTypes: {
+        user: React.PropTypes.oneOfType([
+                React.PropTypes.bool,
+                React.PropTypes.object
+            ])
+    },
 
-        if (process.env.NODE_ENV == 'browserify') {
-            context = JSON.parse(
-                document.getElementById('context').textContent);
-        }
+    render: function() {
+        var accountButtons;
+
+        if (this.props.user)
+            accountButtons = (
+                <div className="account-buttons">
+                    <button className="ca-outline-button"
+                        onClick={this._onMyAccount}>
+                        {this.props.user.name}
+                    </button>
+                    <button className="ca-outline-button"
+                        onClick={this._onLogout}>
+                        Log Out
+                    </button>
+                </div>
+            );
+        else
+            accountButtons = (
+                <div className="account-buttons">
+                    <button className="ca-outline-button"
+                        onClick={this._onSignup}>
+                        Sign Up
+                    </button>
+                    <button className="ca-outline-button"
+                        onClick={this._onLogin}>
+                        Log In
+                    </button>
+                </div>
+            );
 
         return (
             <header className="ca-header">
                 <div className="container">
                     <div className="left">
                         <p className="logo museo-sans">Cornellapp</p>
-                        <div className="account-buttons">
-                            <button className="ca-outline-button"
-                                onClick={this._onSignup}>
-                                Sign Up
-                            </button>
-                            <button className="ca-outline-button"
-                                onClick={this._onLogin}>
-                                Log In
-                            </button>
-                        </div>
+                        {accountButtons}
                     </div>
                     <div className="right">
                         <div className="semester-buttons">
@@ -52,6 +74,19 @@ var CAHeader = React.createClass({
                 </div>
             </header>
         );
+    },
+
+    /**
+     * Event handler for logging out of the application.
+     */
+    _onLogout: function() {
+        $.ajax({
+            type: 'post',
+            url: '/api/logout'
+        });
+
+        UserActions.logout();
+        ScheduleActions.clear();
     },
 
     /**

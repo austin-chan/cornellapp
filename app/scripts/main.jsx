@@ -11,10 +11,10 @@
  * using Browserify.
  */
 
+require('./preparation');
+
 var React = require('react/addons'),
     CAApp = require('../components/CAApp'),
     mountNode = document.getElementById('cornell-app-mount');
-
-require('./preparation');
 
 React.render(<CAApp />, mountNode);

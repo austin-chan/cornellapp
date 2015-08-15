@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cornellapp - Account Confirmed</title>
+    <link href='/assets/css/activation.css' rel="stylesheet">
+    <script src="//use.typekit.net/rfd1tkc.js"></script>
+    <script>try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+    <header class="museo-sans">Cornellapp</header>
+    <div class="message">
+        <% if(!error) { %>
+        <p class="main">Account Confirmation Successful.</p>
+        <p class="secondary">Please close this tab and return to the original page.</p>
+        <% } else { %>
+        <p class="main">The process could not be completed.</p>
+        <p class="secondary"><%= error %></p>
+        <% } %>
+    </div>
+
+</body>
+</html>

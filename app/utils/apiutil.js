@@ -194,25 +194,16 @@ module.exports = function(models) {
 
 	/**
 	 * Perform a course selection creation operation for a user.
-	 * @param {object} p Params object from the request object.
+	 * @param {object} user User object of logged in user.
+	 * @param {object} p Body object from the request object.
 	 * @param {function} callback Callback function to be called when the
 	 * 		operation is complete. The function will be called with one
 	 *		parameter, an error, if an error occurs. Otherwise, no parameters
 	 *		will be passed.
 	 */
-	m.createSelection = function(p, callback) {
-		// Make sure user exists.
-		new models.user({ id: p.userId }).fetch().then(function(user) {
-			if (user === null) {
-				callback('User doesn\'t exist');
-				return;
-			}
-
-			success();
-		});
-
+	m.createSelection = function(user, p, callback) {
 		// Make sure course exists.
-		new models.course({ crseId: p.crseId, strm: p.strm }).fetch()
+		new models.course({ crseId_strm_subject: p.tag }).fetch()
 			.then(function(course) {
 			if (course === null) {
 				callback('Course doesn\'t exist');
@@ -223,7 +214,7 @@ module.exports = function(models) {
 		});
 
 		// Make sure selection doesn't already exist for the course.
-		new models.selection({ crseId: p.crseId, strm: p.strm }).fetch()
+		new models.selection({ tag: p.tag, userId: user.id }).fetch()
 			.then(function(selection) {
 			if ( selection !== null) {
 				callback('Course is already selected');
@@ -234,20 +225,78 @@ module.exports = function(models) {
 		});
 
 		// All checks must pass.
-		var successCount = 3;
+		var successCount = 2;
 		function success() {
 			successCount--;
 			if (successCount === 0) {
-				new models.selection(p).save().then(function(selection) {
+				p.userId = user.id;
+				new models.selection(p).save(null, { method: 'insert' })
+					.then(function(selection) {
 					if (selection === null) {
 						callback('something went wrong saving the selection');
 						return;
 					}
 
-					callback();
+					// Finally get the id.
+					new models.selection({
+						userId: user.id,
+						tag: selection.get('tag')
+					}).fetch().then(function(saved) {
+						callback(null, saved.get('id'));
+					});
 				});
 			}
 		}
+	};
+
+	/**
+	 * Perform a course selection update operation.
+	 * @param {object} user User object of logged in user.
+	 * @param {object} p Body object from the request object.
+	 * @param {function} callback Callback function to be called when the
+	 * 		operation is complete. The function will be called with one
+	 *		parameter, an error, if an error occurs. Otherwise, no parameters
+	 *		will be passed.
+	 */
+	m.updateSelection = function(user, p, callback) {
+		// Make sure selection belongs to user.
+		new models.selection({ id: p.id }).fetch()
+			.then(function(selection) {
+			if (selection === null)
+				return callback('Selection doesn\'t exist');
+
+			if (selection.get('userId') !== user.id)
+				return callback('Selection does\'t belong to user.');
+
+			selection.save(p, { method: 'update' }).then(function() {
+				callback();
+			});
+		});
+	};
+
+	/**
+	 * Perform a course selection update operation.
+	 * @param {object} user User object of logged in user.
+	 * @param {object} p Body object from the request object.
+	 * @param {function} callback Callback function to be called when the
+	 * 		operation is complete. The function will be called with one
+	 *		parameter, an error, if an error occurs. Otherwise, no parameters
+	 *		will be passed.
+	 */
+	m.deleteSelection = function(user, p, callback) {
+		// Make sure selection belongs to user.
+		new models.selection({ id: p.id }).fetch()
+			.then(function(selection) {
+			if (selection === null)
+				return callback('Selection doesn\'t exist');
+
+			if (selection.get('userId') !== user.id)
+				return callback('Selection does\'t belong to user.');
+
+			selection.destroy().then(function() {
+				callback();
+			});
+		});
 	};
 
 	return m;

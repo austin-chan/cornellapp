@@ -13,6 +13,7 @@
 
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
+    UserActions = require('../actions/UserActions'),
     classNames = require('classnames');
 
 var CAModalLogin = React.createClass({
@@ -63,6 +64,12 @@ var CAModalLogin = React.createClass({
 
         if (data.error)
             return this.displayErrorMessage(data.error);
+
+        if (!data.user.active)
+            return ModalActions.activate();
+
+        UserActions.login(data.user);
+        ModalActions.close();
     },
 
     render: function() {

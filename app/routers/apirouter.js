@@ -37,31 +37,6 @@ var apirouter = function(app, blockValidationErrors) {
 		});
 	});
 
-	// Route for adding a course.
-	app.post('/api/selection', function(req, res) {
-		req.sanitizeParams('query').trim();
-		req.checkParams('userId', 'Provide an userId.').notEmpty().isInt();
-		req.checkParams('crseId', 'Provide a crseId.').notEmpty().isInt();
-		req.checkParams('strm', 'Provide a strm.').notEmpty().isInt();
-		req.checkParams('key', 'Provide a key.').notEmpty();
-		req.checkParams('color', 'Provide a color.').notEmpty();
-		req.checkParams('active', 'Provide an active.').notEmpty().isBoolean();
-		req.checkParams('selectedSectionIds', 'Provide a selectedSectionIds.')
-			.notEmpty();
-
-		blockValidationErrors(req, res, function() {
-			apiutil.createSelection(req.params, function(err) {
-				if (err) {
-					res.status(400);
-					res.send('An error occurred adding the course.');
-					return;
-				}
-
-				res.send('ok'); // default code 200
-			});
-		});
-	});
-
 	// Route for getting a full name for a netid
 	app.get('/api/fetch-name', function(req, res) {
 		req.checkQuery('netid', 'Provide a netid.').notEmpty();
@@ -77,6 +52,7 @@ var apirouter = function(app, blockValidationErrors) {
 	});
 
     require('./authenticationrouter')(app, blockValidationErrors);
+    require('./selectionrouter')(app, blockValidationErrors);
 };
 
 module.exports = apirouter;

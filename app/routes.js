@@ -12,24 +12,31 @@
  */
 
 var React = require('react/addons'),
-    CAApp = React.createFactory(require('./components/CAApp'));
+    CAApp = React.createFactory(require('./components/CAApp')),
+    UserStore = require('./stores/UserStore'),
+    ScheduleStore = require('./stores/ScheduleStore');
 
 module.exports = function(app) {
 
-    app.get('/', function(req, res){
-        // React.renderToString takes your component
-        // and generates the markup
-
-        var number = 5;
-
-        var reactHtml = React.renderToString(CAApp({ prop: number }));
-        var context = JSON.stringify({
-            test: 'test'
+    app.get('/test', function(req, res) {
+        req.user.load(['selections.course']).then(function() {
+            console.log(req.user.getSelectionData());
         });
+    });
+
+    app.get('/', function(req, res) {
+        UserStore.reset(req);
+        ScheduleStore.reset(req);
+
+        var reactOutput = React.renderToString(CAApp()),
+            contextString = JSON.stringify({
+                UserStore: UserStore.snapshot(),
+                ScheduleStore: ScheduleStore.snapshot()
+            });
 
         res.render('index.ejs', {
-            reactOutput: reactHtml,
-            context: context
+            reactOutput: reactOutput,
+            contextString: contextString
         });
     });
 
@@ -49,7 +56,7 @@ module.exports = function(app) {
 function blockValidationErrors(req, res, success) {
     var errors = req.validationErrors();
     if (errors)
-        return res.send(errors[0].msg, 400);
+        return res.status(400).send(errors[0].msg);
 
     success();
 }

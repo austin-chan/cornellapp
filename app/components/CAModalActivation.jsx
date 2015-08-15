@@ -13,11 +13,41 @@
 
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
-    classNames = require('classnames');
+    UserActions = require('../actions/UserActions'),
+    classNames = require('classnames'),
+    _ = require('underscore');
 
 var CAModalActivation = React.createClass({
     propTypes: {
         netid: React.PropTypes.string.isRequired
+    },
+
+    componentWillMount: function() {
+        setTimeout(_.bind(function() {
+            this.interval = setInterval(_.bind(this.poll, this), 3000);
+        }, this), 8000);
+    },
+
+    /**
+     * Check if the activation link has been visited.
+     */
+    poll: function() {
+        $.ajax({
+            url: '/api/poll-activation',
+            success: this.receivePollResponse
+        });
+    },
+
+    /**
+     * Handle the response from the poll check.
+     */
+    receivePollResponse: function(data) {
+        if (data.user) {
+            clearInterval(this.interval);
+            ModalActions.close();
+            UserActions.login(data.user);
+        }
+
     },
 
     render: function() {

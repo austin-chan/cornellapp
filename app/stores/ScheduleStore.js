@@ -13,6 +13,7 @@
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     ScheduleConstants = require('../constants/ScheduleConstants'),
+    UserStore = require('./UserStore'),
     assign = require('object-assign'),
     moment = require('moment'),
     _ = require('underscore');
@@ -31,7 +32,8 @@ var _courses = {},
         F: 'friday',
         S: 'saturday',
         Su: 'sunday'
-    };
+    },
+    _requestCount = 0;
 
 /**
  * Add a course to the schedule.
@@ -47,6 +49,12 @@ function add(course) {
         selection: selection
     };
 
+    // Server side persist if logged in user.
+    request('post', _courses[selection.key]).success(function(data) {
+        if (_courses[selection.key])
+            _courses[selection.key].selection.id = data;
+    });
+
     console.log(_courses[selection.key]);
 }
 
@@ -56,6 +64,7 @@ function add(course) {
  */
 function remove(key) {
     delete _courses[key];
+    request('delete', course);
 }
 
 /**
@@ -64,7 +73,10 @@ function remove(key) {
  * @param {boolean} active Active state to set for the course.
  */
 function toggle(key, active) {
+    var course = _courses[key];
     _courses[key].selection.active = active;
+
+    request('put', _courses[key]);
 }
 
 /**
@@ -78,6 +90,7 @@ function setColor(key, color) {
         return;
 
     _courses[key].selection.color = color;
+    request('put', _courses[key]);
 }
 
 /**
@@ -108,6 +121,8 @@ function selectSection(key, sectionId) {
 
     // Add the desired section to the course selection.
     course.selection.selectedSectionIds.push(sectionId);
+
+    request('put', _courses[key]);
 }
 
 /**
@@ -129,6 +144,52 @@ function deselectSectionType(key, sectionType) {
                 return selectedSectionOfType.section === sectionId;
         });
     }
+
+    request('put', _courses[key]);
+}
+
+/**
+ * Initiate a request to persist data about selections.
+ * @param {string} type Method of request.
+ * @param {object} course Course object to save or delete.
+ * @param {object} The jqXHR object for the request.
+ */
+function request(type, course) {
+    if (!UserStore.isLoggedIn())
+        return;
+
+    // Skip if doesn't have id loaded for update or delete requests;
+    if ((type === 'put' || type === 'delete') && !course.selection.id)
+        return;
+
+    // Generate request data object.
+    var data;
+    if (type === 'post') {
+        var raw = course.raw;
+        data = JSON.parse(JSON.stringify(course.selection));
+        data.selectedSectionIds = JSON.stringify(
+            course.selection.selectedSectionIds);
+        data.strm = _semester;
+        data.active = +data.active;
+    } else if (type === 'put') {
+        data = JSON.parse(JSON.stringify(course.selection));
+        data.selectedSectionIds = JSON.stringify(
+            course.selection.selectedSectionIds);
+        data.active = +data.active;
+    } else if (type === 'delete') {
+        data = {
+            id: course.selection.id
+        };
+    }
+
+    _requestCount++;
+    return $.ajax({
+        type: type,
+        url: '/api/selection',
+        data: data
+    }).always(function() {
+        _requestCount--;
+    });
 }
 
 /**
@@ -137,7 +198,6 @@ function deselectSectionType(key, sectionType) {
  * @return {object} Default selection object for the course.
  */
 function defaultSelection(course) {
-
     // Using the current timestamp + random number for the key. This is good
     // enough unless functionality needs to be built to allow the course
     // order to change.
@@ -146,6 +206,7 @@ function defaultSelection(course) {
         .toString(36);
 
     return {
+        tag: course.crseId + '_' + course.strm + '_' + course.subject,
         key: key,
         color: generateColor(),
         active: true,
@@ -477,6 +538,32 @@ function exists(course) {
     });
 }
 
+/**
+ * Reinitializes the course list as empty in the event of logout.
+ */
+function clear() {
+    _courses = {};
+}
+
+/**
+ * Generate a snapshot that can be converted to JSON and used by another
+ * instance of the store to restore it back to an identical state.
+ */
+function snapshot() {
+    return {
+        _courses: _courses
+    };
+}
+
+/**
+ * Restore the state of the store from a snapshot.
+ * @param {object} snapshot Snapshot to return state to.
+ */
+function restore(snapshot) {
+    _courses = snapshot._courses;
+}
+
+
 var ScheduleStore = assign({}, EventEmitter.prototype, {
 
     /**
@@ -592,6 +679,18 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     conflictInSections: conflictInSections,
 
     /**
+     * Generate a snapshot that can be converted to JSON and used by another
+     * instance of the store to restore it back to an identical state.
+     */
+    snapshot: snapshot,
+
+    /**
+     * Restore the state of the store from a snapshot.
+     * @param {object} snapshot Snapshot to return state to.
+     */
+    restore: restore,
+
+    /**
      * Publish a change to all listeners.
      */
     emitChange: function() {
@@ -614,6 +713,20 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     }
 });
+
+if (process.env.NODE_ENV !== 'browserify') {
+    ScheduleStore.reset = function(req) {
+        var snapshot = {};
+
+        snapshot._courses = {};
+        // if (req.isAuthenticated())
+        //     snapshot._user = req.user.cleanOutput();
+        // else
+        //     snapshot._user = false;
+
+        restore(snapshot);
+    };
+}
 
 AppDispatcher.register(function(action) {
     switch(action.actionType) {
@@ -644,6 +757,11 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.DESELECT_SECTION_TYPE:
             deselectSectionType(action.key, action.sectionType);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.CLEAR:
+            clear();
             ScheduleStore.emitChange();
             break;
 

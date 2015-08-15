@@ -8,11 +8,11 @@
         @include container(1080px);
 
         > .left {
-            @include span(5 of 12);
+            @include span(7.5 of 12);
         }
 
         > .right {
-            @include span(7 of 12 last);
+            @include span(4.5 of 12 last);
             text-align: right;
         }
     }

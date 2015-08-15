@@ -16,6 +16,8 @@ jsx --watch react/ react-built/
 TODO
 Search for a course with slash /
 Search for chi gong
+prevent scroll modal
+professor in basket course
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups

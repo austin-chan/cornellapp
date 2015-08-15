@@ -11,17 +11,27 @@
  * initialization process for the application files and all the dependencies.
  */
 
+// Initialize environment variables for local environment. The dotenv package
+// is not included in package.json, every local installation must set up the
+// environment variables independently.
+try {
+    require('dotenv').load();
+} catch(e) {}
+
 // Initialize express and all top-level packages.
 var express = require('express'),
     app = module.exports = express(),
     port = process.env.PORT || 3000,
     bodyParser = require('body-parser'),
     expressValidator = require('express-validator'),
+    session = require('express-session'),
     passport = require('passport'),
-    config = require('config'),
+    config = require('./config'),
     knex = require('knex')(config.knex),
     bookshelf = require('bookshelf')(knex),
-    models = require('./app/models')(bookshelf);
+    models = require('./app/models')(bookshelf),
+    KnexSessionStore = require('connect-session-knex')(session),
+    sessionStore = new KnexSessionStore({ knex: knex });
 
 // App configuration.
 app.set('view engine', 'ejs');
@@ -29,9 +39,12 @@ app.set('views', __dirname + '/app/views');
 app.set('models', models);
 app.set('knex', knex);
 app.set('passport', passport);
+app.set('authorize', require('./app/initialization/authorize'));
 app.set('config', config);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(session({ secret: 'kCornellapp', saveUninitialized: false,
+    resave: false, store: sessionStore }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(expressValidator());
