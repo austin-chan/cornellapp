@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Departments</title>
+    <link href='/assets/css/catalog.css' rel="stylesheet">
+    <script src="//use.typekit.net/rfd1tkc.js"></script>
+    <script>try{Typekit.load();}catch(e){}</script>
+</head>
+<body>
+    <%- include('catalog/' + type) %>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script>
+    $(document).on('click', 'a', function(e) {
+        e.preventDefault();
+
+        var href = $(this).attr('href');
+        parent.receiveLink(href);
+    });
+    </script>
+</body>
+</html>

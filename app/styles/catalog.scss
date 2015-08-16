@@ -1,0 +1,13 @@
+@import "reset";
+@import "bourbon/bourbon";
+@import "susy/susy";
+@import "variables";
+@import "fonts";
+
+body {
+    padding: 0 55px;
+    background: #F8F8F8;
+    font-family: 'bunt';
+}
+
+@import "catalogs";

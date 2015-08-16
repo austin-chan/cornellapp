@@ -15,6 +15,7 @@ var Joi = require('joi');
 var semester = function(bookshelf, models) {
 	return bookshelf.Model.extend({
 		tableName: 'semesters',
+        idAttribute: 'strm',
 		courses: function() {
 			var relation = this.hasMany(models.course, 'strm');
 			relation.relatedData.parentTableName = 'strm';

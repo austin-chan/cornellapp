@@ -56,13 +56,21 @@ var ModalActions = {
 
     /**
      * Open the course catalog.
-     * @param {object} course Optional course object to open to.
+     * @param {string} page Optional link to load in the catalog.
      */
-    catalog: function(course) {
+    catalog: function(page) {
         AppDispatcher.dispatch({
             actionType: ModalConstants.CATALOG,
-            course: course
+            page: page
         });
+    },
+
+    /**
+     * Open the course catalog to a certain course's page.
+     * @param {string} course Course object to load page for.
+     */
+    catalogCourse: function() {
+        ModalActions.catalog('/course');
     },
 
     /**
@@ -715,7 +723,9 @@ module.exports = CABasketCourse;
  */
 
 var React = require('react/addons'),
-    ModalStore = require('../stores/ModalStore'),
+    ModalActions = require('../actions/ModalActions'),
+    classNames = require('classnames'),
+    ScheduleStore = require('../stores/ScheduleStore'),
     _ = require('underscore');
 
 var CACatalog = React.createClass({displayName: "CACatalog",
@@ -723,18 +733,98 @@ var CACatalog = React.createClass({displayName: "CACatalog",
         active: React.PropTypes.bool.isRequired
     },
 
-    render: function() {
-        return (
-            React.createElement("div", {id: "ca-catalog"}
+    getInitialState: function() {
+        return {
+            iframeTitle: ''
+        };
+    },
 
+    /**
+     * Automatically update the title of the catalog when the page changes and
+     * listen for link clicking in the iframe.
+     */
+    componentDidMount: function() {
+        var self = this;
+        $(React.findDOMNode(this.refs.iframe)).on('load', function() {
+            var iframeTitle = this.contentDocument.title;
+
+            self.setState({
+                iframeTitle: iframeTitle
+            });
+        });
+
+        window.receiveLink = function(link) {
+            console.log(link);
+        };
+    },
+
+    render: function() {
+        var rootClass = classNames('ca-catalog', {
+                show: this.props.active
+            }),
+            iframeSrc = "/catalog/departments/" +
+                ScheduleStore.getSemester().strm;
+
+        return (
+            React.createElement("div", {className: rootClass}, 
+                React.createElement("div", {className: "overlay", onClick: this._onClose}), 
+                React.createElement("div", {className: "window"}, 
+                    React.createElement("div", {className: "window-bar"}, 
+                        React.createElement("p", {className: "logo museo-sans"}, "Cornellapp"), 
+                        React.createElement("i", {className: "icon icon-search"}), 
+                        React.createElement("input", {type: "search", 
+                            className: "ca-clear-input search", 
+                            placeholder: "Search for a course"}), 
+                        React.createElement("div", {className: "ca-close close", onClick: this._onClose}, 
+                            React.createElement("i", {className: "icon-close"}), 
+                            React.createElement("div", {className: "label"}, "Close")
+                        )
+                    ), 
+                    React.createElement("div", {className: "navigation-bar"}, 
+                        React.createElement("div", {className: "upper"}, 
+                            React.createElement("div", {className: "navigation-buttons"}, 
+                                React.createElement("button", {className: "back-button disabled"}, 
+                                    React.createElement("i", {className: "icon-keyboard_arrow_left"}
+                                    )
+                                ), 
+                                React.createElement("button", {className: "forward-button"}, 
+                                    React.createElement("i", {className: "icon-keyboard_arrow_right"}
+                                    )
+                                )
+                            ), 
+                            React.createElement("p", {className: "title"}, this.state.iframeTitle)
+                        ), 
+                        React.createElement("div", {className: "navigation-tabs"}, 
+                            React.createElement("button", {className: "ca-simple-button"}, 
+                                "All Departments"
+                            ), 
+                            React.createElement("button", {className: "ca-simple-button"}, 
+                                "Random Courses"
+                            ), 
+                            React.createElement("button", {className: "ca-simple-button"}, 
+                                "Most Liked"
+                            )
+                        )
+                    ), 
+                    React.createElement("div", {className: "iframe-wrap"}, 
+                        React.createElement("iframe", {ref: "iframe", src: iframeSrc})
+                    )
+                )
             )
         );
+    },
+
+    /**
+     * Event handler for closing the catalog.
+     */
+    _onClose: function() {
+        ModalActions.close();
     }
 });
 
 module.exports = CACatalog;
 
-},{"../stores/ModalStore":27,"react/addons":49,"underscore":222}],9:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../stores/ScheduleStore":28,"classnames":34,"react/addons":49,"underscore":222}],9:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2655,7 +2745,7 @@ AppDispatcher.register(function(action) {
             break;
 
         case ModalConstants.CATALOG:
-            catalog(action.course);
+            catalog(action.page);
             ModalStore.emitChange();
             break;
 

@@ -43,6 +43,7 @@ module.exports = function(app) {
 
     // "/api"
     require('./routers/apirouter')(app, blockValidationErrors);
+    require('./routers/catalogrouter')(app);
 };
 
 /**

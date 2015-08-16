@@ -1,0 +1,21 @@
+<% var item = function(subject) { %>
+    <a href="#">
+        <span class="abbreviation"><%= subject.value %></span>
+        <span class="description"><%= subject.descrformal %></span>
+    </a>
+<% }; %>
+<div class="catalog-departments">
+    <div class="left">
+        <% for (var x = 0; x < Math.floor(data.length / 2); x++) {
+            var subject = data[x];
+            item(subject);
+        } %>
+    </div>
+    <div class="right">
+        <% for (var x = Math.floor(data.length / 2); x < data.length; x++) {
+            var subject = data[x];
+            item(subject);
+        } %>
+    </div>
+
+</div>

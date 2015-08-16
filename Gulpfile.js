@@ -45,7 +45,7 @@ gulp.task('sass', function () {
 gulp.task('server', function () {
     nodemon({
         script: 'server.js',
-        ext: 'js jsx html',
+        ext: 'js jsx ejs',
         ignore: ['public/**', 'app/styles/**']
     });
 });

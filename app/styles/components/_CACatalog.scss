@@ -1,0 +1,185 @@
+.ca-catalog {
+
+    &.show {
+
+        .overlay {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .window {
+            visibility: visible;
+            @include transform(translate(0px, 0px));
+        }
+    }
+
+    .overlay {
+        background-color: rgba(99, 99, 99, 0.38);
+        position: fixed;
+        visibility: hidden;
+        cursor: pointer;
+        opacity: 0;
+        z-index: 400;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        @include transition(all .17s linear);
+    }
+
+    .window {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 764px;
+        z-index: 500;
+        visibility: hidden;
+        background: #F8F8F8;
+        box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2);
+        @include transform(translate(-764px, 0px));
+        @include transition(all .5s $ios-easing);
+
+        .window-bar {
+            background: #F4F4F4;
+            height: 75px;
+            padding: 0px 55px;
+            border-bottom: 1px solid #D6D6D6;
+
+            .logo {
+                display: inline-block;
+                color: #BC625F;
+                font-size: 27px;
+                float: left;
+                margin-top: 22px;
+            }
+
+            .icon {
+                color: #C4C4C4;
+                font-size: 28px;
+                margin-top: 23px;
+                float: left;
+                display: inline-block;
+                margin-left: 30px;
+            }
+
+            .search {
+                font-size: 16px;
+                color: #424242;
+                margin-top: 25px;
+                margin-left: 4px;
+                width: 422px;
+
+                @include placeholder {
+                    font-size: 14px;
+                    top: 2px;
+                }
+            }
+
+            .close {
+                color: #C4C4C4;
+                position: absolute;
+                right: 14px;
+                color: #C4C4C4;
+                top: 18px;
+                font-size: 34px;
+
+                .label {
+                    position: absolute;
+                    font-size: 10px;
+                    left: 4px;
+                    bottom: -6px;
+                    letter-spacing: .04em;
+                    visibility: hidden;
+                    opacity: 0;
+                }
+
+                &:hover {
+                    .label {
+                        visibility: visible;
+                        opacity: 1;
+                        @include transition(.13s all ease-in-out);
+                    }
+                }
+            }
+        }
+
+        .navigation-bar {
+            padding: 20px 55px 16px;
+            border-bottom: 1px solid #E9E9E9;
+
+            .navigation-buttons {
+                vertical-align: middle;
+                display: inline-block;
+                font-size: 0;
+
+                button {
+                    display: inline-block;
+                    border: 1px solid #E1E1E1;
+                    background: #F9F9F9;
+                    font-size: 25px;
+                    color: #C6C6C6;
+                    height: 34px;
+                    box-sizing: border-box;
+                    width: 30px;
+                    outline: none;
+                    cursor: pointer;
+                    padding: 0;
+                    text-align: center;
+                    @include transition(.13s all ease-in-out);
+
+                    &:hover {
+                        opacity: .7;
+                    }
+
+                    &.disabled {
+                        opacity: .5;
+                        cursor: default;
+                    }
+                }
+
+                .back-button {
+                    border-radius: 4px 0 0 4px;
+                    margin-right: 2px;
+                }
+
+                .forward-button {
+                    border-radius: 0 4px 4px 0;
+                }
+            }
+
+            .title {
+                vertical-align: middle;
+                display: inline-block;
+                color: #BC625F;
+                font-size: 24px;
+                vertical-align: middle;
+                margin-top: 3px;
+                margin-left: 24px;
+                letter-spacing: .05em;
+            }
+
+            .navigation-tabs {
+                padding-top: 12px;
+
+                button {
+                    font-size: 11px !important;
+                    margin-right: 15px;
+                }
+            }
+        }
+
+        .iframe-wrap {
+            position: absolute;
+            top: 179px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+
+            iframe {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+}

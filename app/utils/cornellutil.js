@@ -87,7 +87,8 @@ m.isAvailableRoster = function(semester, callback) {
  * @param {string} semester String of a semester slug to check the available
  *     subjects from.
  * @param {function} callback Function that is called when the operation is
- *    finished with an array of subject tags or null if an error occurred.
+ *    finished with an array of subject tags and the raw data or null if an
+ *    error occurred.
  */
 m.getSubjects = function(semester, callback) {
 	var subjectsUrl = m.apiBase + 'config/subjects.json?roster=' + semester;
@@ -100,7 +101,7 @@ m.getSubjects = function(semester, callback) {
 			subjects.push(subject.value);
 		}
 
-		callback(subjects);
+		callback(subjects, subjectData);
 	}, function() {
 		callback(null);
 	});

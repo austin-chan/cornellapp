@@ -18,6 +18,7 @@ Search for a course with slash /
 Search for chi gong
 prevent scroll modal
 professor in basket course
+cookies save semester pref
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups

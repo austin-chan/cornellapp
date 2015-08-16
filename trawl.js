@@ -19,6 +19,7 @@ var async = require('async'),
 	models = require('./app/models')(bookshelf),
 	cornellutil = require('./app/utils/cornellutil'),
 	courseutil = require('./app/utils/courseutil')(models, knex),
+	moment = require('moment'),
 	semester = process.argv[2];
 
 if (!semester || typeof semester != 'string') {
@@ -76,14 +77,19 @@ async.waterfall([
 	// get all subjects for semester
 	function(semesterEntry, callback) {
 		console.log('Retrieving list of available subjects');
-		cornellutil.getSubjects(semester, function(subjects) {
+		cornellutil.getSubjects(semester, function(subjects, raw) {
 			if (!subjects || !subjects.length) {
 				callback(semester + ' is not an available semester.');
 				return;
 			}
 
-			printSuccess('Retrieved list of subjects');
-			callback(null, semesterEntry, subjects);
+			semesterEntry.save({
+				subject_list: JSON.stringify(raw),
+				updated: moment().format('YYYY-MM-DD HH:mm:ss')
+			}).then(function() {
+				printSuccess('Retrieved list of subjects');
+				callback(null, semesterEntry, subjects);
+			});
 		});
 	},
 

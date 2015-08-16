@@ -144,7 +144,7 @@ AppDispatcher.register(function(action) {
             break;
 
         case ModalConstants.CATALOG:
-            catalog(action.course);
+            catalog(action.page);
             ModalStore.emitChange();
             break;
 

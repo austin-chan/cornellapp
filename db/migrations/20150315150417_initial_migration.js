@@ -15,6 +15,8 @@ exports.up = function(knex, Promise) {
 			table.string('lastModifiedDttm').notNullable();
 			table.string('slug').notNullable();
 			table.integer('strm').notNullable();
+			table.text('subject_list').notNullable();
+			table.string('updated').notNullable();
 		}),
 		knex.schema.createTable('courses', function(table) {
 			table.increments().unsigned();

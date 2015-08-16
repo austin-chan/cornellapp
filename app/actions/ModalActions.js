@@ -55,13 +55,21 @@ var ModalActions = {
 
     /**
      * Open the course catalog.
-     * @param {object} course Optional course object to open to.
+     * @param {string} page Optional link to load in the catalog.
      */
-    catalog: function(course) {
+    catalog: function(page) {
         AppDispatcher.dispatch({
             actionType: ModalConstants.CATALOG,
-            course: course
+            page: page
         });
+    },
+
+    /**
+     * Open the course catalog to a certain course's page.
+     * @param {string} course Course object to load page for.
+     */
+    catalogCourse: function() {
+        ModalActions.catalog('/course');
     },
 
     /**
