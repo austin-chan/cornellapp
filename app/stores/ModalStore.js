@@ -13,6 +13,7 @@
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     ModalConstants = require('../constants/ModalConstants'),
+    ScheduleStore = require('./ScheduleStore'),
     assign = require('object-assign'),
     moment = require('moment'),
     _ = require('underscore');
@@ -21,7 +22,15 @@ var CHANGE_EVENT = 'schedule_change';
 
 var _active = false,
     _modalType,
-    _modalData;
+    _modalData,
+    _catalogData,
+    _catalogStack,
+    _catalogStackForward;
+
+/**
+ * Initialize the store.
+ */
+catalogReset();
 
 /**
  * Activate the login modal to appear.
@@ -61,10 +70,63 @@ function account() {
 
 /**
  * Activate the catalog view.
+ * @param {}
  */
-function catalog() {
+function catalog(page) {
     _active = 'catalog';
-    _modalData = {};
+
+    if (page) {
+        setCatalogPage(page);
+    }
+}
+
+/**
+ * Load the catalog previous page.
+ */
+function catalogBack() {
+    // Skip if there is no previous page.
+    if (_catalogStack.length < 2)
+        return;
+
+    var popped = _catalogStack.pop();
+    _catalogStackForward.push(popped);
+}
+
+/**
+ * Load the catalog previous page.
+ */
+function catalogForward() {
+    // Skip if there is no next page.
+    if (_catalogStack.length === 0)
+        return;
+
+    var popped = _catalogStackForward.pop();
+    _catalogStack.push(popped);
+}
+
+/**
+ * Reset the catalog to the default page and clear all history.
+ */
+function catalogReset() {
+    _catalogStack = [];
+    _catalogStackForward = [];
+    setCatalogPage('departments');
+}
+
+/**
+ * Set the catalog's page.
+ */
+function setCatalogPage(link) {
+    var currentPage = _.last(_catalogStack);
+
+    link = '/catalog/' + ScheduleStore.getSemester().strm + '/' + link;
+
+    // Skip if link is already selected.
+    if (currentPage === link)
+        return;
+
+    _catalogStackForward = [];
+    _catalogStack.push(link);
 }
 
 /**
@@ -93,7 +155,10 @@ var ModalStore = assign({}, EventEmitter.prototype, {
      */
     getCatalogState: function() {
         return {
-            active: _active === 'catalog'
+            active: _active === 'catalog',
+            page: _.last(_catalogStack),
+            hasBack: _catalogStack.length > 1,
+            hasForward: _catalogStackForward.length !== 0
         };
     },
 
@@ -145,6 +210,21 @@ AppDispatcher.register(function(action) {
 
         case ModalConstants.CATALOG:
             catalog(action.page);
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.CATALOG_BACK:
+            catalogBack();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.CATALOG_FORWARD:
+            catalogForward();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.CATALOG_RESET:
+            catalogReset();
             ModalStore.emitChange();
             break;
 

@@ -20,6 +20,20 @@ $ca-colors: (
     'pink': $ca-pink
 );
 
+.cf {
+    &:before,
+    &:after {
+        content:"";
+        display:table;
+    }
+
+    &:after {
+        clear:both;
+    }
+
+    zoom: 1; /* For IE 6/7 (trigger hasLayout) */
+}
+
 @mixin basket-item() {
     position: relative;
     box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.15);

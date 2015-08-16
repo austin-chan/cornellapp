@@ -55,7 +55,7 @@ var ModalActions = {
     },
 
     /**
-     * Open the course catalog.
+     * Open the course catalog and optionally load a certain page.
      * @param {string} page Optional link to load in the catalog.
      */
     catalog: function(page) {
@@ -71,6 +71,33 @@ var ModalActions = {
      */
     catalogCourse: function() {
         ModalActions.catalog('/course');
+    },
+
+    /**
+     * Load the catalog next page.
+     */
+    catalogBack: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG_BACK
+        });
+    },
+
+    /**
+     * Load the catalog previous page.
+     */
+    catalogForward: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG_FORWARD
+        });
+    },
+
+    /**
+     * Reset the catalog to the default page and clear all history.
+     */
+    catalogReset: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG_RESET
+        });
     },
 
     /**
@@ -339,7 +366,10 @@ var CAApp = React.createClass({displayName: "CAApp",
                 ), 
                 React.createElement(CAModal, {active: this.state.modal.active, 
                     type: this.state.modal.type, data: this.state.modal.data}), 
-                React.createElement(CACatalog, {active: this.state.catalog.active})
+                React.createElement(CACatalog, {active: this.state.catalog.active, 
+                    page: this.state.catalog.page, 
+                    hasBack: this.state.catalog.hasBack, 
+                    hasForward: this.state.catalog.hasForward})
             )
         );
     }
@@ -730,7 +760,10 @@ var React = require('react/addons'),
 
 var CACatalog = React.createClass({displayName: "CACatalog",
     propTypes: {
-        active: React.PropTypes.bool.isRequired
+        active: React.PropTypes.bool.isRequired,
+        page: React.PropTypes.string.isRequired,
+        hasBack: React.PropTypes.bool.isRequired,
+        hasForward: React.PropTypes.bool.isRequired
     },
 
     getInitialState: function() {
@@ -754,7 +787,7 @@ var CACatalog = React.createClass({displayName: "CACatalog",
         });
 
         window.receiveLink = function(link) {
-            console.log(link);
+            ModalActions.catalog(link);
         };
     },
 
@@ -762,8 +795,12 @@ var CACatalog = React.createClass({displayName: "CACatalog",
         var rootClass = classNames('ca-catalog', {
                 show: this.props.active
             }),
-            iframeSrc = "/catalog/departments/" +
-                ScheduleStore.getSemester().strm;
+            backClass = classNames('back-button', {
+                disabled: !this.props.hasBack
+            }),
+            forwardClass = classNames('forward-button', {
+                disabled: !this.props.hasForward
+            });
 
         return (
             React.createElement("div", {className: rootClass}, 
@@ -783,11 +820,13 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                     React.createElement("div", {className: "navigation-bar"}, 
                         React.createElement("div", {className: "upper"}, 
                             React.createElement("div", {className: "navigation-buttons"}, 
-                                React.createElement("button", {className: "back-button disabled"}, 
+                                React.createElement("button", {className: backClass, 
+                                    onClick: this._onBack}, 
                                     React.createElement("i", {className: "icon-keyboard_arrow_left"}
                                     )
                                 ), 
-                                React.createElement("button", {className: "forward-button"}, 
+                                React.createElement("button", {className: forwardClass, 
+                                    onClick: this._onForward}, 
                                     React.createElement("i", {className: "icon-keyboard_arrow_right"}
                                     )
                                 )
@@ -807,11 +846,25 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                         )
                     ), 
                     React.createElement("div", {className: "iframe-wrap"}, 
-                        React.createElement("iframe", {ref: "iframe", src: iframeSrc})
+                        React.createElement("iframe", {ref: "iframe", src: this.props.page})
                     )
                 )
             )
         );
+    },
+
+    /**
+     * Event handler for going back a page in the catalog.
+     */
+    _onBack: function() {
+        ModalActions.catalogBack();
+    },
+
+    /**
+     * Event handler for going forward a page in the catalog.
+     */
+    _onForward: function() {
+        ModalActions.catalogForward();
     },
 
     /**
@@ -2487,7 +2540,10 @@ module.exports = {
     ACTIVATION: 'MODAL_ACTIVATION',
     ACCOUNT: 'MODAL_ACCOUNT',
     CLOSE: 'MODAL_CLOSE',
-    CATALOG: 'MODAL_CATALOG'
+    CATALOG: 'MODAL_CATALOG',
+    CATALOG_BACK: 'MODAL_CATALOG_BACK',
+    CATALOG_FORWARD: 'MODAL_CATALOG_FORWARD',
+    CATALOG_RESET: 'MODAL_CATALOG_RESET',
 };
 
 },{}],22:[function(require,module,exports){
@@ -2614,6 +2670,7 @@ global.context = JSON.parse(document.getElementById('context').textContent);
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     ModalConstants = require('../constants/ModalConstants'),
+    ScheduleStore = require('./ScheduleStore'),
     assign = require('object-assign'),
     moment = require('moment'),
     _ = require('underscore');
@@ -2622,7 +2679,15 @@ var CHANGE_EVENT = 'schedule_change';
 
 var _active = false,
     _modalType,
-    _modalData;
+    _modalData,
+    _catalogData,
+    _catalogStack,
+    _catalogStackForward;
+
+/**
+ * Initialize the store.
+ */
+catalogReset();
 
 /**
  * Activate the login modal to appear.
@@ -2662,10 +2727,63 @@ function account() {
 
 /**
  * Activate the catalog view.
+ * @param {}
  */
-function catalog() {
+function catalog(page) {
     _active = 'catalog';
-    _modalData = {};
+
+    if (page) {
+        setCatalogPage(page);
+    }
+}
+
+/**
+ * Load the catalog previous page.
+ */
+function catalogBack() {
+    // Skip if there is no previous page.
+    if (_catalogStack.length < 2)
+        return;
+
+    var popped = _catalogStack.pop();
+    _catalogStackForward.push(popped);
+}
+
+/**
+ * Load the catalog previous page.
+ */
+function catalogForward() {
+    // Skip if there is no next page.
+    if (_catalogStack.length === 0)
+        return;
+
+    var popped = _catalogStackForward.pop();
+    _catalogStack.push(popped);
+}
+
+/**
+ * Reset the catalog to the default page and clear all history.
+ */
+function catalogReset() {
+    _catalogStack = [];
+    _catalogStackForward = [];
+    setCatalogPage('departments');
+}
+
+/**
+ * Set the catalog's page.
+ */
+function setCatalogPage(link) {
+    var currentPage = _.last(_catalogStack);
+
+    link = '/catalog/' + ScheduleStore.getSemester().strm + '/' + link;
+
+    // Skip if link is already selected.
+    if (currentPage === link)
+        return;
+
+    _catalogStackForward = [];
+    _catalogStack.push(link);
 }
 
 /**
@@ -2694,7 +2812,10 @@ var ModalStore = assign({}, EventEmitter.prototype, {
      */
     getCatalogState: function() {
         return {
-            active: _active === 'catalog'
+            active: _active === 'catalog',
+            page: _.last(_catalogStack),
+            hasBack: _catalogStack.length > 1,
+            hasForward: _catalogStackForward.length !== 0
         };
     },
 
@@ -2749,6 +2870,21 @@ AppDispatcher.register(function(action) {
             ModalStore.emitChange();
             break;
 
+        case ModalConstants.CATALOG_BACK:
+            catalogBack();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.CATALOG_FORWARD:
+            catalogForward();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.CATALOG_RESET:
+            catalogReset();
+            ModalStore.emitChange();
+            break;
+
         case ModalConstants.CLOSE:
             close();
             ModalStore.emitChange();
@@ -2760,7 +2896,7 @@ AppDispatcher.register(function(action) {
 
 module.exports = ModalStore;
 
-},{"../constants/ModalConstants":21,"../dispatcher/AppDispatcher":24,"events":32,"moment":42,"object-assign":43,"underscore":222}],28:[function(require,module,exports){
+},{"../constants/ModalConstants":21,"../dispatcher/AppDispatcher":24,"./ScheduleStore":28,"events":32,"moment":42,"object-assign":43,"underscore":222}],28:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.

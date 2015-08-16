@@ -54,7 +54,7 @@ var ModalActions = {
     },
 
     /**
-     * Open the course catalog.
+     * Open the course catalog and optionally load a certain page.
      * @param {string} page Optional link to load in the catalog.
      */
     catalog: function(page) {
@@ -70,6 +70,33 @@ var ModalActions = {
      */
     catalogCourse: function() {
         ModalActions.catalog('/course');
+    },
+
+    /**
+     * Load the catalog next page.
+     */
+    catalogBack: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG_BACK
+        });
+    },
+
+    /**
+     * Load the catalog previous page.
+     */
+    catalogForward: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG_FORWARD
+        });
+    },
+
+    /**
+     * Reset the catalog to the default page and clear all history.
+     */
+    catalogReset: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG_RESET
+        });
     },
 
     /**

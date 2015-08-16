@@ -13,7 +13,8 @@
 var catalogrouter = function(app) {
     var models = app.get('models');
 
-    app.get('/catalog/departments/:strm', function(req, res) {
+    // Route for rendering all of the available departments.
+    app.get('/catalog/:strm/departments', function(req, res) {
         var strm = req.params.strm;
 
         new models.semester({ strm: strm }).fetch().then(function(s) {
@@ -21,8 +22,33 @@ var catalogrouter = function(app) {
                 return res.send('An error occured.');
 
             res.render('catalog', {
+                title: 'All Departments',
                 type: 'departments',
                 data: JSON.parse(s.get('subject_list'))
+            });
+        });
+    });
+
+    // Route for rendering all of the courses for a department.
+    app.get('/catalog/:strm/department/:department', function(req, res) {
+        var strm = req.params.strm;
+        var department = req.params.department.toUpperCase();
+
+        new models.course().where('strm', strm).where('subject', department)
+            .fetchAll().then(function(courses) {
+            if (!courses.length)
+                return res.send('An error occured.');
+
+            new models.semester({ strm: strm }).fetch().then(function(ss) {
+                var s = _.find(JSON.parse(ss.get('subject_list')), function(s) {
+                    return s.value === department;
+                });
+
+                res.render('catalog', {
+                    title: s.descrformal,
+                    type: 'department',
+                    courses: courses
+                });
             });
         });
     });

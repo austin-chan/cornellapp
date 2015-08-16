@@ -1,10 +1,10 @@
 .catalog-departments {
-    padding-top: 32px;
+    @extend .cf;
 
     a {
         display: block;
         text-decoration: none;
-        padding-bottom: 4px;
+        padding-bottom: 7px;
         @include transition(all .13s ease-in-out);
 
         &:hover {

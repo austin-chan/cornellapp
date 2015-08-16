@@ -1,0 +1,11 @@
+<div class="course-entry">
+    <div class="upper">
+        <span class="tag"><%= course.get('subject') %> <%= course.get('catalogNbr') %></span>
+        <span class="when"><%= course.get('catalogWhenOffered') %> <%= course.get('catalogNbr') %></span>
+        <p class="title"><%= course.get('titleLong') %></p>
+    </div>
+    <div class="lower">
+        <%= course.get('description') %>
+
+    </div>
+</div>

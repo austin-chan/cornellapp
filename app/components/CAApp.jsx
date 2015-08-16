@@ -72,7 +72,10 @@ var CAApp = React.createClass({
                 </div>
                 <CAModal active={this.state.modal.active}
                     type={this.state.modal.type} data={this.state.modal.data} />
-                <CACatalog active={this.state.catalog.active} />
+                <CACatalog active={this.state.catalog.active}
+                    page={this.state.catalog.page}
+                    hasBack={this.state.catalog.hasBack}
+                    hasForward={this.state.catalog.hasForward} />
             </div>
         );
     }

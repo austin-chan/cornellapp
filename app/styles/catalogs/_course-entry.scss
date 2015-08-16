@@ -1,0 +1,24 @@
+.course-entry {
+
+    .upper {
+        @extend .cf;
+
+        .tag {
+            float: left;
+            color: #BC625F;
+            font-weight: 500;
+        }
+
+        .title {
+            margin-left: 100px;
+            color: #7C7C7C;
+
+        }
+
+        .when {
+            float: right;
+            color: #B8B8B8;
+            font-size: 10px;
+        }
+    }
+}

@@ -19,7 +19,10 @@ var React = require('react/addons'),
 
 var CACatalog = React.createClass({
     propTypes: {
-        active: React.PropTypes.bool.isRequired
+        active: React.PropTypes.bool.isRequired,
+        page: React.PropTypes.string.isRequired,
+        hasBack: React.PropTypes.bool.isRequired,
+        hasForward: React.PropTypes.bool.isRequired
     },
 
     getInitialState: function() {
@@ -43,7 +46,7 @@ var CACatalog = React.createClass({
         });
 
         window.receiveLink = function(link) {
-            console.log(link);
+            ModalActions.catalog(link);
         };
     },
 
@@ -51,8 +54,12 @@ var CACatalog = React.createClass({
         var rootClass = classNames('ca-catalog', {
                 show: this.props.active
             }),
-            iframeSrc = "/catalog/departments/" +
-                ScheduleStore.getSemester().strm;
+            backClass = classNames('back-button', {
+                disabled: !this.props.hasBack
+            }),
+            forwardClass = classNames('forward-button', {
+                disabled: !this.props.hasForward
+            });
 
         return (
             <div className={rootClass}>
@@ -72,11 +79,13 @@ var CACatalog = React.createClass({
                     <div className="navigation-bar">
                         <div className="upper">
                             <div className="navigation-buttons">
-                                <button className="back-button disabled">
+                                <button className={backClass}
+                                    onClick={this._onBack}>
                                     <i className="icon-keyboard_arrow_left">
                                     </i>
                                 </button>
-                                <button className="forward-button">
+                                <button className={forwardClass}
+                                    onClick={this._onForward}>
                                     <i className="icon-keyboard_arrow_right">
                                     </i>
                                 </button>
@@ -96,11 +105,25 @@ var CACatalog = React.createClass({
                         </div>
                     </div>
                     <div className="iframe-wrap">
-                        <iframe ref="iframe" src={iframeSrc}></iframe>
+                        <iframe ref="iframe" src={this.props.page}></iframe>
                     </div>
                 </div>
             </div>
         );
+    },
+
+    /**
+     * Event handler for going back a page in the catalog.
+     */
+    _onBack: function() {
+        ModalActions.catalogBack();
+    },
+
+    /**
+     * Event handler for going forward a page in the catalog.
+     */
+    _onForward: function() {
+        ModalActions.catalogForward();
     },
 
     /**
