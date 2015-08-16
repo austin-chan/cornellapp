@@ -14,6 +14,7 @@
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
     UserActions = require('../actions/UserActions'),
+    ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames');
 
 var CAModalLogin = React.createClass({
@@ -32,7 +33,7 @@ var CAModalLogin = React.createClass({
 
         setTimeout(function() {
             netidField.focus();
-        }, 50);
+        }, 100);
     },
 
     /**
@@ -66,9 +67,10 @@ var CAModalLogin = React.createClass({
             return this.displayErrorMessage(data.error);
 
         if (!data.user.active)
-            return ModalActions.activate();
+            return ModalActions.activation(this.submittedNetid);
 
         UserActions.login(data.user);
+        ScheduleActions.merge(data._data);
         ModalActions.close();
     },
 
@@ -150,12 +152,13 @@ var CAModalLogin = React.createClass({
         if (this.state.loading)
             return;
 
-        var form = React.findDOMNode(this.refs.form);
+        var formObj = $(React.findDOMNode(this.refs.form)).serializeObject();
 
+        this.submittedNetid = $.trim(formObj.netid);
         this.jqXHR = $.ajax({
             type: 'post',
             url: '/api/login',
-            data: $(form).serializeObject(),
+            data: formObj,
             success: this.receiveLoginResponse
         });
 

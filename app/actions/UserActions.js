@@ -32,6 +32,17 @@ var UserActions = {
         AppDispatcher.dispatch({
             actionType: UserConstants.LOGOUT
         });
+    },
+
+    /**
+     * Change the name of the user.
+     * @param {string} name Name to change to.
+     */
+    changeName: function(name) {
+        AppDispatcher.dispatch({
+            actionType: UserConstants.CHANGE_NAME,
+            name: name
+        });
     }
 };
 

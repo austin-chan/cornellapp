@@ -13,6 +13,7 @@
 module.exports = function(models) {
 	var async = require('async'),
 		strutil = require('./strutil'),
+		async = require('async'),
 		m = {};
 
 	/**
@@ -202,51 +203,49 @@ module.exports = function(models) {
 	 *		will be passed.
 	 */
 	m.createSelection = function(user, p, callback) {
-		// Make sure course exists.
-		new models.course({ crseId_strm_subject: p.tag }).fetch()
-			.then(function(course) {
-			if (course === null) {
-				callback('Course doesn\'t exist');
-				return;
-			}
-
-			success();
-		});
-
-		// Make sure selection doesn't already exist for the course.
-		new models.selection({ tag: p.tag, userId: user.id }).fetch()
-			.then(function(selection) {
-			if ( selection !== null) {
-				callback('Course is already selected');
-				return;
-			}
-
-			success();
-		});
-
-		// All checks must pass.
-		var successCount = 2;
-		function success() {
-			successCount--;
-			if (successCount === 0) {
-				p.userId = user.id;
-				new models.selection(p).save(null, { method: 'insert' })
-					.then(function(selection) {
-					if (selection === null) {
-						callback('something went wrong saving the selection');
+		async.parallel([
+			function(callback) {
+				// Make sure course exists.
+				new models.course({ crseId_strm_subject: p.tag }).fetch()
+					.then(function(course) {
+					if (course === null) {
+						callback('Course doesn\'t exist');
 						return;
 					}
 
-					// Finally get the id.
-					new models.selection({
-						userId: user.id,
-						tag: selection.get('tag')
-					}).fetch().then(function(saved) {
-						callback(null, saved.get('id'));
-					});
+					callback();
+				});
+			}, function(callback) {
+				// Make sure selection doesn't already exist for the course.
+				new models.selection({ tag: p.tag, userId: user.id }).fetch()
+					.then(function(selection) {
+					if ( selection !== null) {
+						callback('Course is already selected');
+						return;
+					}
+
+					callback();
 				});
 			}
-		}
+		], function(err) {
+			p.userId = user.id;
+			prepareSelectionData(p);
+			new models.selection(p).save(null, { method: 'insert' })
+				.then(function(selection) {
+				if (selection === null) {
+					callback('something went wrong saving the selection');
+					return;
+				}
+
+				// Finally get the id.
+				new models.selection({
+					userId: user.id,
+					tag: selection.get('tag')
+				}).fetch().then(function(saved) {
+					callback(null, saved.get('id'));
+				});
+			});
+		});
 	};
 
 	/**
@@ -267,6 +266,8 @@ module.exports = function(models) {
 
 			if (selection.get('userId') !== user.id)
 				return callback('Selection does\'t belong to user.');
+
+			prepareSelectionData(p);
 
 			selection.save(p, { method: 'update' }).then(function() {
 				callback();
@@ -301,3 +302,12 @@ module.exports = function(models) {
 
 	return m;
 };
+
+/**
+ * Prepare fields of a selection to the correct form of data before saving or
+ * updating.
+ */
+function prepareSelectionData(data) {
+	data.selectedSectionIds = JSON.stringify(data.selectedSectionIds);
+	data.active = !!data.active;
+}

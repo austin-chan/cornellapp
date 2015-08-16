@@ -16,12 +16,14 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     UserStore = require('./UserStore'),
     assign = require('object-assign'),
     moment = require('moment'),
+    config = require('../../config'),
     _ = require('underscore');
 
 var CHANGE_EVENT = 'schedule_change';
 
 var _courses = {},
-    _semester = 2608,
+    _semester = {},
+    _data = {},
     _colors = ['blue', 'purple', 'light-blue', 'red', 'green', 'yellow',
         'pink'],
     _dayMap = {
@@ -34,6 +36,61 @@ var _courses = {},
         Su: 'sunday'
     },
     _requestCount = 0;
+
+/**
+ * Restore store data from the render context on client side.
+ */
+if (process.env.NODE_ENV === 'browserify')
+    restore(context.ScheduleStoreSnapshot);
+
+/**
+ * Generate the render context on server side.
+ */
+else
+    var reset = function(req) {
+        var snapshot = {};
+
+        // Mount the course selection data.
+        if (req.isAuthenticated())
+            snapshot._data = req.user.getSelectionData();
+        else
+            snapshot._data = _.mapObject(config.semesters, function(s) {
+                return {};
+            });
+
+        // Use a cookie set semester if it is set.
+        if (req.cookies.semester_slug &&
+            config.semesters[req.cookies.semester_slug])
+            snapshot._semester = config.semesters[req.cookies.semester_slug];
+        // Or use the semester specified in config.
+        else
+            snapshot._semester = config.semesters[config.semester];
+
+        restore(snapshot);
+    };
+
+/**
+ * Generate a snapshot that can be converted to JSON and used by another
+ * instance of the store to restore it back to an identical state.
+ */
+function snapshot() {
+    _data[_semester.slug] = _courses;
+
+    return {
+        _data: _data,
+        _semester: _semester
+    };
+}
+
+/**
+ * Restore the state of the store from a snapshot.
+ * @param {object} snapshot Snapshot to return state to.
+ */
+function restore(snapshot) {
+    _data = snapshot._data;
+    _semester = snapshot._semester;
+    _courses = _data[_semester.slug];
+}
 
 /**
  * Add a course to the schedule.
@@ -50,10 +107,11 @@ function add(course) {
     };
 
     // Server side persist if logged in user.
-    request('post', _courses[selection.key]).success(function(data) {
-        if (_courses[selection.key])
-            _courses[selection.key].selection.id = data;
-    });
+    if (UserStore.getUser() !== false)
+        request('post', _courses[selection.key]).success(function(data) {
+            if (_courses[selection.key])
+                _courses[selection.key].selection.id = data;
+        });
 
     console.log(_courses[selection.key]);
 }
@@ -63,8 +121,8 @@ function add(course) {
  * @param {string} key Key of course to remove.
  */
 function remove(key) {
+    request('delete', _courses[key]);
     delete _courses[key];
-    request('delete', course);
 }
 
 /**
@@ -126,12 +184,97 @@ function selectSection(key, sectionId) {
 }
 
 /**
+ * Change the active semester.
+ * @param {string} semester Slug of the semester to set as active.
+ */
+function changeSemester(semester) {
+    // Skip if already selected.
+    if (semester === _semester.slug)
+        return;
+
+    var semesterExists = _.find(_.values(config.semesters), function(s) {
+        return s.slug === semester.slug;
+    });
+
+    // Make sure semester slug exists.
+    if (!semesterExists)
+        return;
+
+    // Save the active _courses into _data.
+    _data[_semester.slug] = _courses;
+
+    // Swap the new semester into _courses, like a context switch.
+    _courses = _data[semesterExists.slug];
+
+    // Finally change the semester.
+    _semester = semesterExists;
+}
+
+/**
+ * Merge a course selection payload from the backend into the store.
+ * @param {object} data Course selection data payload.
+ */
+function merge(data) {
+    console.log('i');
+    // Write _courses back to _data, like writing from registers to memory.
+    _data[_semester.slug] = _courses;
+
+    // No courses were loaded client side.
+    var originallyEmpty = _.every(_data, function(s) {
+        return _.isEmpty(s);
+    });
+
+    _.each(data, function(semesterData, slug) {
+        _.each(semesterData, function(course, key) {
+            // Skip if course is already in the store.
+            var exists = _.some(_data[slug], function(c) {
+                    return c.selection.tag === course.selection.tag;
+                });
+            if (exists)
+                return;
+
+            // Move into the store.
+            _data[slug][key] = course;
+        });
+    });
+
+    // Restore _courses from _data, like the L1 cache if you've taken 3410.
+    _courses = _data[_semester.slug];
+
+    if (originallyEmpty)
+        return;
+
+    // Then send the whole package to the backend to sync, but omit the raw
+    // component because it is too big.
+    var d = _.mapObject(_data, function(semesterData) {
+        return _.mapObject(semesterData, function(course) {
+            return _.omit(course, 'raw');
+        });
+    });
+    _requestCount++;
+    $.ajax({
+        type: 'post',
+        url: '/api/selection/sync',
+        data: {
+            _data: d
+        }
+    }).always(function() {
+        _requestCount--;
+    });
+}
+
+/**
  * Deselect a section type from a course selection. Used in cases where
  * courses have optional components.
  * @param {string} key Key of the course to deselect a section from.
  * @param {string} sectionType Type of section to deselect.
+ * @param {boolean} sendRequest Persist the change by sending a request to the
+ *      back end.
  */
-function deselectSectionType(key, sectionType) {
+function deselectSectionType(key, sectionType, sendRequest) {
+    sendRequest = sendRequest = typeof sendRequest !== 'undefined' ?
+        sendRequest : false;
+
     var course = _courses[key],
         selectedSectionOfType = getSelectedSectionOfType(key,
             sectionType);
@@ -145,7 +288,8 @@ function deselectSectionType(key, sectionType) {
         });
     }
 
-    request('put', _courses[key]);
+    if (sendRequest)
+        request('put', _courses[key]);
 }
 
 /**
@@ -167,15 +311,9 @@ function request(type, course) {
     if (type === 'post') {
         var raw = course.raw;
         data = JSON.parse(JSON.stringify(course.selection));
-        data.selectedSectionIds = JSON.stringify(
-            course.selection.selectedSectionIds);
-        data.strm = _semester;
-        data.active = +data.active;
+        data.strm = _semester.strm;
     } else if (type === 'put') {
         data = JSON.parse(JSON.stringify(course.selection));
-        data.selectedSectionIds = JSON.stringify(
-            course.selection.selectedSectionIds);
-        data.active = +data.active;
     } else if (type === 'delete') {
         data = {
             id: course.selection.id
@@ -545,27 +683,7 @@ function clear() {
     _courses = {};
 }
 
-/**
- * Generate a snapshot that can be converted to JSON and used by another
- * instance of the store to restore it back to an identical state.
- */
-function snapshot() {
-    return {
-        _courses: _courses
-    };
-}
-
-/**
- * Restore the state of the store from a snapshot.
- * @param {object} snapshot Snapshot to return state to.
- */
-function restore(snapshot) {
-    _courses = snapshot._courses;
-}
-
-
 var ScheduleStore = assign({}, EventEmitter.prototype, {
-
     /**
      * Get all available colors for courses.
      * @return {array} List of color strings.
@@ -596,10 +714,18 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
 
     /**
      * Get the active semester for the schedule.
-     * @return {object}
+     * @return {object} Active semester object.
      */
     getSemester: function() {
         return _semester;
+    },
+
+    /**
+     * Get a list of all available semester objects.
+     * @return {array} List of all possible semester objects.
+     */
+    getSemesters: function() {
+        return _.values(config.semesters);
     },
 
     /**
@@ -714,18 +840,9 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     }
 });
 
+// Attach the server side reset method.
 if (process.env.NODE_ENV !== 'browserify') {
-    ScheduleStore.reset = function(req) {
-        var snapshot = {};
-
-        snapshot._courses = {};
-        // if (req.isAuthenticated())
-        //     snapshot._user = req.user.cleanOutput();
-        // else
-        //     snapshot._user = false;
-
-        restore(snapshot);
-    };
+    ScheduleStore.reset = reset;
 }
 
 AppDispatcher.register(function(action) {
@@ -756,12 +873,22 @@ AppDispatcher.register(function(action) {
             break;
 
         case ScheduleConstants.DESELECT_SECTION_TYPE:
-            deselectSectionType(action.key, action.sectionType);
+            deselectSectionType(action.key, action.sectionType, true);
             ScheduleStore.emitChange();
             break;
 
         case ScheduleConstants.CLEAR:
             clear();
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.CHANGE_SEMESTER:
+            changeSemester(action.semester);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.MERGE:
+            merge(action.data);
             ScheduleStore.emitChange();
             break;
 

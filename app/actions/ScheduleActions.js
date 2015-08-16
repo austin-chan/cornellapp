@@ -98,6 +98,28 @@ var ScheduleActions = {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.CLEAR
         });
+    },
+
+    /**
+     * Change the active semester.
+     * @param {string} semester Slug of the semester to set as active.
+     */
+    changeSemester: function(semester) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CHANGE_SEMESTER,
+            semester: semester
+        });
+    },
+
+    /**
+     * Merge a course selection payload from the backend into the store.
+     * @param {object} data Course selection data payload.
+     */
+    merge: function(data) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.MERGE,
+            data: data
+        });
     }
 };
 

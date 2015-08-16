@@ -36,6 +36,10 @@ var CAScheduleCourse = React.createClass({
      * @return {object} Bounds object for the section.
      */
     boundsForSection: function(section) {
+        if (process.env.NODE_ENV !== 'browserify' ||
+            _.isEmpty(this.props.dayOffsetMap))
+            return { top: 0, left: 0, right: 0, bottom: 0 };
+
         var meetings = section.meetings,
             instances = [],
             bounds = {
@@ -62,6 +66,18 @@ var CAScheduleCourse = React.createClass({
         }, this));
 
         return bounds;
+    },
+
+    /**
+     * Determine if the section conflicts with any of the sections in
+     * sectionList.
+     * @param {object} section Section object to check with.
+     * @param {array} sectionList Array of section objects to check against.
+     * @return {boolean} False if there are no conflicts, true if there are
+     *      conflicts.
+     */
+    conflictsWithSections: function(section, sectionList) {
+        return ScheduleStore.conflictInSections(sectionList.concat(section));
     },
 
     /**
@@ -99,8 +115,12 @@ var CAScheduleCourse = React.createClass({
         // Loop through each section of the course.
         _.each(sections, function(section) {
             var instances = this.renderSection(section),
-                hasOptions = ScheduleStore.getSectionOptionsOfType(
-                    course.selection.key, section.ssrComponent).length > 1,
+                options = ScheduleStore.getSectionOptionsOfType(
+                    course.selection.key, section.ssrComponent),
+                hasOptions = _.some(options, function(o) {
+                    if (!this.conflictsWithSections(o, [section]))
+                        return true;
+                }, this), // determine if the course should be draggable
                 sectionClass = classNames('schedule-section', {
                     'no-options': !hasOptions
                 });

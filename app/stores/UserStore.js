@@ -21,9 +21,43 @@ var CHANGE_EVENT = 'user_change';
 
 var _user = false;
 
-// Restore from render context on client side.
-if (process.env.NODE_ENV === 'browserify') {
-    restore(context.UserStore);
+/**
+ * Restore store data from the render context on client side.
+ */
+if (process.env.NODE_ENV === 'browserify')
+    restore(context.UserStoreSnapshot);
+
+/**
+ * Generate the render context on server side.
+ */
+else
+    var reset = function(req) {
+        var snapshot = {};
+
+        if (req.isAuthenticated())
+            snapshot._user = req.user.cleanOutput();
+        else
+            snapshot._user = false;
+
+        restore(snapshot);
+    };
+
+/**
+ * Generate a snapshot that can be converted to JSON and used by another
+ * instance of the store to restore it back to an identical state.
+ */
+function snapshot() {
+    return {
+        _user: _user
+    };
+}
+
+/**
+ * Restore the state of the store from a snapshot.
+ * @param {object} snapshot Snapshot to return state to.
+ */
+function restore(snapshot) {
+    _user = snapshot._user;
 }
 
 /**
@@ -42,21 +76,11 @@ function logout() {
 }
 
 /**
- * Generate a snapshot that can be converted to JSON and used by another
- * instance of the store to restore it back to an identical state.
+ * Change the user's name.
+ * @param {string} name Name to change to.
  */
-function snapshot() {
-    return {
-        _user: _user
-    };
-}
-
-/**
- * Restore the state of the store from a snapshot.
- * @param {object} snapshot Snapshot to return state to.
- */
-function restore(snapshot) {
-    _user = snapshot._user;
+function changeName(name) {
+    _user.name = name;
 }
 
 var UserStore = assign({}, EventEmitter.prototype, {
@@ -112,17 +136,9 @@ var UserStore = assign({}, EventEmitter.prototype, {
     }
 });
 
+// Attach the server side reset method.
 if (process.env.NODE_ENV !== 'browserify') {
-    UserStore.reset = function(req) {
-        var snapshot = {};
-
-        if (req.isAuthenticated())
-            snapshot._user = req.user.cleanOutput();
-        else
-            snapshot._user = false;
-
-        restore(snapshot);
-    };
+    UserStore.reset = reset;
 }
 
 AppDispatcher.register(function(action) {
@@ -134,6 +150,11 @@ AppDispatcher.register(function(action) {
 
         case UserConstants.LOGOUT:
             logout();
+            UserStore.emitChange();
+            break;
+
+        case UserConstants.CHANGE_NAME:
+            changeName(action.name);
             UserStore.emitChange();
             break;
 

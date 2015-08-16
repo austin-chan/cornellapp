@@ -21,15 +21,21 @@ var authenticationrouter = function(app, blockValidationErrors) {
             if (err)
                 return res.json({ error: err });
 
+            // Handle unactivated user logins
+            if (!user.get('active'))
+                return res.json({
+                    error: null,
+                    user: user.cleanOutput()
+                });
+
             req.login(user, function(err) {
                 if (err)
                     return res.json({ error: err });
 
-                console.log(req.isAuthenticated());
-
                 return res.json({
                     error: null,
-                    user: user.cleanOutput()
+                    user: user.cleanOutput(),
+                    _data: user.getSelectionData()
                 });
             });
         })(req, res);

@@ -17,6 +17,7 @@ var React = require('react/addons'),
     ScheduleStore = require('./stores/ScheduleStore');
 
 module.exports = function(app) {
+    var config = app.get('config');
 
     app.get('/test', function(req, res) {
         req.user.load(['selections.course']).then(function() {
@@ -30,8 +31,8 @@ module.exports = function(app) {
 
         var reactOutput = React.renderToString(CAApp()),
             contextString = JSON.stringify({
-                UserStore: UserStore.snapshot(),
-                ScheduleStore: ScheduleStore.snapshot()
+                UserStoreSnapshot: UserStore.snapshot(),
+                ScheduleStoreSnapshot: ScheduleStore.snapshot()
             });
 
         res.render('index.ejs', {
@@ -42,7 +43,6 @@ module.exports = function(app) {
 
     // "/api"
     require('./routers/apirouter')(app, blockValidationErrors);
-
 };
 
 /**

@@ -38,6 +38,7 @@ var CABasketCourse = React.createClass({
             active = course.selection.active,
             rootClass = classNames('ca-basket-item', course.selection.color,
                 { inactive: !course.selection.active }),
+            professor,
             credits,
 
         // Description for the course item.
@@ -74,6 +75,17 @@ var CABasketCourse = React.createClass({
                     course.selection.key, sectionType),
                 selectedSectionId = selectedSectionOfType ?
                     selectedSectionOfType.section : 'none';
+
+            // Find professor name in the primary section.
+            if (!index && selectedSectionOfType.meetings.length) {
+                var meeting = selectedSectionOfType.meetings[0];
+                if (meeting.professors.length) {
+                    var p = meeting.professors[0];
+                    professor = p.firstName + ' ' + p.lastName;
+                }
+            }
+            if (!professor)
+                professor = 'Staff';
 
             // If section type is optional add no selection option.
             if (optionalSectionTypes.indexOf(sectionType) !== -1) {
@@ -117,7 +129,7 @@ var CABasketCourse = React.createClass({
                     </div>
                 </div>
                 <div className="item-content">
-                    <p className="professor">Professor Katheleen Gibson</p>
+                    <p className="professor">{professor}</p>
                     <p className="byline freight-sans-pro">
                         {credits}{sectionLabels}
                     </p>

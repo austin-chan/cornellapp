@@ -58,6 +58,17 @@ var CAScheduleInstance = React.createClass({
                 height: heightAmount + 'px',
                 top: topAmount + 'px'
             },
+            headline = course.raw.subject + ' ' + course.raw.catalogNbr + ' - ' +
+                section.ssrComponent,
+            longHeadline = headline.length > 15,
+            headlineClass = classNames('instance-headline', {
+                'long-headline': longHeadline
+            }),
+            time = this.formatTime(meeting.timeStart) + ' - ' +
+                this.formatTime(meeting.timeEnd),
+            professor = meeting.professors.length ?
+                meeting.professors[0].firstName + ' ' +
+                meeting.professors[0].lastName : 'Staff',
             includeHr;
 
         return (
@@ -66,17 +77,18 @@ var CAScheduleInstance = React.createClass({
 
                 <div className="schedule-instance">
                     <div className="instance-wrap">
-                        <p className="instance-headline">
-                            {course.raw.subject} {course.raw.catalogNbr} -&nbsp;
-                            {section.ssrComponent}
+                        <p className={headlineClass}>
+                            {headline}
                         </p>
                         <p className="instance-location">
                             {meeting.facilityDescr}
                         </p>
                         <hr />
+                        <p className="instance-professor">
+                            {professor}
+                        </p>
                         <p className="instance-time">
-                            {this.formatTime(meeting.timeStart)} -&nbsp;
-                            {this.formatTime(meeting.timeEnd)}
+                            {time}
                         </p>
                     </div>
                 </div>

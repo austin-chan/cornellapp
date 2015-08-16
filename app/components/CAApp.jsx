@@ -15,6 +15,7 @@ var React = require('react/addons'),
     CAHeader = require('./CAHeader'),
     CABasket = require('./CABasket'),
     CASchedule = require('./CASchedule'),
+    CACatalog = require('./CACatalog'),
     CAModal = require('./CAModal'),
     ScheduleStore = require('../stores/ScheduleStore'),
     ModalStore = require('../stores/ModalStore'),
@@ -71,6 +72,7 @@ var CAApp = React.createClass({
                 </div>
                 <CAModal active={this.state.modal.active}
                     type={this.state.modal.type} data={this.state.modal.data} />
+                <CACatalog active={this.state.catalog.active} />
             </div>
         );
     }

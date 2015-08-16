@@ -14,6 +14,7 @@
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
     UserActions = require('../actions/UserActions'),
+    ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames'),
     _ = require('underscore');
 
@@ -46,8 +47,8 @@ var CAModalActivation = React.createClass({
             clearInterval(this.interval);
             ModalActions.close();
             UserActions.login(data.user);
+            ScheduleActions.merge();
         }
-
     },
 
     render: function() {

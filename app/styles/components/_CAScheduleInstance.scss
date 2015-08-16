@@ -19,8 +19,8 @@
         }
     }
 
-    &.compact {
-        .schedule-instance hr {
+    &.compact .schedule-instance {
+        .instance-professor, hr {
             display: none;
         }
     }
@@ -37,6 +37,7 @@
         color: white;
         text-align: center;
         font-size: 14px;
+        overflow: hidden;
         cursor: pointer;
         @include transition(.13s all ease-in-out);
 
@@ -51,6 +52,10 @@
         .instance-headline {
             font-size: 11px;
             font-weight: 500;
+
+            &.long-headline {
+                font-size: 10.5px;
+            }
         }
 
         .instance-location {
@@ -63,6 +68,13 @@
             background: rgba(255, 255, 255, .2);
             height: 1px;
             margin: 7px 22px;
+        }
+
+        .instance-professor {
+            font-size: 10px;
+            margin-top: 9px;
+            font-weight: 500;
+            margin-bottom: -1px;
         }
 
         .instance-time {

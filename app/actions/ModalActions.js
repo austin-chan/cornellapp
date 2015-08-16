@@ -45,13 +45,33 @@ var ModalActions = {
     },
 
     /**
+     * Activate the account view panel.
+     */
+    account: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.ACCOUNT
+        });
+    },
+
+    /**
+     * Open the course catalog.
+     * @param {object} course Optional course object to open to.
+     */
+    catalog: function(course) {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG,
+            course: course
+        });
+    },
+
+    /**
      * Close any open modals or catalog.
      */
     close: function() {
         AppDispatcher.dispatch({
             actionType: ModalConstants.CLOSE
         });
-    }
+    },
 };
 
 module.exports = ModalActions;

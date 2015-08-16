@@ -14,7 +14,10 @@
 var React = require('react/addons'),
     ScheduleActions = require('../actions/ScheduleActions'),
     ModalActions = require('../actions/ModalActions'),
-    UserActions = require('../actions/UserActions');
+    UserActions = require('../actions/UserActions'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    classNames = require('classnames'),
+    _ = require('underscore');
 
 var CAHeader = React.createClass({
     propTypes: {
@@ -25,18 +28,24 @@ var CAHeader = React.createClass({
     },
 
     render: function() {
-        var accountButtons;
+        var accountButtons,
+            semesterButtons = [],
+            activeSemester = ScheduleStore.getSemester();
 
         if (this.props.user)
             accountButtons = (
                 <div className="account-buttons">
                     <button className="ca-outline-button"
-                        onClick={this._onMyAccount}>
+                        onClick={this._onAccount}>
                         {this.props.user.name}
                     </button>
                     <button className="ca-outline-button"
                         onClick={this._onLogout}>
                         Log Out
+                    </button>
+                    <button className="ca-outline-button"
+                        onClick={this._onCatalog}>
+                        Open Catalog
                     </button>
                 </div>
             );
@@ -51,8 +60,26 @@ var CAHeader = React.createClass({
                         onClick={this._onLogin}>
                         Log In
                     </button>
+                    <button className="ca-outline-button"
+                        onClick={this._onCatalog}>
+                        Open Catalog
+                    </button>
                 </div>
             );
+
+
+        _.each(ScheduleStore.getSemesters(), function(s){
+            var className = classNames('ca-fill-button', {
+                selected: s.slug === activeSemester.slug
+            });
+
+            semesterButtons.push(
+                <button className={className} key={s.slug}
+                    onClick={this._onSemesterChange.bind(null, s)}>
+                    {s.descr}
+                </button>
+            );
+        }, this);
 
         return (
             <header className="ca-header">
@@ -63,17 +90,26 @@ var CAHeader = React.createClass({
                     </div>
                     <div className="right">
                         <div className="semester-buttons">
-                            <button className="ca-fill-button">
-                                SUMMER 2015
-                            </button>
-                            <button className="ca-fill-button selected">
-                                FALL 2015
-                            </button>
+                            {semesterButtons}
                         </div>
                     </div>
                 </div>
             </header>
         );
+    },
+
+    /**
+     * Event handler for opening the catalog.
+     */
+    _onCatalog: function() {
+        ModalActions.catalog();
+    },
+
+    /**
+     * Event handler for changing the active semester.
+     */
+    _onSemesterChange: function(semester) {
+        ScheduleActions.changeSemester(semester);
     },
 
     /**
@@ -87,6 +123,13 @@ var CAHeader = React.createClass({
 
         UserActions.logout();
         ScheduleActions.clear();
+    },
+
+    /**
+     * Event handler for clicking the account button.
+     */
+    _onAccount: function() {
+        ModalActions.account();
     },
 
     /**

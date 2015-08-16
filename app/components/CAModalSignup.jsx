@@ -31,7 +31,7 @@ var CAModalSignup = React.createClass({
 
         setTimeout(function() {
             netidField.focus();
-        }, 50);
+        }, 100);
     },
 
     /**
@@ -187,9 +187,9 @@ var CAModalSignup = React.createClass({
 
         var form = React.findDOMNode(this.refs.form),
             formObj = $(form).serializeObject();
+
         // Save netid to possibly pass to activation modal.
         this.submittedNetid = $.trim(formObj.netid);
-
         this.jqXHR = $.ajax({
             type: 'post',
             url: '/api/signup',

@@ -25,7 +25,9 @@ var authentication = function(passport, models) {
      */
     passport.deserializeUser(function(id, done) {
         new models.user({ id: id }).fetch({
-            withRelated: ['selections.course']
+            withRelated: [
+                'selections.course.groups.sections.meetings.professors'
+            ]
         }).then(function(user) {
             done(null, user);
         });
@@ -46,7 +48,11 @@ var authentication = function(passport, models) {
         blockValidationErrors(req, done, function() {
             // Check that an activated or unactivated user exists with the
             // NetID.
-            new models.user({ netid: netid }).fetch().then(function(user) {
+            new models.user({ netid: netid }).fetch({
+                withRelated: [
+                    'selections.course.groups.sections.meetings.professors'
+                ]
+            }).then(function(user) {
                 if (!user)
                     return done('The NetID you entered does not belong to any' +
                         ' account.');

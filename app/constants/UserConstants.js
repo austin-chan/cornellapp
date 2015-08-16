@@ -12,5 +12,6 @@
 
 module.exports = {
     LOGIN: 'USER_LOGIN',
-    LOGOUT: 'USER_LOGOUT'
+    LOGOUT: 'USER_LOGOUT',
+    CHANGE_NAME: 'CHANGE_NAME'
 };

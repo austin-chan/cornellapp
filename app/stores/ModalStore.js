@@ -29,7 +29,6 @@ var _active = false,
 function login() {
     _active = 'modal';
     _modalType = 'login';
-    _modalData = {};
 }
 
 /**
@@ -38,7 +37,6 @@ function login() {
 function signup() {
     _active = 'modal';
     _modalType = 'signup';
-    _modalData = {};
 }
 
 /**
@@ -51,6 +49,22 @@ function activation(netid) {
     _modalData = {
         netid: netid
     };
+}
+
+/**
+ * Activate the account view panel.
+ */
+function account() {
+    _active = 'modal';
+    _modalType = 'account';
+}
+
+/**
+ * Activate the catalog view.
+ */
+function catalog() {
+    _active = 'catalog';
+    _modalData = {};
 }
 
 /**
@@ -82,21 +96,6 @@ var ModalStore = assign({}, EventEmitter.prototype, {
             active: _active === 'catalog'
         };
     },
-
-    /**
-     * Activate the login modal to appear.
-     */
-    login: login,
-
-    /**
-     * Activate the signup modal to appear.
-     */
-    signup: signup,
-
-    /**
-     * Activate the account activation modal to appear.
-     */
-    activation: activation,
 
     /**
      * Publish a change to all listeners.
@@ -136,6 +135,16 @@ AppDispatcher.register(function(action) {
 
         case ModalConstants.ACTIVATION:
             activation(action.netid);
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.ACCOUNT:
+            account();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.CATALOG:
+            catalog(action.course);
             ModalStore.emitChange();
             break;
 

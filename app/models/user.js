@@ -100,8 +100,12 @@ var user = function(bookshelf, models) {
                     var course = s.course;
                     delete s.course;
 
+                    // Decode the selected section IDs.
+                    s.selectedSectionIds = JSON.parse(s.selectedSectionIds);
+                    s.active = !!s.active;
+
                     return {
-                        course: course,
+                        raw: course,
                         selection: s
                     };
                 });

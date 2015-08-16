@@ -20,7 +20,7 @@ var React = require('react/addons'),
 var CABasket = React.createClass({
     propTypes: {
         courses: React.PropTypes.array.isRequired,
-        semester: React.PropTypes.number.isRequired,
+        semester: React.PropTypes.object.isRequired,
     },
 
     render: function() {

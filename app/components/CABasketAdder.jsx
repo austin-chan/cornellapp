@@ -16,7 +16,7 @@ var React = require('react/addons'),
 
 var CABasketAdder = React.createClass({
     propTypes: {
-        semester: React.PropTypes.number.isRequired
+        semester: React.PropTypes.object.isRequired
     },
 
     componentDidMount: function() {
@@ -26,7 +26,7 @@ var CABasketAdder = React.createClass({
         $(input).autocomplete({
             params: {
                 strm: function() {
-                    return self.props.semester;
+                    return self.props.semester.strm;
                 }
             },
 

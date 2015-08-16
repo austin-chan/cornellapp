@@ -11,11 +11,13 @@
  */
 
 var strutil = require('../utils/strutil'),
-	cornellutil = require('../utils/cornellutil');
+	cornellutil = require('../utils/cornellutil'),
+	_ = require('underscore');
 
 var apirouter = function(app, blockValidationErrors) {
 	var knex = app.get('knex'),
 		models = app.get('models'),
+		authorize = app.get('authorize'),
 		apiutil = require('../utils/apiutil')(models);
 
 	// Route for searching for courses to add.
@@ -49,6 +51,26 @@ var apirouter = function(app, blockValidationErrors) {
 				res.send(name);
 			});
 		});
+	});
+
+	// Route for saving account info.
+	app.post('/api/user', authorize, function(req, res) {
+		var d = {};
+
+		if (req.body.name !== req.user.get('name'))
+			d.name = req.body.name;
+
+		// Old password is correct.
+		if (req.body.old_password && req.body.new_password &&
+			req.user.correctPassword(req.body.old_password)) {
+			d.password = models.user.hashPassword(req.body.new_password);
+		}
+
+		if (!_.isEmpty(d)) {
+			req.user.save(d).then(function() {
+				res.send('ok');
+			});
+		}
 	});
 
     require('./authenticationrouter')(app, blockValidationErrors);
