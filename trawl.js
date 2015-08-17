@@ -1,8 +1,16 @@
 /**
- * @fileoverview Performs the operation of retrieving, storing and updating
- * all course data from the Cornell University Courses API. This file is named
- * after the Google web crawler "Trawler". Run trawl in the command line with an
- * argument of the semester name to update: 'node trawl FA15'
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * Performs the operation of retrieving, storing and updating all course data
+ * from the Cornell University Courses API. This file is named after the Google
+ * web crawler "Trawler". Run trawl in the command line with an argument of the
+ * semester name to update: 'node trawl FA15'
  */
 
 // Initialize environment variables for local environment.
@@ -59,8 +67,8 @@ async.waterfall([
 			// save new semester entry
 			} else {
 				var rosterSemester = courseutil.sanitizeSemesterObject(roster);
-				new models.semester(rosterSemester).save()
-					.then(function(semesterEntry) {
+				new models.semester(rosterSemester).save({},
+					{ method: 'insert' }).then(function(semesterEntry) {
 						printSuccess('Inserted new semester entry');
 						callback(null, semesterEntry);
 					}).catch(function(err) {

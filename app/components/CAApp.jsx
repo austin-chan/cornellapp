@@ -48,9 +48,24 @@ var CAApp = React.createClass({
     },
 
     componentWillUnmount: function() {
+        this.stopScroll = false;
+
         ScheduleStore.removeChangeListener(this._onChange);
         ModalStore.removeChangeListener(this._onChange);
         UserStore.removeChangeListener(this._onChange);
+    },
+
+    /**
+     * Make sure the body is not scrollable with a modal or catalog.
+     */
+    componentWillUpdate: function(nextProps, nextState) {
+        var stopScroll = nextState.catalog.active || nextState.modal.active;
+
+        if (this.stopScroll !== stopScroll)
+            $(document.body).toggleClass('disable-scroll', stopScroll);
+
+        this.stopScroll = stopScroll;
+
     },
 
     _onChange: function() {

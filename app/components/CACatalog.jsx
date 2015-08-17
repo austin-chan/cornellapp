@@ -70,7 +70,9 @@ var CACatalog = React.createClass({
                         <i className="icon icon-search"></i>
                         <input type="search"
                             className="ca-clear-input search"
-                            placeholder="Search for a course" />
+                            placeholder="Search for a course"
+                            ref="search"
+                            onKeyDown={this._onSearchDown}/>
                         <div className="ca-close close" onClick={this._onClose}>
                             <i className="icon-close"></i>
                             <div className="label">Close</div>
@@ -93,10 +95,12 @@ var CACatalog = React.createClass({
                             <p className="title">{this.state.iframeTitle}</p>
                         </div>
                         <div className="navigation-tabs">
-                            <button className="ca-simple-button">
+                            <button className="ca-simple-button"
+                                onClick={this._onAllDepartments}>
                                 All Departments
                             </button>
-                            <button className="ca-simple-button">
+                            <button className="ca-simple-button"
+                                onClick={this._onRandomCourses}>
                                 Random Courses
                             </button>
                             <button className="ca-simple-button">
@@ -110,6 +114,37 @@ var CACatalog = React.createClass({
                 </div>
             </div>
         );
+    },
+
+    /**
+     * Event handler for clicking on random courses button.
+     */
+    _onRandomCourses: function() {
+        var randomLink = '/catalog/' + ScheduleStore.getSemester().strm +
+            '/random',
+            $iframe = $(React.findDOMNode(this.refs.iframe));
+
+        if (this.props.page === randomLink)
+            $iframe.attr('src', $iframe.attr('src'));
+        else
+            ModalActions.catalog('random');
+
+    },
+
+    /**
+     * Event handler for keying down in the search bar.
+     */
+    _onSearchDown: function(e) {
+        var value = React.findDOMNode(this.refs.search).value;
+        if (e.key === 'Enter' && $.trim(value).length)
+            ModalActions.catalog('search/' + value);
+    },
+
+    /**
+     * Event handler for clicking on All Departments button.
+     */
+    _onAllDepartments: function() {
+        ModalActions.catalog('departments');
     },
 
     /**

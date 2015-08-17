@@ -342,9 +342,24 @@ var CAApp = React.createClass({displayName: "CAApp",
     },
 
     componentWillUnmount: function() {
+        this.stopScroll = false;
+
         ScheduleStore.removeChangeListener(this._onChange);
         ModalStore.removeChangeListener(this._onChange);
         UserStore.removeChangeListener(this._onChange);
+    },
+
+    /**
+     * Make sure the body is not scrollable with a modal or catalog.
+     */
+    componentWillUpdate: function(nextProps, nextState) {
+        var stopScroll = nextState.catalog.active || nextState.modal.active;
+
+        if (this.stopScroll !== stopScroll)
+            $(document.body).toggleClass('disable-scroll', stopScroll);
+
+        this.stopScroll = stopScroll;
+
     },
 
     _onChange: function() {
@@ -544,6 +559,7 @@ var React = require('react/addons'),
     CAToggle = require('./CAToggle'),
     CAColorPanel = require('./CAColorPanel'),
     ScheduleActions = require('../actions/ScheduleActions'),
+    ModalActions = require('../actions/ModalActions'),
     ScheduleStore = require('../stores/ScheduleStore'),
     strutil = require('../utils/strutil'),
     classNames = require('classnames'),
@@ -670,7 +686,8 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
                             onClick: this._onColorSelecting.bind(this, true)}, 
                             "Change Color"
                         ), 
-                        React.createElement("button", {className: "ca-simple-button"}, 
+                        React.createElement("button", {className: "ca-simple-button", 
+                            onClick: this._onCatalogPage}, 
                             "Open in Catalog"
                         )
                     )
@@ -680,6 +697,16 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
                     onDone: this._onColorSelecting.bind(this, false), 
                     onColorChange: this._onColorChange})
             )
+        );
+    },
+
+    /**
+     * Event handler for clicking on Open in Catalog.
+     */
+    _onCatalogPage: function() {
+        var course = this.props.course.raw;
+        ModalActions.catalog(
+            'course/' + course.subject + '/' + course.catalogNbr
         );
     },
 
@@ -738,7 +765,7 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
 
 module.exports = CABasketCourse;
 
-},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":28,"../utils/strutil":30,"./CAColorPanel":9,"./CAToggle":20,"classnames":34,"pluralize":44,"react/addons":49,"underscore":222}],8:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":28,"../utils/strutil":30,"./CAColorPanel":9,"./CAToggle":20,"classnames":34,"pluralize":44,"react/addons":49,"underscore":222}],8:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -811,7 +838,9 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                         React.createElement("i", {className: "icon icon-search"}), 
                         React.createElement("input", {type: "search", 
                             className: "ca-clear-input search", 
-                            placeholder: "Search for a course"}), 
+                            placeholder: "Search for a course", 
+                            ref: "search", 
+                            onKeyDown: this._onSearchDown}), 
                         React.createElement("div", {className: "ca-close close", onClick: this._onClose}, 
                             React.createElement("i", {className: "icon-close"}), 
                             React.createElement("div", {className: "label"}, "Close")
@@ -834,10 +863,12 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                             React.createElement("p", {className: "title"}, this.state.iframeTitle)
                         ), 
                         React.createElement("div", {className: "navigation-tabs"}, 
-                            React.createElement("button", {className: "ca-simple-button"}, 
+                            React.createElement("button", {className: "ca-simple-button", 
+                                onClick: this._onAllDepartments}, 
                                 "All Departments"
                             ), 
-                            React.createElement("button", {className: "ca-simple-button"}, 
+                            React.createElement("button", {className: "ca-simple-button", 
+                                onClick: this._onRandomCourses}, 
                                 "Random Courses"
                             ), 
                             React.createElement("button", {className: "ca-simple-button"}, 
@@ -851,6 +882,37 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                 )
             )
         );
+    },
+
+    /**
+     * Event handler for clicking on random courses button.
+     */
+    _onRandomCourses: function() {
+        var randomLink = '/catalog/' + ScheduleStore.getSemester().strm +
+            '/random',
+            $iframe = $(React.findDOMNode(this.refs.iframe));
+
+        if (this.props.page === randomLink)
+            $iframe.attr('src', $iframe.attr('src'));
+        else
+            ModalActions.catalog('random');
+
+    },
+
+    /**
+     * Event handler for keying down in the search bar.
+     */
+    _onSearchDown: function(e) {
+        var value = React.findDOMNode(this.refs.search).value;
+        if (e.key === 'Enter' && $.trim(value).length)
+            ModalActions.catalog('search/' + value);
+    },
+
+    /**
+     * Event handler for clicking on All Departments button.
+     */
+    _onAllDepartments: function() {
+        ModalActions.catalog('departments');
     },
 
     /**
@@ -1073,6 +1135,7 @@ var CAHeader = React.createClass({displayName: "CAHeader",
      */
     _onSemesterChange: function(semester) {
         ScheduleActions.changeSemester(semester);
+        ModalActions.catalogReset();
     },
 
     /**
@@ -2754,7 +2817,7 @@ function catalogBack() {
  */
 function catalogForward() {
     // Skip if there is no next page.
-    if (_catalogStack.length === 0)
+    if (_catalogStackForward.length === 0)
         return;
 
     var popped = _catalogStackForward.pop();
@@ -2818,6 +2881,11 @@ var ModalStore = assign({}, EventEmitter.prototype, {
             hasForward: _catalogStackForward.length !== 0
         };
     },
+
+    /**
+     * Reset the catalog to the default page and clear all history.
+     */
+    reset: catalogReset,
 
     /**
      * Publish a change to all listeners.
@@ -3084,7 +3152,7 @@ function selectSection(key, sectionId) {
 
 /**
  * Change the active semester.
- * @param {string} semester Slug of the semester to set as active.
+ * @param {object} semester Object of the semester to set as active.
  */
 function changeSemester(semester) {
     // Skip if already selected.
@@ -3098,6 +3166,9 @@ function changeSemester(semester) {
     // Make sure semester slug exists.
     if (!semesterExists)
         return;
+
+    // Save new semester slug as a cookie.
+    $.cookie('semester_slug', semester.slug);
 
     // Save the active _courses into _data.
     _data[_semester.slug] = _courses;

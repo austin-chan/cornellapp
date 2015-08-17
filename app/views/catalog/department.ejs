@@ -1,6 +1,7 @@
 <div class="catalog-department">
     <% for (var x = 0; x < courses.length; x++) {
-        var course = courses.at(x); %>
-        <%- include('course-entry', { course: course }) %>
+        var course = courses.at(x),
+            like = likes[x]; %>
+        <%- include('course-entry', { course: course, like: like }) %>
     <% } %>
 </div>

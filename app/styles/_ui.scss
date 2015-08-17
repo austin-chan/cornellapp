@@ -134,6 +134,81 @@
     }
 }
 
+.ca-catalog-button {
+    position: relative;
+    text-transform: uppercase;
+    border: none;
+    outline: none;
+    color: #999999;
+    cursor: pointer;
+    font-size: 9px;
+    background: #EEEEEE;
+    padding: 7px 9px 6px;
+    letter-spacing: .22em;
+    text-indent: .22em;
+    font-weight: 400;
+    font-family: 'bunt';
+    display: inline-block;
+    vertical-align: top;
+    border-radius: 4px;
+    box-sizing: border-box;
+    text-decoration: none;
+    height: 22px;
+    box-sizing: border-box;
+    @include transition(.13s all ease-in-out);
+
+    &.red {
+        background: #D17E7B;
+        color: #F1F1F1;
+    }
+
+    &.like {
+        border-radius: 15px;
+        height: 22px;
+        width: 22px;
+
+        i {
+            position: absolute;
+            left: 3px;
+            top: 5px;
+            font-size: 12px;
+        }
+
+        .label {
+            padding-left: 15px;
+            font-size: 9px;
+            margin-top: -1px;
+        }
+
+        &.liked {
+            background: #D17E7B;
+            color: #F1F1F1;
+        }
+
+        &.has-likes {
+            width: auto;
+
+            i {
+                left: 7px;
+                top: 4px;
+                font-size: 13px;
+            }
+
+            .label {
+                display: block;
+            }
+        }
+
+        .label {
+            display: none;
+        }
+    }
+
+    &:hover {
+        opacity: .7;
+    }
+}
+
 .ca-close {
     color: white;
     cursor: pointer;

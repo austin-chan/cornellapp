@@ -11,12 +11,26 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script>
-    $(document).on('click', 'a', function(e) {
-        e.preventDefault();
+        <%# Override click action behavior and pass to the parent. %>
+        $(document).on('click', 'a', function(e) {
+            e.preventDefault();
 
-        var href = $(this).attr('href');
-        parent.receiveLink(href);
-    });
+            var href = $(this).attr('href');
+            parent.receiveLink(href);
+        });
+
+        <%# Click on like button. %>
+        $(document).on('click', '.like', function(e) {
+            var liked = $(this).hasClass('liked'),
+                count = parseInt($(this).find('.label').text()),
+                likeDif = liked ? -1 : 1;
+
+            count = count + likeDif;
+
+            $(this).find('.label').text(count);
+            $(this).toggleClass('liked', !liked);
+            $(this).toggleClass('has-likes', !!count);
+        });
     </script>
 </body>
 </html>

@@ -11,6 +11,11 @@ exports.up = function(knex, Promise) {
             table.string('color').notNullable();
             table.boolean('active').notNullable();
             table.string('selectedSectionIds').notNullable();
+        }),
+        knex.schema.createTable('likes', function(table) {
+            table.increments('id');
+            table.integer('crseId').unsigned().notNullable();
+            table.integer('userId').unsigned().notNullable();
         })
     ]);
 };

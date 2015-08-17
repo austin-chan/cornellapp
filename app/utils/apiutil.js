@@ -13,7 +13,6 @@
 module.exports = function(models) {
 	var async = require('async'),
 		strutil = require('./strutil'),
-		async = require('async'),
 		m = {};
 
 	/**
@@ -27,14 +26,17 @@ module.exports = function(models) {
 	 *     error occurred and the second argument passed is the collection of
 	 *     course entries that matched the search. If no matching courses are
 	 *     found, an empty array is passed as the second argument.
+	 * @param {boolean} skipRelated Optional boolean to skip related data.
 	 */
-	m.searchCourses = function(p, limit, callback) {
+	m.searchCourses = function(p, limit, callback, skipRelated) {
+		skipRelated = typeof skipRelated === 'undefined' ? false : skipRelated;
+
 		var strm = p.strm,
 			query = p.query,
 			firstAlphabetic = strutil.firstAlphabeticSubstring(query),
 			firstNumeric = strutil.firstNumericSubstring(query),
 			firstQuery,
-			withRelated = {
+			withRelated = skipRelated ? {} : {
 				withRelated: ['groups.sections.meetings.professors']
 			};
 

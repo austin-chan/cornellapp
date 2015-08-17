@@ -1,0 +1,64 @@
+<div class="catalog-course course-entry">
+    <div class="upper">
+        <span class="tag"><%= course.get('subject') %> <%= course.get('catalogNbr') %></span>
+        <span class="when"><%= course.get('catalogWhenOffered') %></span>
+        <p class="title"><%= course.get('titleLong') %></p>
+    </div>
+    <div class="lower">
+        <p class="description freight-sans-pro">
+            <%- course.get('description') || 'No description available.' %>
+        </p>
+        <div class="extra-info freight-sans-pro">
+        <%
+            var extraInfo = function(title, attribute) {
+                if (course.get(attribute)) {
+        %>
+                <p class="info"><strong><%= title %>:</strong> <%= course.get(attribute) %></p>
+        <%
+                }
+            }
+
+            var infos = [
+                ['Fees', 'catalogFee'],
+                ['Permission Note', 'catalogPermission'],
+                ['Course Attribute', 'catalogAttribute'],
+                ['Prerequisites/Corequisites', 'catalogPrereqCoreq'],
+                ['Forbidden Overlaps', 'catalogForbiddenOverlaps'],
+                ['Satisfies Requirement', 'catalogSatisfiesReq'],
+                ['Breadth Requirement', 'catalogBreadth'],
+                ['Distribution Category', 'catalogDistr'],
+                ['Language Requirement', 'catalogLang'],
+                ['Course Subfield', 'catalogCourseSubfield'],
+                ['Comments', 'catalogComments'],
+            ];
+
+            _.each(infos, function(info) {
+                extraInfo(info[0], info[1]);
+            });
+
+            var outcomes = JSON.parse(course.get('catalogOutcomes'));
+            if (outcomes.length) {
+        %>
+                <p class="info"><strong>Outcomes:</strong></p>
+                <ul class="outcomes">
+        <%
+                _.each(outcomes, function(outcome) {
+        %>
+                    <li><%= outcome %></li>
+        <%
+                });
+        %>
+                </ul>
+        <%
+
+            }
+        %>
+            <div class="action-buttons">
+                <%- include('like', { like: like }) %>
+                <div class="ca-catalog-button roster button red">
+                    Add to Courses
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

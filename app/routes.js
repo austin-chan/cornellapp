@@ -14,7 +14,8 @@
 var React = require('react/addons'),
     CAApp = React.createFactory(require('./components/CAApp')),
     UserStore = require('./stores/UserStore'),
-    ScheduleStore = require('./stores/ScheduleStore');
+    ScheduleStore = require('./stores/ScheduleStore'),
+    ModalStore = require('./stores/ModalStore');
 
 module.exports = function(app) {
     var config = app.get('config');
@@ -26,8 +27,9 @@ module.exports = function(app) {
     });
 
     app.get('/', function(req, res) {
-        UserStore.reset(req);
         ScheduleStore.reset(req);
+        ModalStore.reset();
+        UserStore.reset(req);
 
         var reactOutput = React.renderToString(CAApp()),
             contextString = JSON.stringify({

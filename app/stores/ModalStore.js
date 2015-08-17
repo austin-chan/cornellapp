@@ -97,7 +97,7 @@ function catalogBack() {
  */
 function catalogForward() {
     // Skip if there is no next page.
-    if (_catalogStack.length === 0)
+    if (_catalogStackForward.length === 0)
         return;
 
     var popped = _catalogStackForward.pop();
@@ -161,6 +161,11 @@ var ModalStore = assign({}, EventEmitter.prototype, {
             hasForward: _catalogStackForward.length !== 0
         };
     },
+
+    /**
+     * Reset the catalog to the default page and clear all history.
+     */
+    reset: catalogReset,
 
     /**
      * Publish a change to all listeners.

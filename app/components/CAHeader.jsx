@@ -110,6 +110,7 @@ var CAHeader = React.createClass({
      */
     _onSemesterChange: function(semester) {
         ScheduleActions.changeSemester(semester);
+        ModalActions.catalogReset();
     },
 
     /**

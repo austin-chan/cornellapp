@@ -15,6 +15,7 @@ var React = require('react/addons'),
     CAToggle = require('./CAToggle'),
     CAColorPanel = require('./CAColorPanel'),
     ScheduleActions = require('../actions/ScheduleActions'),
+    ModalActions = require('../actions/ModalActions'),
     ScheduleStore = require('../stores/ScheduleStore'),
     strutil = require('../utils/strutil'),
     classNames = require('classnames'),
@@ -141,7 +142,8 @@ var CABasketCourse = React.createClass({
                             onClick={this._onColorSelecting.bind(this, true)}>
                             Change Color
                         </button>
-                        <button className="ca-simple-button">
+                        <button className="ca-simple-button"
+                            onClick={this._onCatalogPage}>
                             Open in Catalog
                         </button>
                     </div>
@@ -151,6 +153,16 @@ var CABasketCourse = React.createClass({
                     onDone={this._onColorSelecting.bind(this, false)}
                     onColorChange={this._onColorChange} />
             </div>
+        );
+    },
+
+    /**
+     * Event handler for clicking on Open in Catalog.
+     */
+    _onCatalogPage: function() {
+        var course = this.props.course.raw;
+        ModalActions.catalog(
+            'course/' + course.subject + '/' + course.catalogNbr
         );
     },
 

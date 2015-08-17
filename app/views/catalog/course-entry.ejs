@@ -1,11 +1,32 @@
 <div class="course-entry">
     <div class="upper">
         <span class="tag"><%= course.get('subject') %> <%= course.get('catalogNbr') %></span>
-        <span class="when"><%= course.get('catalogWhenOffered') %> <%= course.get('catalogNbr') %></span>
+        <span class="when"><%= course.get('catalogWhenOffered') %></span>
         <p class="title"><%= course.get('titleLong') %></p>
     </div>
     <div class="lower">
-        <%= course.get('description') %>
-
+        <p class="description freight-sans-pro">
+            <%- course.get('description') || 'No description available.' %>
+        </p>
+        <div class="action-buttons">
+            <%- include('like', { like: like }) %>
+            <div class="ca-catalog-button button red">
+                Add to Courses
+            </div>
+            <a href="course/<%= course.get('subject') %>/<%= course.get('catalogNbr') %>" class="ca-catalog-button button">
+                View Details
+            </a>
+        </div>
+        <div class="extra-info freight-sans-pro">
+            <% if (course.get('catalogSatisfiesReq')) { %>
+                <p class="info"><strong>Satisfies Requirement:</strong> <%= course.get('catalogSatisfiesReq') %></p>
+            <% } %>
+            <% if (course.get('catalogBreadth')) { %>
+                <p class="info"><strong>Breadth Requirement:</strong> <%= course.get('catalogBreadth') %></p>
+            <% } %>
+            <% if (course.get('catalogDistr')) { %>
+                <p class="info"><strong>Distribution Category:</strong> <%= course.get('catalogDistr') %></p>
+            <% } %>
+        </div>
     </div>
 </div>

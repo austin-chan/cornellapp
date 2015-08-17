@@ -73,6 +73,17 @@ var apirouter = function(app, blockValidationErrors) {
 		}
 	});
 
+	app.get('/admin/trawl', authorize, function(req, res) {
+		res.writeHead(200, { "Content-Type": "text/event-stream",
+                         "Cache-control": "no-cache" });
+
+		res.write('ok');
+		setTimeout(function() {
+			res.write('ok');
+			res.end();
+		}, 5000);
+	});
+
     require('./authenticationrouter')(app, blockValidationErrors);
     require('./selectionrouter')(app, blockValidationErrors);
 };

@@ -1,0 +1,15 @@
+<%
+    if (user) {
+        var likeCount = like.length,
+            isLiked = _.some(like, function(l) {
+                    return l.userId == user;
+                }) ? 'liked' : '',
+            hasLikes = likeCount ? 'has-likes' : '';
+%>
+    <div class="ca-catalog-button button like <%= isLiked %> <%= hasLikes %>">
+        <i class="icon-favorite"></i>
+        <span class="label"><%= likeCount %></span>
+    </div>
+<%
+    }
+%>

@@ -185,7 +185,7 @@ function selectSection(key, sectionId) {
 
 /**
  * Change the active semester.
- * @param {string} semester Slug of the semester to set as active.
+ * @param {object} semester Object of the semester to set as active.
  */
 function changeSemester(semester) {
     // Skip if already selected.
@@ -199,6 +199,9 @@ function changeSemester(semester) {
     // Make sure semester slug exists.
     if (!semesterExists)
         return;
+
+    // Save new semester slug as a cookie.
+    $.cookie('semester_slug', semester.slug);
 
     // Save the active _courses into _data.
     _data[_semester.slug] = _courses;
