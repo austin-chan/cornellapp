@@ -14,7 +14,7 @@ exports.up = function(knex, Promise) {
         }),
         knex.schema.createTable('likes', function(table) {
             table.increments('id');
-            table.integer('crseId').unsigned().notNullable();
+            table.string('crseId_subject').notNullable();
             table.integer('userId').unsigned().notNullable();
         })
     ]);
@@ -22,6 +22,7 @@ exports.up = function(knex, Promise) {
 
 exports.down = function(knex, Promise) {
     return Promise.all([
-        knex.schema.dropTable('selections')
+        knex.schema.dropTable('selections'),
+        knex.schema.dropTable('likes'),
     ]);
 };

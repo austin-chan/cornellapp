@@ -13,6 +13,7 @@
 
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
+    ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames'),
     ScheduleStore = require('../stores/ScheduleStore'),
     _ = require('underscore');
@@ -47,6 +48,10 @@ var CACatalog = React.createClass({
 
         window.receiveLink = function(link) {
             ModalActions.catalog(link);
+        };
+
+        window.addCourse = function(course) {
+            ScheduleActions.add(course);
         };
     },
 
@@ -103,7 +108,8 @@ var CACatalog = React.createClass({
                                 onClick={this._onRandomCourses}>
                                 Random Courses
                             </button>
-                            <button className="ca-simple-button">
+                            <button className="ca-simple-button"
+                                onClick={this._onMostLiked}>
                                 Most Liked
                             </button>
                         </div>
@@ -114,6 +120,13 @@ var CACatalog = React.createClass({
                 </div>
             </div>
         );
+    },
+
+    /**
+     * Event handler for clicking on Most Liked button.
+     */
+    _onMostLiked: function() {
+        ModalActions.catalog('most-liked');
     },
 
     /**

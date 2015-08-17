@@ -59,8 +59,8 @@ var user = function(bookshelf, models) {
                 from: 'Cornellapp <' + config.mail.fromAddress + '>',
                 to: this.get('netid') + '@cornell.edu',
                 subject: '🍻 Please confirm your account',
-                text: this.get('name') + ',\nPlease verify that you ' +
-                    'have indeed signed up for an account on Cornellapp. ' +
+                text: this.get('name') + ',\n\nPlease verify that you ' +
+                    'have signed up for an account on Cornellapp. ' +
                     'This is the last step of completing account signup. If ' +
                     'you wish to continue, please follow the link below:\n\n' +
 

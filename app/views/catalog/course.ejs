@@ -54,15 +54,13 @@
             }
         %>
             <div class="action-buttons">
-                <%- include('like', { like: like }) %>
-                <div class="ca-catalog-button roster button red">
-                    Add to Courses
-                </div>
+                <%- include('like', { like: like, course: course }) %>
+                <%- include('add', { course: course }) %>
             </div>
         </div>
     </div>
     <div class="enrollment">
-        <h3>Enrollment Information</h3>
+        <h3>Enrollment Options</h3>
         <%
             var componentMap = {
                 LAB: 'laboratory',
@@ -87,21 +85,22 @@
                         group.get('componentsOptional')),
                     groupByline = '';
 
-                if (componentsRequired.length + componentsOptional.length > 2) {
+                if (componentsRequired.length + componentsOptional.length > 1) {
                     groupByline = 'Choose';
 
                     _.each(componentsRequired, function(c) {
                         groupByline += ' one ' + componentMap[c];
                     });
-                    groupByline += '.';
+                    groupByline += '. ';
 
                     if (componentsOptional.length) {
                         var comp = componentsOptional[0];
                         comp = comp.charAt(0).toUpperCase() + comp.slice(1);
 
-                        groupByline += ' ' + comp + ' optional.'
+                        groupByline += ' ' + comp + ' optional. '
                     }
                 }
+
 
                 var combinations = JSON.parse(group.get('simpleCombinations'));
                 if (combinations.length) {
@@ -129,25 +128,97 @@
                     for (var s = 0; s < sections.length; s++) {
                         var section = sections.at(s);
         %>
+                    <div class="section">
                         <div class="first">
-                            <div class="tag"></div>
-                            <div class="classId"></div>
+                            <div class="tag"><%= section.get('ssrComponent') %> <%= section.get('catalogNbr') %></div>
+                            <div class="classId"><%= section.get('classNbr') %></div>
                         </div>
-                        <div class="second">
-                            <div class="days">Tue, Thu</div>
+                        <div class="meetings">
+        <%
+                        var meetings = section.related('meetings');
+                        for (var m = 0; m < meetings.length; m++) {
+                            var meeting = meetings.at(m).toJSON();
+        %>
+                            <div class="meeting">
+                                <div class="second">
+                <%
+                                var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
+                                    _.identity);
+
+                                days = _.map(days, function(day) {
+                                    var map = {
+                                        M: 'Mon',
+                                        T: 'Tue',
+                                        W: 'Wed',
+                                        R: 'Thur',
+                                        F: 'Fri',
+                                        S: 'Sat',
+                                        Su: 'Sun'
+                                    }
+                                    return map[day];
+                                });
+
+                                days = days ? days.join(', ') : 'TBA';
+                %>
+                                    <div class="days"><%= days %></div>
+                                </div>
+                                <div class="third">
+                                    <p class="time">
+                <%
+                                    var format = function(d) {
+                                        d = d.toLowerCase();
+                                        if (!d)
+                                            return '';
+
+                                        if (d[0] === '0')
+                                            return d.substring(1);
+
+                                        return d;
+                                    };
+                %>
+                                        <%= format(meeting.timeStart) %> - <%= format(meeting.timeEnd) %>
+                <%
+                                    if (group.get('sessionCode') != '1') {
+                %>
+                                        <span class="dates">
+                                            <%= group.get('sessionBeginDt') %> -&nbsp;
+                                            <%= group.get('sessionEndDt') %></span>
+                <%
+                                    }
+                %>
+                                    </p>
+                                    <p class="location">
+                                        <%= meeting.facilityDescr %>
+                                    </p>
+                                </div>
+                                <div class="fourth">
+                <%
+                                    var professors = meeting.professors;
+                                    professors = _.map(professors, function(p) {
+                                        return p.firstName + ' ' +
+                                            (p.middleName.length ? p.middleName + ' ' : '') +
+                                            p.lastName;
+                                    });
+                %>
+                                    <%= professors.join(', ') %>
+                                </div>
+                            </div>
+        <%
+                        }
+        %>
                         </div>
-                        <div class="third">
-                            <p class="time">
-                                9:05am - 9:55am
-                                <span class="dates">Sep 1 - Oct 2, 2015</span>
-                            </p>
-                            <p class="location">
-                                Bill and Melinda Gates Hll G01
-                            </p>
+        <%
+                        var notes = JSON.parse(section.get('notes'));
+                        if (notes.length) {
+        %>
+                        <div class="fifth">
+                            <%= notes.join('; ') %>
                         </div>
-                        <div class="fourth">
-                            Kit Yee Fan
-                        </div>
+
+        <%
+                        }
+        %>
+                    </div>
         <%
                     }
         %>
@@ -156,8 +227,8 @@
                     <p class="primary">4 credits</p>
                     <p class="secondary">Student Option</p>
                 </div>
-
             </div>
+            <hr>
         <%
 
             }

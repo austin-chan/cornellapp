@@ -41,11 +41,13 @@ var catalogrouter = function(app) {
             department = req.params.department.toUpperCase();
 
         new models.course().where('strm', strm).where('subject', department)
-            .fetchAll().then(function(courses) {
+            .fetchAll({ withRelated: ['groups.sections.meetings.professors'] })
+            .then(function(courses) {
             if (!courses.length)
                 return res.send('An error occured.');
 
-            new models.semester({ strm: strm }).fetch().then(function(ss) {
+            new models.semester({ strm: strm }).fetch()
+                .then(function(ss) {
                 var s = _.find(JSON.parse(ss.get('subject_list')), function(s) {
                     return s.value === department;
                 });
@@ -53,7 +55,9 @@ var catalogrouter = function(app) {
                 var cs = courses.toJSON();
 
                 async.map(cs, function(c, callback) {
-                    knex.table('likes').where('crseId', c.crseId).select()
+                    knex.table('likes')
+                        .where('crseId_subject', c.crseId + '_' + c.subject)
+                        .select()
                         .then(function(ls) {
                             callback(null, ls);
                         });
@@ -62,6 +66,7 @@ var catalogrouter = function(app) {
                         title: s.descrformal,
                         type: 'department',
                         courses: courses,
+                        context: cs,
                         likes: results,
                         user: req.user ? req.user.id : false,
                         _: _
@@ -83,12 +88,15 @@ var catalogrouter = function(app) {
                 if (!c)
                     return res.send('An error occured.');
 
-                knex.table('likes').where('crseId', c.get('crseId')).select()
+                knex.table('likes')
+                    .where('crseId_subject', c.crseId + '_' + c.subject)
+                    .select()
                     .then(function(like) {
                         res.render('catalog', {
                             title: subject + ' ' + number,
                             type: 'course',
                             course: c,
+                            context: [c.toJSON()],
                             like: like,
                             user: req.user ? req.user.id : false,
                             _: _
@@ -108,7 +116,9 @@ var catalogrouter = function(app) {
             var cs = results.toJSON();
 
             async.map(cs, function(c, callback) {
-                knex.table('likes').where('crseId', c.crseId).select()
+                knex.table('likes')
+                    .where('crseId_subject', c.crseId + '_' + c.subject)
+                    .select()
                     .then(function(ls) {
                         callback(null, ls);
                     });
@@ -117,13 +127,13 @@ var catalogrouter = function(app) {
                     title: '"' + req.params.term + '"',
                     type: 'department',
                     courses: results,
+                    context: cs,
                     likes: likes,
                     user: req.user ? req.user.id : false,
                     _: _
                 });
             });
-        }, true);
-        // res.send('ok');
+        });
     });
 
     // Route for searching random courses.
@@ -135,7 +145,9 @@ var catalogrouter = function(app) {
                 var cs = courses.toJSON();
 
                 async.map(cs, function(c, callback) {
-                    knex.table('likes').where('crseId', c.crseId).select()
+                    knex.table('likes')
+                        .where('crseId_subject', c.crseId + '_' + c.subject)
+                        .select()
                         .then(function(ls) {
                             callback(null, ls);
                         });
@@ -144,6 +156,7 @@ var catalogrouter = function(app) {
                         title: 'Random Courses',
                         type: 'department',
                         courses: courses,
+                        context: cs,
                         likes: likes,
                         user: req.user ? req.user.id : false,
                         _: _
@@ -151,6 +164,54 @@ var catalogrouter = function(app) {
                 });
 
             });
+    });
+
+    // Route for getting the most liked courses.
+    app.get('/catalog/:strm/most-liked', function(req, res) {
+        var strm = req.params.strm;
+
+        knex.table('likes').select(knex.raw('crseId_subject, count(*) as num'))
+            .groupBy('crseId_subject').limit(20)
+            .orderByRaw('num DESC').select().then(function(likes) {
+
+                var courseQ = new models.course({ strm: strm });
+
+                var crseIds = _.map(likes, function(like) {
+                    var split = like.crseId_subject.split('_');
+
+                    courseQ.query(function(qb) {
+                        qb.orWhere({ crseId: split[0] })
+                        .where({ subject: split[1] });
+                    });
+                });
+
+                courseQ.fetchAll({ withRelated:
+                    ['groups.sections.meetings.professors'] })
+                .then(function(courses) {
+
+                    var cs = courses.toJSON();
+
+                    async.map(cs, function(c, callback) {
+                        knex.table('likes')
+                            .where('crseId_subject', c.crseId + '_' + c.subject)
+                            .select()
+                            .then(function(ls) {
+                                callback(null, ls);
+                            });
+                    }, function(err, likes) {
+                        res.render('catalog', {
+                            title: 'Most Liked',
+                            type: 'department',
+                            courses: courses,
+                            context: cs,
+                            likes: likes,
+                            user: req.user ? req.user.id : false,
+                            _: _
+                        });
+                    });
+                });
+            });
+
     });
 };
 

@@ -6,7 +6,7 @@
                 }) ? 'liked' : '',
             hasLikes = likeCount ? 'has-likes' : '';
 %>
-    <div class="ca-catalog-button button like <%= isLiked %> <%= hasLikes %>">
+    <div class="ca-catalog-button button like <%= isLiked %> <%= hasLikes %>" data-crseid="<%= course.get('crseId') %>" data-subject="<%= course.get('subject') %>">
         <i class="icon-favorite"></i>
         <span class="label"><%= likeCount %></span>
     </div>

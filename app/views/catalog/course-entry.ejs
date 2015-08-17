@@ -9,10 +9,8 @@
             <%- course.get('description') || 'No description available.' %>
         </p>
         <div class="action-buttons">
-            <%- include('like', { like: like }) %>
-            <div class="ca-catalog-button button red">
-                Add to Courses
-            </div>
+            <%- include('like', { course: course, like: like }) %>
+            <%- include('add', { course: course }) %>
             <a href="course/<%= course.get('subject') %>/<%= course.get('catalogNbr') %>" class="ca-catalog-button button">
                 View Details
             </a>

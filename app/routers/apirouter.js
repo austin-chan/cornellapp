@@ -73,15 +73,45 @@ var apirouter = function(app, blockValidationErrors) {
 		}
 	});
 
-	app.get('/admin/trawl', authorize, function(req, res) {
+	// Route for liking a course.
+	app.post('/api/like/:crseId/:subject', authorize, function(req, res) {
+		var crseId = req.params.crseId,
+			subject = req.params.subject,
+			shouldLike = !!req.body.shouldLike;
+
+		if (!crseId || !subject)
+			return res.send('error');
+
+		if (req.body.shouldLike !== 'false') {
+			knex.table('likes').insert({ crseId_subject: crseId + '_' + subject,
+				userId: req.user.id }).then(function() {
+					res.send('ok');
+				});
+		} else {
+			knex.table('likes')
+				.where('userId', req.user.id)
+				.where('crseId_subject', crseId + '_' + subject)
+				.del().then(function() {
+					res.send('ok');
+				});
+		}
+	});
+
+	app.get('/admin/trawl/:semester', authorize, function(req, res) {
 		res.writeHead(200, { "Content-Type": "text/event-stream",
                          "Cache-control": "no-cache" });
 
-		res.write('ok');
-		setTimeout(function() {
-			res.write('ok');
+		require('../utils/trawlutil')
+			.trawl(req.params.semester, res.write, printSuccess, exit);
+
+		function exit() {
 			res.end();
-		}, 5000);
+		}
+
+		function printSuccess(message) {
+			res.write(message +
+				'<span style="color: green"> Success \u2713</span>');
+		}
 	});
 
     require('./authenticationrouter')(app, blockValidationErrors);

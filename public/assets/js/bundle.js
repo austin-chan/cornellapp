@@ -781,6 +781,7 @@ module.exports = CABasketCourse;
 
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
+    ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames'),
     ScheduleStore = require('../stores/ScheduleStore'),
     _ = require('underscore');
@@ -815,6 +816,10 @@ var CACatalog = React.createClass({displayName: "CACatalog",
 
         window.receiveLink = function(link) {
             ModalActions.catalog(link);
+        };
+
+        window.addCourse = function(course) {
+            ScheduleActions.add(course);
         };
     },
 
@@ -871,7 +876,8 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                                 onClick: this._onRandomCourses}, 
                                 "Random Courses"
                             ), 
-                            React.createElement("button", {className: "ca-simple-button"}, 
+                            React.createElement("button", {className: "ca-simple-button", 
+                                onClick: this._onMostLiked}, 
                                 "Most Liked"
                             )
                         )
@@ -882,6 +888,13 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                 )
             )
         );
+    },
+
+    /**
+     * Event handler for clicking on Most Liked button.
+     */
+    _onMostLiked: function() {
+        ModalActions.catalog('most-liked');
     },
 
     /**
@@ -939,7 +952,7 @@ var CACatalog = React.createClass({displayName: "CACatalog",
 
 module.exports = CACatalog;
 
-},{"../actions/ModalActions":1,"../stores/ScheduleStore":28,"classnames":34,"react/addons":49,"underscore":222}],9:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":28,"classnames":34,"react/addons":49,"underscore":222}],9:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
