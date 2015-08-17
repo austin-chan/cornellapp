@@ -3,4 +3,31 @@
     .roster {
         padding-top: 6px;
     }
+
+    h3 {
+        color: #717171;
+        font-size: 16px;
+    }
+
+    .enrollment {
+
+        .group {
+            padding-top: 22px;
+
+            .byline {
+                font-size: 12px;
+                color: #A3A3A3;
+
+                a {
+                    color: #616161;
+                    text-decoration: none;
+                    @include transition(all .13s ease-in-out);
+
+                    &:hover {
+                        opacity: .73;
+                    }
+                }
+            }
+        }
+    }
 }

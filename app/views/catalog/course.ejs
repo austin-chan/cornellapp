@@ -61,4 +61,106 @@
             </div>
         </div>
     </div>
+    <div class="enrollment">
+        <h3>Enrollment Information</h3>
+        <%
+            var componentMap = {
+                LAB: 'laboratory',
+                DIS: 'discussion',
+                LEC: 'lecture',
+                SEM: 'seminar',
+                RSC: 'research',
+                FLD: 'field studies',
+                CLN: 'clinical',
+                STU: 'studio',
+                TA: 'tutor group',
+                IND: 'independent study',
+            }
+            for (var g = 0; g < course.related('groups').length; g++) {
+        %>
+            <div class="group">
+        <%
+                var group = course.related('groups').at(g),
+                    componentsRequired = JSON.parse(
+                        group.get('componentsRequired')),
+                    componentsOptional = JSON.parse(
+                        group.get('componentsOptional')),
+                    groupByline = '';
+
+                if (componentsRequired.length + componentsOptional.length > 2) {
+                    groupByline = 'Choose';
+
+                    _.each(componentsRequired, function(c) {
+                        groupByline += ' one ' + componentMap[c];
+                    });
+                    groupByline += '.';
+
+                    if (componentsOptional.length) {
+                        var comp = componentsOptional[0];
+                        comp = comp.charAt(0).toUpperCase() + comp.slice(1);
+
+                        groupByline += ' ' + comp + ' optional.'
+                    }
+                }
+
+                var combinations = JSON.parse(group.get('simpleCombinations'));
+                if (combinations.length) {
+                    groupByline += 'Combined with: ';
+                    _.each(combinations, function(combination, i) {
+                        groupByline += '<a href="course/' + combination.subject
+                            + '/' + combination.catalogNbr + '">' +
+                            combination.subject + combination.catalogNbr +
+                            '</a>';
+
+                        if (i !== combinations.length - 1)
+                            groupByline += ', ';
+                    });
+                }
+
+                if (groupByline.length) {
+        %>
+                <p class="byline"><%- groupByline %></p>
+        <%
+                }
+                var sections = group.related('sections');
+        %>
+                <div class="sections">
+        <%
+                    for (var s = 0; s < sections.length; s++) {
+                        var section = sections.at(s);
+        %>
+                        <div class="first">
+                            <div class="tag"></div>
+                            <div class="classId"></div>
+                        </div>
+                        <div class="second">
+                            <div class="days">Tue, Thu</div>
+                        </div>
+                        <div class="third">
+                            <p class="time">
+                                9:05am - 9:55am
+                                <span class="dates">Sep 1 - Oct 2, 2015</span>
+                            </p>
+                            <p class="location">
+                                Bill and Melinda Gates Hll G01
+                            </p>
+                        </div>
+                        <div class="fourth">
+                            Kit Yee Fan
+                        </div>
+        <%
+                    }
+        %>
+                </div>
+                <div class="credits">
+                    <p class="primary">4 credits</p>
+                    <p class="secondary">Student Option</p>
+                </div>
+
+            </div>
+        <%
+
+            }
+        %>
+    </div>
 </div>
