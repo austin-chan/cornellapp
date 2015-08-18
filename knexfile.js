@@ -16,7 +16,9 @@
 // Initialize environment variables for local environment.
 try {
     require('dotenv').load();
-} catch(e) {}
+} catch(e) {
+    require('dotenv').config({ path: '.productionenv' }).load();
+}
 
 var knexConfig = {
     development: require('./config').knex,

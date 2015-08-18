@@ -2,7 +2,6 @@ node_modules
 .elasticbeanstalk
 .ebextensions/variables.config
 .env
-.productionenv
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

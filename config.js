@@ -57,4 +57,12 @@ var config = {
     ]
 };
 
+/**
+ * Command line is running migrations on production.
+ */
+if (typeof process.env.NODE_ENV === 'undefined' && !process.env.DB_HOST) {
+    console.log(process.env);
+    // config.knex.connection = require('productionconfig');
+}
+
 module.exports = config;

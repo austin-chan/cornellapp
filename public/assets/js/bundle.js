@@ -4196,6 +4196,14 @@ var config = {
     ]
 };
 
+/**
+ * Command line is running migrations on production.
+ */
+if (typeof "browserify" === 'undefined' && !process.env.DB_HOST) {
+    console.log(process.env);
+    // config.knex.connection = require('productionconfig');
+}
+
 module.exports = config;
 
 }).call(this,require('_process'))

@@ -59,7 +59,8 @@ gulp.task('server', function () {
     nodemon({
         script: 'server.js',
         ext: 'js jsx ejs',
-        ignore: ['public/**', 'app/styles/**']
+        ignore: ['public/**', 'app/styles/**'],
+        env: { 'NODE_ENV': 'development' }
     });
 });
 
