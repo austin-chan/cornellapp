@@ -14,6 +14,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     ModalConstants = require('../constants/ModalConstants'),
     ScheduleStore = require('./ScheduleStore'),
+    UserStore = require('./UserStore'),
     assign = require('object-assign'),
     moment = require('moment'),
     _ = require('underscore');
@@ -66,6 +67,20 @@ function activation(netid) {
 function account() {
     _active = 'modal';
     _modalType = 'account';
+    _modalData = {
+        name: UserStore.getUser().name
+    };
+}
+
+/**
+ * Activate the enrollment info view panel.
+ */
+function enrollment() {
+    _active = 'modal';
+    _modalType = 'enrollment';
+    _modalData = {
+        courses: ScheduleStore.getCourses()
+    };
 }
 
 /**
@@ -210,6 +225,11 @@ AppDispatcher.register(function(action) {
 
         case ModalConstants.ACCOUNT:
             account();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.ENROLLMENT:
+            enrollment();
             ModalStore.emitChange();
             break;
 

@@ -40,4 +40,15 @@ $ca-colors: (
     border-radius: 3px;
     background: white;
     margin-bottom: 20px;
+
+    .button-area {
+        font-size: 0;
+        position: absolute;
+        bottom: 6px;
+        left: 5px;
+
+        button {
+            margin-right: 10px;
+        }
+    }
 }

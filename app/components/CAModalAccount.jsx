@@ -14,10 +14,13 @@
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
     UserActions = require('../actions/UserActions'),
-    UserStore = require('../stores/UserStore'),
     classNames = require('classnames');
 
 var CAModalAccount = React.createClass({
+    propTypes: {
+        name: React.PropTypes.string.isRequired
+    },
+
     getInitialState: function() {
         return {
             loading: false,
@@ -61,7 +64,7 @@ var CAModalAccount = React.createClass({
 
     render: function() {
         var errorMessage,
-            name = UserStore.getUser().name,
+            name = this.props.name,
             submitButtonClass = classNames('ca-red-button', {
                 loading: this.state.loading
             });

@@ -13,6 +13,7 @@
 
 var React = require('react/addons'),
     CABasketAdder = require('./CABasketAdder'),
+    CABasketReview = require('./CABasketReview'),
     CABasketCourse = require('./CABasketCourse'),
     classNames = require('classnames'),
     _ = require('underscore');
@@ -27,8 +28,10 @@ var CABasket = React.createClass({
         var courseItems = [],
             courses = this.props.courses,
             rootClass = classNames('ca-basket',
-                { empty: !_.size(this.props.courses) });
+                { empty: !_.size(this.props.courses) }),
+            review;
 
+        // Loop through all courses.
         _.each(courses, function(course) {
             courseItems.push(
                 <CABasketCourse key={course.selection.key}
@@ -36,12 +39,15 @@ var CABasket = React.createClass({
             );
         });
 
+        if (courseItems.length)
+            review = <CABasketReview courses={this.props.courses} />;
+
         return (
             <div className={rootClass}>
                 <CABasketAdder semester={this.props.semester} />
-
                 <p className="empty-label">No Courses Added</p>
                 {courseItems}
+                {review}
             </div>
         );
     }

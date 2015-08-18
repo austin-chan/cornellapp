@@ -1,0 +1,28 @@
+.ca-modal-enrollment {
+
+    .course {
+        padding-bottom: 28px;
+        padding-top: 2px;
+
+        .course-label {
+            color: #B2B2B2;
+            font-size: 17px;
+        }
+
+        .section {
+            margin-top: 12px;
+
+            .id {
+                color: #808080;
+                font-size: 15px;
+            }
+
+            .number {
+                display: inline-block;
+                color: #D17E7B;
+                font-size: 16px;
+                margin-left: 15px;
+            }
+        }
+    }
+}

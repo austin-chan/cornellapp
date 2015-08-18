@@ -90,17 +90,6 @@
         left: 0;
     }
 
-    .button-area {
-        font-size: 0;
-        position: absolute;
-        bottom: 6px;
-        left: 5px;
-
-        button {
-            margin-right: 10px;
-        }
-    }
-
     @each $color-name, $color in $ca-colors {
         &.#{$color-name} {
             .item-header {

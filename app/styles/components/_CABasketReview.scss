@@ -1,0 +1,25 @@
+.ca-basket-review {
+    @include basket-item();
+
+    .top {
+        text-align: center;
+        padding-top: 18px;
+        padding-bottom: 42px;
+
+        .item {
+            width: 100px;
+            display: inline-block;
+
+            .primary {
+                display: block;
+                color: #535353;
+                font-size: 30px;
+            }
+
+            .secondary {
+                color: #A2A2A2;
+                font-size: 14px;
+            }
+        }
+    }
+}

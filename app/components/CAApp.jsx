@@ -89,8 +89,8 @@ var CAApp = React.createClass({
                     Copyright &copy; 2015. Cornellapp is an&nbsp;
                     <a href="https://github.com/pastachan/cornellapp"
                         target="_blank">
-                        open-sourced application
-                    </a>.
+                        open-sourced
+                    </a> application.
                 </p>
                 <CAModal active={this.state.modal.active}
                     type={this.state.modal.type} data={this.state.modal.data} />

@@ -13,6 +13,16 @@
 var m = {};
 
 /**
+ * Capitalizes the first letter in a string.
+ * @param {string} str String to be capitalized.
+ * @return {string} The capitalized string. No operation is completed if the
+ *     string is empty.
+ */
+m.capitalize = function(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+/**
  * Shortens a string to a specified maximum length, adding a specified number
  * of periods to suffix the shortened string. If the original string is larger
  * than the maximum length, the final shortened string including the periods
@@ -20,7 +30,7 @@ var m = {};
  * @param {string} str String to shorten.
  * @param {number} len Maximum length of shortened string.
  * @param {number} dots Number of dots to use if the string needs to be
- *      shortened.
+ *     shortened.
  * @return {string} Shortened string.
  */
 m.shorten = function(str, len, dots) {

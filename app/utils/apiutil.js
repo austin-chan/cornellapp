@@ -311,5 +311,5 @@ module.exports = function(models) {
  */
 function prepareSelectionData(data) {
 	data.selectedSectionIds = JSON.stringify(data.selectedSectionIds);
-	data.active = !!data.active;
+	data.active = data.active == 'true';
 }

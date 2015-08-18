@@ -54,6 +54,15 @@ var ModalActions = {
     },
 
     /**
+     * Activate the enrollment info view panel.
+     */
+    enrollment: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.ENROLLMENT
+        });
+    },
+
+    /**
      * Open the course catalog and optionally load a certain page.
      * @param {string} page Optional link to load in the catalog.
      */
