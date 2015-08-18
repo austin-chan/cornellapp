@@ -20,10 +20,8 @@ var React = require('react/addons'),
 module.exports = function(app) {
     var config = app.get('config');
 
-    app.get('/test', function(req, res) {
-        req.user.load(['selections.course']).then(function() {
-            console.log(req.user.getSelectionData());
-        });
+    app.get('/health', function(req, res) {
+        res.send('ok');
     });
 
     app.get('/', function(req, res) {

@@ -14,9 +14,9 @@
 // Initialize environment variables for local environment. The dotenv package
 // is not included in package.json, every local installation must set up the
 // environment variables independently.
-try {
+var exists = fs.existsSync('.env');
+if (exists)
     require('dotenv').load();
-} catch(e) {}
 
 // Initialize express and all top-level packages.
 var express = require('express'),
