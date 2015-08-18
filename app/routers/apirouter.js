@@ -12,6 +12,7 @@
 
 var strutil = require('../utils/strutil'),
 	cornellutil = require('../utils/cornellutil'),
+	config = require('../../config'),
 	_ = require('underscore');
 
 var apirouter = function(app, blockValidationErrors) {
@@ -98,19 +99,27 @@ var apirouter = function(app, blockValidationErrors) {
 	});
 
 	app.get('/admin/trawl/:semester', authorize, function(req, res) {
+		if (config.admins.indexOf(req.user.get('netid')) === -1)
+			return res.send('NOT AUTHORIZED');
+
 		res.writeHead(200, { "Content-Type": "text/event-stream",
                          "Cache-control": "no-cache" });
 
 		require('../utils/trawlutil')
-			.trawl(req.params.semester, res.write, printSuccess, exit);
+			.trawl(req.params.semester, log, printSuccess, exit);
+
+		function log(message) {
+			res.write(message + '\n');
+		}
 
 		function exit() {
+			res.write('Process Complete.');
 			res.end();
 		}
 
 		function printSuccess(message) {
 			res.write(message +
-				'<span style="color: green"> Success \u2713</span>');
+				' Success\n');
 		}
 	});
 

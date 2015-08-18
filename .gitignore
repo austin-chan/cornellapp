@@ -2,3 +2,7 @@ node_modules
 .elasticbeanstalk
 .ebextensions/variables.config
 .env
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

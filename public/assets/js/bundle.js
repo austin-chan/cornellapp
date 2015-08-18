@@ -4190,7 +4190,10 @@ var config = {
             "strm": 2608,
             "descr": "Fall 2015"
         }
-    }
+    },
+    "admins": [
+        "adc237"
+    ]
 };
 
 module.exports = config;
