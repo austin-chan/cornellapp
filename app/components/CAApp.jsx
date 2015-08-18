@@ -85,6 +85,13 @@ var CAApp = React.createClass({
                         <CASchedule courses={this.state.allCourses} />
                     </div>
                 </div>
+                <p className="footer">
+                    Copyright &copy; 2015. Cornellapp is an&nbsp;
+                    <a href="https://github.com/pastachan/cornellapp"
+                        target="_blank">
+                        open-sourced application
+                    </a>.
+                </p>
                 <CAModal active={this.state.modal.active}
                     type={this.state.modal.type} data={this.state.modal.data} />
                 <CACatalog active={this.state.catalog.active}

@@ -12,4 +12,17 @@
             @include span(8.4 of 12 last);
         }
     }
+
+    .footer {
+        text-align: center;
+        font-size: 13px;
+        color: #BBBBBB;
+        padding-bottom: 10px;
+
+        a {
+            color: #888888;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    }
 }

@@ -13,12 +13,14 @@
  * module.
  */
 
+var fs = require("fs");
+
 // Initialize environment variables for local environment.
-try {
+var exists = fs.existsSync('.env');
+if (exists)
     require('dotenv').load();
-} catch(e) {
+else
     require('dotenv').config({ path: '.productionenv' }).load();
-}
 
 var knexConfig = {
     development: require('./config').knex,

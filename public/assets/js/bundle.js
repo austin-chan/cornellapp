@@ -379,6 +379,13 @@ var CAApp = React.createClass({displayName: "CAApp",
                         React.createElement(CASchedule, {courses: this.state.allCourses})
                     )
                 ), 
+                React.createElement("p", {className: "footer"}, 
+                    "Copyright © 2015. Cornellapp is an ", 
+                    React.createElement("a", {href: "https://github.com/pastachan/cornellapp", 
+                        target: "_blank"}, 
+                        "open-sourced application"
+                    ), "."
+                ), 
                 React.createElement(CAModal, {active: this.state.modal.active, 
                     type: this.state.modal.type, data: this.state.modal.data}), 
                 React.createElement(CACatalog, {active: this.state.catalog.active, 
