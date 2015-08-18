@@ -20,7 +20,7 @@ var exists = fs.existsSync('.env');
 if (exists)
     require('dotenv').load();
 else
-    require('dotenv').config({ path: '.productionenv' }).load();
+    require('dotenv').config({ path: '.productionenv' });
 
 var knexConfig = {
     development: require('./config').knex,
