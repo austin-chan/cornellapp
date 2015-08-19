@@ -13,11 +13,8 @@
  * module.
  */
 
-var fs = require("fs");
-
 // Initialize environment variables for local environment.
-var exists = fs.existsSync('.env');
-if (exists)
+if (require("fs").existsSync('.env'))
     require('dotenv').load();
 else
     require('dotenv').config({ path: '.productionenv' });

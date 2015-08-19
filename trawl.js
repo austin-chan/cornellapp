@@ -14,9 +14,10 @@
  */
 
 // Initialize environment variables for local environment.
-try {
+if (require("fs").existsSync('.env'))
     require('dotenv').load();
-} catch(e) {}
+else
+    require('dotenv').config({ path: '.productionenv' });
 
 var chalk = require('chalk');
 
