@@ -1,5 +1,5 @@
 # [Cornellapp](http://cornellapp.com)
-The Best Way to Schedule Your Semesters at Cornell University
+Cornellapp is the best and the most popular way to schedule your courses at Cornell.
 
 ## Installation
 To run Cornellapp on your machine, you must have [Node.js](https://nodejs.org/) and MySQL installed (Mac users should use [Homebrew](http://brew.sh/)), and [Gulp](https://github.com/gulpjs/gulp/blob/master/docs/getting-started.md) installed with the global flag.
@@ -33,7 +33,7 @@ But before launching the web application in your browser, you need to populate c
 $ node trawl FA15
 ```
 
-Open `localhost:3000` and there Cornellapp is in your browser!
+Open `localhost:3000` and see Cornellapp in your browser!
 
 ## React + Flux
 Cornellapp uses React and a unidirectional data flow paradigm called [Flux](https://facebook.github.io/flux/), which like React was created Facebook – God bless them. Cornellapp's Flux architecture describes a pattern with four major components: Dispatcher, Stores, Actions, and Views, all of which are singletons except Views.
@@ -47,7 +47,7 @@ Cornellapp uses React and a unidirectional data flow paradigm called [Flux](http
 | Dispatcher |  ---->  | Store |  ---->  | View |
 --------------         ---------         --------
 ```
-The Cornellapp Dispatcher communicates all changes to the Stores in the pub/sub pattern using event triggers and listeners.
+The Cornellapp Dispatcher communicates all changes to the Stores in the pub/sub pattern using event triggers and listeners. Then the stores transmit the data to all the components by calling `setState` on the root component (CAApp).
 
 ## Isomorphic Javascript Structure
 Cornellapp is entirely written in Javascript (Node), allowing logic to be shared when executing code in the frontend and backend. Using the same language in the Cornellapp frontend and backend cuts down development time, obviates possible confusion between multiple languages, and most importantly allows client-side rendering to be run in the server-side environment, making the application a single isomorphic entity. The isomorphic attribute enables the application to deliver pre-rendered pages that only need to be initialized in the client-side instead of delivering empty pages that need to be completely built client-side. This also prevents the modern phenomenon known by some as the [Flash of Client-Side Rendering](https://twitter.com/codepo8/status/576677287124426752), which degrades the user experience and occurs commonly in client-side frameworks like Angular and Ember. Additionally, pre-rendered markup reduces user loading time and dramatically improves SEO strength. Thus, [React](http://facebook.github.io/react/) was chosen as the frontend Javascript framework, as it's the only real way to create isomorphic javascript applications.
@@ -144,9 +144,9 @@ Cornellapp from its inception has ideologically been a collaborative application
 
 To submit a code change, fork the repo and create your branch from `master`. Make changes and submit a pull request in Github.
 
-**Contributors List:**
-Austin Chan '17
-Nicole Calace '16
+**Contributors List:**  
+Austin Chan '17  
+Nicole Calace '16  
 
 ## License
 
