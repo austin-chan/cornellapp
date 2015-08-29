@@ -27,9 +27,7 @@ var CABasketReview = React.createClass({
 
     render: function() {
         var courseLength = 0,
-            maxCredits = 0,
-            minCredits = 0,
-            credits;
+            credits = 0;
 
         // Loop through all selected courses.
         _.each(this.props.courses, function(course) {
@@ -38,17 +36,9 @@ var CABasketReview = React.createClass({
                 return;
 
             courseLength++;
-
-            var group = ScheduleStore.getSelectedGroup(course.selection.key);
-            maxCredits += parseFloat(group.unitsMaximum);
-            minCredits += parseFloat(group.unitsMinimum);
+            credits += parseFloat(course.selection.credits);
         });
 
-        // Handle if credit count is ambiguous.
-        if (maxCredits === minCredits)
-            credits = maxCredits;
-        else
-            credits = maxCredits + ' - ' + minCredits;
 
         return (
             <div className="ca-basket-review">

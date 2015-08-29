@@ -55,8 +55,22 @@
 %>
     </div>
     <div class="credits">
-        <p class="primary">4 credits</p>
-        <p class="secondary">Student Option</p>
+        <p class="primary">
+    <%
+        if (group.get('unitsMaximum') == group.get('unitsMinimum')) {
+            var credits = group.get('unitsMaximum');
+    %>
+            <%= credits %> <%= credits == '1' ? 'credit' : 'credits' %>
+    <%
+        } else {
+    %>
+            <%= group.get('unitsMinimum') %>-<%= group.get('unitsMaximum') %>
+            &nbsp;credits
+    <%
+        }
+    %>
+        </p>
+        <p class="secondary"><%= group.get('gradingBasisLong') %></p>
     </div>
 </div>
 <hr>

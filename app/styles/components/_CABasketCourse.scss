@@ -55,6 +55,18 @@
                     color: #bdbdbd;
                 }
 
+                &.changeable {
+
+                    select {
+                        padding-right: 12px;
+                    }
+
+                    i {
+                        margin-left: -13px;
+                        margin-right: 0px;
+                    }
+                }
+
                 select {
                     cursor: pointer;
                     background: transparent;
@@ -66,9 +78,21 @@
                     @include appearance(none);
                     @include transition(.13s all ease-in-out);
 
+                    option {
+                        padding-right: 15px;
+                    }
+
                     &:hover {
                         opacity: .64;
                     }
+                }
+
+                i {
+                    pointer-events: none;
+                    font-size: 15px;
+                    line-height: 0;
+                    vertical-align: middle;
+                    color: #888;
                 }
             }
         }

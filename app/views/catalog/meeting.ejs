@@ -17,7 +17,7 @@
         return map[day];
     });
 
-    days = days ? days.join(', ') : 'TBA';
+    days = days.length ? days.join(', ') : 'TBA';
 %>
         <div class="days"><%= days %></div>
     </div>
@@ -34,9 +34,13 @@
 
             return d;
         };
+
+        if (meeting.timeStart) {
 %>
             <%= format(meeting.timeStart) %> - <%= format(meeting.timeEnd) %>
 <%
+        }
+
         if (group.get('sessionCode') != '1') {
 %>
             <span class="dates">

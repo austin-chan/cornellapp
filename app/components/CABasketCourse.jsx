@@ -33,36 +33,60 @@ var CABasketCourse = React.createClass({
         };
     },
 
-    render: function() {
-        var course = this.props.course,
-            group = ScheduleStore.getSelectedGroup(course.selection.key),
-            active = course.selection.active,
-            rootClass = classNames('ca-basket-item', course.selection.color,
-                { inactive: !course.selection.active }),
-            professor,
-            credits,
+    /**
+     * Render the credits label or dropdown depending on the group options.
+     * @param {object} course Course object to render credits info for.
+     * @param {object} group Group object to render credits info for.
+     * @return {object} Renderable object to represent the credits.
+     */
+    renderCredits: function(course, group) {
+        // Credit count is changeable.
+        if (group.unitsMinimum != group.unitsMaximum) {
+            var creditOptions = [],
+                selectedCredits = course.selection.credits,
+                creditsMin = parseFloat(group.unitsMinimum),
+                creditsMax = parseFloat(group.unitsMaximum),
+                smallIncrements = creditsMax % 1 != 0 || creditsMin % 1 != 0;
 
-        // Description for the course item.
-            description = course.raw.description.length ?
-                strutil.shorten(course.raw.description, 140, 3) :
-                'No description available.',
+            for (var i = creditsMin; i <= creditsMax;
+                i += smallIncrements ? .5 : 1) {
 
-        // Header for the course item.
-            headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
-                ': ' + course.raw.titleLong;
+                creditOptions.push(
+                    <option key={i} value={i}>
+                        {i} {pluralize('credits', i)}
+                    </option>
+                );
+            }
 
-        headerTitle = strutil.shorten(headerTitle, 36, 2);
+            return (
+                <span className="section">
+                    <select className="freight-sans-pro"
+                        onChange={this._onCreditsSelect}
+                        value={selectedCredits}>
+                        {creditOptions}
+                    </select>
+                    <i className="icon-arrow_drop_down"></i>
+                </span>
+            );
 
-        // Label to display credit count.
-        if (group.unitsMinimum == group.unitsMaximum)
-            credits = group.unitsMinimum + ' ' +
+        } else {
+            return group.unitsMinimum + ' ' +
                 pluralize('credits', group.unitsMinimum);
-        else
-            credits = group.unitsMinimum + '-' + group.unitsMaximum +
-                'credits';
+        }
+    },
 
+    /**
+     * Render the section info and dropdowns to represent the selected sections
+     * for the courses and the professor.
+     * @param {object} course Course object to render section info for.
+     * @param {object} group Group object to render section info for.
+     * @return {array} Array of an array of renderable objects to represent the
+     *      section selections and the name of the professor to display.
+     */
+    renderSectionsAndProfessor: function(course, group) {
         // Section dropdowns to change the sections.
         var sectionLabels = [],
+            professor,
             requiredSectionTypes = JSON.parse(group.componentsRequired),
             optionalSectionTypes = JSON.parse(group.componentsOptional),
             allSectionTypes = requiredSectionTypes.concat(optionalSectionTypes);
@@ -108,17 +132,54 @@ var CABasketCourse = React.createClass({
                 );
             }, this);
 
+            var sectionClass = classNames('section', {
+                    changeable: options.length > 1
+                }),
+                dropDown;
+
+            // Render drop down icon if it is changeable.
+            if (options.length > 1) {
+                dropDown = <i className="icon-arrow_drop_down"></i>;
+            }
+
             sectionLabels.push(
-                <span key={sectionType} className="section">
+                <span key={sectionType} className={sectionClass}>
                     <span className="middot">&middot;</span>
                     <select className="freight-sans-pro"
                         value={selectedSectionId}
                         onChange={this._onSectionSelect}>
                         {options}
                     </select>
+                    {dropDown}
                 </span>
             );
         }, this);
+
+        return [sectionLabels, professor];
+    },
+
+    render: function() {
+        var course = this.props.course,
+            group = ScheduleStore.getSelectedGroup(course.selection.key),
+            active = course.selection.active,
+            rootClass = classNames('ca-basket-item', course.selection.color,
+                { inactive: !course.selection.active }),
+            credits = this.renderCredits(course, group),
+            sectionsAndProfessor =
+                this.renderSectionsAndProfessor(course, group),
+            sectionLabels = sectionsAndProfessor[0],
+            professor = sectionsAndProfessor[1],
+
+        // Description for the course item.
+            description = course.raw.description.length ?
+                strutil.shorten(course.raw.description, 140, 3) :
+                'No description available.',
+
+        // Header for the course item.
+            headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
+                ': ' + course.raw.titleLong;
+
+        headerTitle = strutil.shorten(headerTitle, 36, 2);
 
         return (
             <div className={rootClass}>
@@ -215,6 +276,16 @@ var CABasketCourse = React.createClass({
             ScheduleActions.selectSection(this.props.course.selection.key,
                 value);
         }
+    },
+
+    /**
+     * Event handler for selecting the number of credits for a course.
+     * @param {object} e Event object from the onChange event.
+     */
+    _onCreditsSelect: function(e) {
+        var value = e.target.value;
+
+        ScheduleActions.selectCredits(this.props.course.selection.key, value);
     }
 
 });

@@ -10,7 +10,7 @@
  * Router submodule for handling all catalog routes.
  */
 
- var async = require('async');
+var async = require('async');
 
 var catalogrouter = function(app) {
     var models = app.get('models'),
@@ -52,26 +52,8 @@ var catalogrouter = function(app) {
                     return s.value === department;
                 });
 
-                var cs = courses.toJSON();
-
-                async.map(cs, function(c, callback) {
-                    knex.table('likes')
-                        .where('crseId_subject', c.crseId + '_' + c.subject)
-                        .select()
-                        .then(function(ls) {
-                            callback(null, ls);
-                        });
-                }, function(err, results) {
-                    res.render('catalog', {
-                        title: s.descrformal,
-                        type: 'department',
-                        courses: courses,
-                        context: cs,
-                        likes: results,
-                        user: req.user ? req.user.id : false,
-                        _: _
-                    });
-                });
+                aggregateResponse(req, res, courses, s.descrformal,
+                    'department');
             });
         });
     });
@@ -89,11 +71,13 @@ var catalogrouter = function(app) {
                     return res.send('An error occured.');
 
                 knex.table('likes')
-                    .where('crseId_subject', c.crseId + '_' + c.subject)
+                    .where('crseId_subject', c.get('crseId') + '_' +
+                        c.get('subject'))
                     .select()
                     .then(function(like) {
                         res.render('catalog', {
-                            title: subject + ' ' + number,
+                            title: '(' + subject + ' ' + number + ') ' +
+                                c.get('titleLong'),
                             type: 'course',
                             course: c,
                             context: [c.toJSON()],
@@ -112,27 +96,9 @@ var catalogrouter = function(app) {
             strm: req.params.strm
         };
 
-        apiutil.searchCourses(p, 20, function(err, results) {
-            var cs = results.toJSON();
-
-            async.map(cs, function(c, callback) {
-                knex.table('likes')
-                    .where('crseId_subject', c.crseId + '_' + c.subject)
-                    .select()
-                    .then(function(ls) {
-                        callback(null, ls);
-                    });
-            }, function(err, likes) {
-                res.render('catalog', {
-                    title: '"' + req.params.term + '"',
-                    type: 'department',
-                    courses: results,
-                    context: cs,
-                    likes: likes,
-                    user: req.user ? req.user.id : false,
-                    _: _
-                });
-            });
+        apiutil.searchCourses(p, 20, function(err, courses) {
+            aggregateResponse(req, res, courses, '"' + req.params.term + '"',
+                'department');
         });
     });
 
@@ -141,29 +107,9 @@ var catalogrouter = function(app) {
         new models.course().query(function(qb) {
             qb.orderByRaw('RAND()').limit(20);
         }).fetchAll().then(function(courses) {
-
-                var cs = courses.toJSON();
-
-                async.map(cs, function(c, callback) {
-                    knex.table('likes')
-                        .where('crseId_subject', c.crseId + '_' + c.subject)
-                        .select()
-                        .then(function(ls) {
-                            callback(null, ls);
-                        });
-                }, function(err, likes) {
-                    res.render('catalog', {
-                        title: 'Random Courses',
-                        type: 'department',
-                        courses: courses,
-                        context: cs,
-                        likes: likes,
-                        user: req.user ? req.user.id : false,
-                        _: _
-                    });
-                });
-
-            });
+            aggregateResponse(req, res, courses, 'Random Courses',
+                'department');
+        });
     });
 
     // Route for getting the most liked courses.
@@ -188,31 +134,44 @@ var catalogrouter = function(app) {
                 courseQ.fetchAll({ withRelated:
                     ['groups.sections.meetings.professors'] })
                 .then(function(courses) {
-
-                    var cs = courses.toJSON();
-
-                    async.map(cs, function(c, callback) {
-                        knex.table('likes')
-                            .where('crseId_subject', c.crseId + '_' + c.subject)
-                            .select()
-                            .then(function(ls) {
-                                callback(null, ls);
-                            });
-                    }, function(err, likes) {
-                        res.render('catalog', {
-                            title: 'Most Liked',
-                            type: 'department',
-                            courses: courses,
-                            context: cs,
-                            likes: likes,
-                            user: req.user ? req.user.id : false,
-                            _: _
-                        });
-                    });
+                    aggregateResponse(req, res, courses, 'Most Liked',
+                        'department');
                 });
             });
 
     });
+
+    /**
+     * Retrieve all likes information for the courses and then prepare the data to
+     * deliver to the client side.
+     * @param {object} req Request object for the process.
+     * @param {object} res Response object for the process.
+     * @param {object} courses Collection of course models.
+     * @param {string} title Title of the page.
+     * @param {string} pageType Type of page to render.
+     */
+    function aggregateResponse(req, res, courses, title, pageType) {
+        var cs = courses.toJSON();
+
+        async.map(cs, function(c, callback) {
+            knex.table('likes')
+                .where('crseId_subject', c.crseId + '_' + c.subject)
+                .select()
+                .then(function(ls) {
+                    callback(null, ls);
+                });
+        }, function(err, likes) {
+            res.render('catalog', {
+                title: title,
+                type: pageType,
+                courses: courses,
+                context: cs,
+                likes: likes,
+                user: req.user ? req.user.id : false,
+                _: _
+            });
+        });
+    }
 };
 
 module.exports = catalogrouter;

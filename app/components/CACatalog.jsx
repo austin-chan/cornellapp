@@ -16,6 +16,7 @@ var React = require('react/addons'),
     ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    strutil = require('../utils/strutil'),
     _ = require('underscore');
 
 var CACatalog = React.createClass({
@@ -39,7 +40,7 @@ var CACatalog = React.createClass({
     componentDidMount: function() {
         var self = this;
         $(React.findDOMNode(this.refs.iframe)).on('load', function() {
-            var iframeTitle = this.contentDocument.title;
+            var iframeTitle = strutil.shorten(this.contentDocument.title, 48);
 
             self.setState({
                 iframeTitle: iframeTitle

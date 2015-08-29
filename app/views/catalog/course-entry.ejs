@@ -1,8 +1,15 @@
+<%
+    var courseLink = 'course/' + course.get('subject') + '/' + course.get('catalogNbr'),
+        departmentLink = 'department/' + course.get('subject');
+%>
 <div class="course-entry">
     <div class="upper">
-        <span class="tag"><%= course.get('subject') %> <%= course.get('catalogNbr') %></span>
+        <span class="tag">
+            <a href="<%- departmentLink %>"><%= course.get('subject') %></a>
+            <%= course.get('catalogNbr') %>
+        </span>
         <span class="when"><%= course.get('catalogWhenOffered') %></span>
-        <p class="title"><%= course.get('titleLong') %></p>
+        <a href="<%- courseLink %>" class="title"><%= course.get('titleLong') %></a>
     </div>
     <div class="lower">
         <p class="description freight-sans-pro">
@@ -11,7 +18,7 @@
         <div class="action-buttons">
             <%- include('like', { course: course, like: like }) %>
             <%- include('add', { course: course }) %>
-            <a href="course/<%= course.get('subject') %>/<%= course.get('catalogNbr') %>" class="ca-catalog-button button">
+            <a href="<%- courseLink %>" class="ca-catalog-button button">
                 View Details
             </a>
         </div>

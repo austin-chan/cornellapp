@@ -29,6 +29,7 @@ var selectionrouter = function(app, blockValidationErrors) {
         req.checkBody('tag', 'Provide a tag.').notEmpty();
         req.checkBody('key', 'Provide a key.').notEmpty();
         req.checkBody('color', 'Provide a color.').notEmpty();
+        req.checkBody('credits', 'Provide credits.').notEmpty();
         req.checkBody('active', 'Provide an active.').notEmpty().isBoolean();
         req.checkBody('selectedSectionIds', 'Provide selected sections.')
             .isArray();
@@ -52,6 +53,7 @@ var selectionrouter = function(app, blockValidationErrors) {
         req.checkBody('id', 'Provide an id.').notEmpty().isInt();
         req.checkBody('key', 'Provide a key.').notEmpty();
         req.checkBody('color', 'Provide a color.').notEmpty();
+        req.checkBody('credits', 'Provide credits.').notEmpty();
         req.checkBody('active', 'Provide an active.').notEmpty().isBoolean();
         req.checkBody('selectedSectionIds', 'Provide selected sections.')
             .isArray();
@@ -110,7 +112,7 @@ var selectionrouter = function(app, blockValidationErrors) {
                     // Save new object.
                     if (!matchingExisting) {
                         p = _.pick(course.selection, ['tag', 'key', 'color',
-                            'active', 'selectedSectionIds']);
+                            'credits', 'active', 'selectedSectionIds']);
                         p.strm = config.semesters[slug].strm;
 
                         apiutil.createSelection(req.user, p, callback);
@@ -118,7 +120,7 @@ var selectionrouter = function(app, blockValidationErrors) {
                     // Or update
                     } else {
                         p = _.pick(course.selection, ['key', 'color',
-                            'active', 'selectedSectionIds']);
+                            'credits', 'active', 'selectedSectionIds']);
                         p.id = matchingExisting.selection.id;
 
                         apiutil.updateSelection(req.user, p, callback);

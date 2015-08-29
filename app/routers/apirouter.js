@@ -71,6 +71,10 @@ var apirouter = function(app, blockValidationErrors) {
 			req.user.save(d).then(function() {
 				res.send('ok');
 			});
+
+		// No change was detected.
+		} else {
+			res.send('ok');
 		}
 	});
 

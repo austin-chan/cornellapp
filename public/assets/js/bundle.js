@@ -216,6 +216,19 @@ var ScheduleActions = {
     },
 
     /**
+     * Select a number of credits for a course.
+     * @param {string} key Key of the course to change the section selection of.
+     * @param {string} credits Number of credits to apply for the course.
+     */
+    selectCredits: function(key, credits) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.SELECT_CREDITS,
+            key: key,
+            credits: parseFloat(credits),
+        });
+    },
+
+    /**
      * Reinitialize the course list as empty in the event of logout.
      */
     clear: function() {
@@ -599,36 +612,60 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
         };
     },
 
-    render: function() {
-        var course = this.props.course,
-            group = ScheduleStore.getSelectedGroup(course.selection.key),
-            active = course.selection.active,
-            rootClass = classNames('ca-basket-item', course.selection.color,
-                { inactive: !course.selection.active }),
-            professor,
-            credits,
+    /**
+     * Render the credits label or dropdown depending on the group options.
+     * @param {object} course Course object to render credits info for.
+     * @param {object} group Group object to render credits info for.
+     * @return {object} Renderable object to represent the credits.
+     */
+    renderCredits: function(course, group) {
+        // Credit count is changeable.
+        if (group.unitsMinimum != group.unitsMaximum) {
+            var creditOptions = [],
+                selectedCredits = course.selection.credits,
+                creditsMin = parseFloat(group.unitsMinimum),
+                creditsMax = parseFloat(group.unitsMaximum),
+                smallIncrements = creditsMax % 1 != 0 || creditsMin % 1 != 0;
 
-        // Description for the course item.
-            description = course.raw.description.length ?
-                strutil.shorten(course.raw.description, 140, 3) :
-                'No description available.',
+            for (var i = creditsMin; i <= creditsMax;
+                i += smallIncrements ? .5 : 1) {
 
-        // Header for the course item.
-            headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
-                ': ' + course.raw.titleLong;
+                creditOptions.push(
+                    React.createElement("option", {key: i, value: i}, 
+                        i, " ", pluralize('credits', i)
+                    )
+                );
+            }
 
-        headerTitle = strutil.shorten(headerTitle, 36, 2);
+            return (
+                React.createElement("span", {className: "section"}, 
+                    React.createElement("select", {className: "freight-sans-pro", 
+                        onChange: this._onCreditsSelect, 
+                        value: selectedCredits}, 
+                        creditOptions
+                    ), 
+                    React.createElement("i", {className: "icon-arrow_drop_down"})
+                )
+            );
 
-        // Label to display credit count.
-        if (group.unitsMinimum == group.unitsMaximum)
-            credits = group.unitsMinimum + ' ' +
+        } else {
+            return group.unitsMinimum + ' ' +
                 pluralize('credits', group.unitsMinimum);
-        else
-            credits = group.unitsMinimum + '-' + group.unitsMaximum +
-                'credits';
+        }
+    },
 
+    /**
+     * Render the section info and dropdowns to represent the selected sections
+     * for the courses and the professor.
+     * @param {object} course Course object to render section info for.
+     * @param {object} group Group object to render section info for.
+     * @return {array} Array of an array of renderable objects to represent the
+     *      section selections and the name of the professor to display.
+     */
+    renderSectionsAndProfessor: function(course, group) {
         // Section dropdowns to change the sections.
         var sectionLabels = [],
+            professor,
             requiredSectionTypes = JSON.parse(group.componentsRequired),
             optionalSectionTypes = JSON.parse(group.componentsOptional),
             allSectionTypes = requiredSectionTypes.concat(optionalSectionTypes);
@@ -674,17 +711,54 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
                 );
             }, this);
 
+            var sectionClass = classNames('section', {
+                    changeable: options.length > 1
+                }),
+                dropDown;
+
+            // Render drop down icon if it is changeable.
+            if (options.length > 1) {
+                dropDown = React.createElement("i", {className: "icon-arrow_drop_down"});
+            }
+
             sectionLabels.push(
-                React.createElement("span", {key: sectionType, className: "section"}, 
+                React.createElement("span", {key: sectionType, className: sectionClass}, 
                     React.createElement("span", {className: "middot"}, "·"), 
                     React.createElement("select", {className: "freight-sans-pro", 
                         value: selectedSectionId, 
                         onChange: this._onSectionSelect}, 
                         options
-                    )
+                    ), 
+                    dropDown
                 )
             );
         }, this);
+
+        return [sectionLabels, professor];
+    },
+
+    render: function() {
+        var course = this.props.course,
+            group = ScheduleStore.getSelectedGroup(course.selection.key),
+            active = course.selection.active,
+            rootClass = classNames('ca-basket-item', course.selection.color,
+                { inactive: !course.selection.active }),
+            credits = this.renderCredits(course, group),
+            sectionsAndProfessor =
+                this.renderSectionsAndProfessor(course, group),
+            sectionLabels = sectionsAndProfessor[0],
+            professor = sectionsAndProfessor[1],
+
+        // Description for the course item.
+            description = course.raw.description.length ?
+                strutil.shorten(course.raw.description, 140, 3) :
+                'No description available.',
+
+        // Header for the course item.
+            headerTitle = course.raw.subject + ' ' + course.raw.catalogNbr +
+                ': ' + course.raw.titleLong;
+
+        headerTitle = strutil.shorten(headerTitle, 36, 2);
 
         return (
             React.createElement("div", {className: rootClass}, 
@@ -781,6 +855,16 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
             ScheduleActions.selectSection(this.props.course.selection.key,
                 value);
         }
+    },
+
+    /**
+     * Event handler for selecting the number of credits for a course.
+     * @param {object} e Event object from the onChange event.
+     */
+    _onCreditsSelect: function(e) {
+        var value = e.target.value;
+
+        ScheduleActions.selectCredits(this.props.course.selection.key, value);
     }
 
 });
@@ -817,9 +901,7 @@ var CABasketReview = React.createClass({displayName: "CABasketReview",
 
     render: function() {
         var courseLength = 0,
-            maxCredits = 0,
-            minCredits = 0,
-            credits;
+            credits = 0;
 
         // Loop through all selected courses.
         _.each(this.props.courses, function(course) {
@@ -828,17 +910,9 @@ var CABasketReview = React.createClass({displayName: "CABasketReview",
                 return;
 
             courseLength++;
-
-            var group = ScheduleStore.getSelectedGroup(course.selection.key);
-            maxCredits += parseFloat(group.unitsMaximum);
-            minCredits += parseFloat(group.unitsMinimum);
+            credits += parseFloat(course.selection.credits);
         });
 
-        // Handle if credit count is ambiguous.
-        if (maxCredits === minCredits)
-            credits = maxCredits;
-        else
-            credits = maxCredits + ' - ' + minCredits;
 
         return (
             React.createElement("div", {className: "ca-basket-review"}, 
@@ -901,6 +975,7 @@ var React = require('react/addons'),
     ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    strutil = require('../utils/strutil'),
     _ = require('underscore');
 
 var CACatalog = React.createClass({displayName: "CACatalog",
@@ -924,7 +999,7 @@ var CACatalog = React.createClass({displayName: "CACatalog",
     componentDidMount: function() {
         var self = this;
         $(React.findDOMNode(this.refs.iframe)).on('load', function() {
-            var iframeTitle = this.contentDocument.title;
+            var iframeTitle = strutil.shorten(this.contentDocument.title, 48);
 
             self.setState({
                 iframeTitle: iframeTitle
@@ -1069,7 +1144,7 @@ var CACatalog = React.createClass({displayName: "CACatalog",
 
 module.exports = CACatalog;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":30,"classnames":36,"react/addons":51,"underscore":224}],10:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":30,"../utils/strutil":32,"classnames":36,"react/addons":51,"underscore":224}],10:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2488,12 +2563,14 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
                     var firstColumnDepth = _.filter(renderSlice, function(s) {
                             return s[0] > 0;
                         }).length,
-                        secondColumnDepth = _.max(renderSlice, function(s) {
+                        secondColumnDepth = _.filter(renderSlice, function(s) {
                             return s[1] > 0;
                         }).length;
 
+                    console.log(firstColumnDepth);
+                    console.log(secondColumnDepth);
                     conflictRenderIndex =
-                        (secondColumnDepth > firstColumnDepth) ? 1 : 0;
+                        (secondColumnDepth < firstColumnDepth) ? 1 : 0;
                 }
 
                 // Only need to keep track of rendering for conflict sections.
@@ -2928,6 +3005,7 @@ module.exports = {
     SET_COLOR: 'SCHEDULE_SET_COLOR',
     SELECT_SECTION: 'SCHEDULE_SELECT_SECTION',
     DESELECT_SECTION_TYPE: 'SCHEDULE_DESELECT_SECTION_TYPE',
+    SELECT_CREDITS: 'SCHEDULE_SELECT_CREDITS',
     CLEAR: 'SCHEDULE_CLEAR',
     CHANGE_SEMESTER: 'SCHEDULE_CHANGE_SEMESTER',
     MERGE: 'SCHEDULE_MERGE'
@@ -3453,11 +3531,13 @@ function selectSection(key, sectionId) {
         section = getSection(key, sectionId),
         newGroup = getGroupOfSection(key, sectionId);
 
-    // Section selection across groups requires repicking all the sections.
+    // Section selection across groups requires repicking all the sections and
+    // setting the credit count.
     if (newGroup.id !== previousGroup.id) {
         // Reassign all selected section ids.
         course.selection.selectedSectionIds =
             defaultSectionIdSelections(newGroup);
+        course.selection.credits = parseFloat(newGroup.unitsMinimum);
     }
 
     // Remove the section of the same type as the newly selected section.
@@ -3466,6 +3546,22 @@ function selectSection(key, sectionId) {
     // Add the desired section to the course selection.
     course.selection.selectedSectionIds.push(sectionId);
 
+    request('put', _courses[key]);
+}
+
+/**
+ * Select a number of credits for a course.
+ * @param {string} key Key of the course to change the section selection of.
+ * @param {string} credits Number of credits to apply for the course.
+ */
+function selectCredits(key, credits) {
+    var course = _courses[key];
+
+    // Skip if process didn't change anything.
+    if (course.selection.credits == credits)
+        return;
+
+    course.selection.credits = credits;
     request('put', _courses[key]);
 }
 
@@ -3629,13 +3725,14 @@ function defaultSelection(course) {
     // order to change.
     var group = course.groups[0],
         key = (+new Date() + Math.floor(Math.random() * 100))
-        .toString(36);
+            .toString(36);
 
     return {
         tag: course.crseId + '_' + course.strm + '_' + course.subject,
         key: key,
         color: generateColor(),
         active: true,
+        credits: parseFloat(group.unitsMinimum),
         selectedSectionIds: defaultSectionIdSelections(group)
     };
 }
@@ -4235,6 +4332,11 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.DESELECT_SECTION_TYPE:
             deselectSectionType(action.key, action.sectionType, true);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.SELECT_CREDITS:
+            selectCredits(action.key, action.credits);
             ScheduleStore.emitChange();
             break;
 

@@ -117,12 +117,14 @@ var CAScheduleCourse = React.createClass({
                     var firstColumnDepth = _.filter(renderSlice, function(s) {
                             return s[0] > 0;
                         }).length,
-                        secondColumnDepth = _.max(renderSlice, function(s) {
+                        secondColumnDepth = _.filter(renderSlice, function(s) {
                             return s[1] > 0;
                         }).length;
 
+                    console.log(firstColumnDepth);
+                    console.log(secondColumnDepth);
                     conflictRenderIndex =
-                        (secondColumnDepth > firstColumnDepth) ? 1 : 0;
+                        (secondColumnDepth < firstColumnDepth) ? 1 : 0;
                 }
 
                 // Only need to keep track of rendering for conflict sections.

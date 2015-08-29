@@ -9,12 +9,28 @@
             float: left;
             color: #BC625F;
             font-weight: 500;
+
+            a {
+                text-decoration: none;
+                color: #BC625F;
+                @include transition(.13s all ease-in-out);
+
+                &:hover {
+                    opacity: .62;
+                }
+            }
         }
 
         .title {
             margin-left: 116px;
             color: #7C7C7C;
+            text-decoration: none;
+            display: block;
+            @include transition(.13s all ease-in-out);
 
+            &:hover {
+                opacity: .62;
+            }
         }
 
         .when {

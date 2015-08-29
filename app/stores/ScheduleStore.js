@@ -167,11 +167,13 @@ function selectSection(key, sectionId) {
         section = getSection(key, sectionId),
         newGroup = getGroupOfSection(key, sectionId);
 
-    // Section selection across groups requires repicking all the sections.
+    // Section selection across groups requires repicking all the sections and
+    // setting the credit count.
     if (newGroup.id !== previousGroup.id) {
         // Reassign all selected section ids.
         course.selection.selectedSectionIds =
             defaultSectionIdSelections(newGroup);
+        course.selection.credits = parseFloat(newGroup.unitsMinimum);
     }
 
     // Remove the section of the same type as the newly selected section.
@@ -180,6 +182,22 @@ function selectSection(key, sectionId) {
     // Add the desired section to the course selection.
     course.selection.selectedSectionIds.push(sectionId);
 
+    request('put', _courses[key]);
+}
+
+/**
+ * Select a number of credits for a course.
+ * @param {string} key Key of the course to change the section selection of.
+ * @param {string} credits Number of credits to apply for the course.
+ */
+function selectCredits(key, credits) {
+    var course = _courses[key];
+
+    // Skip if process didn't change anything.
+    if (course.selection.credits == credits)
+        return;
+
+    course.selection.credits = credits;
     request('put', _courses[key]);
 }
 
@@ -343,13 +361,14 @@ function defaultSelection(course) {
     // order to change.
     var group = course.groups[0],
         key = (+new Date() + Math.floor(Math.random() * 100))
-        .toString(36);
+            .toString(36);
 
     return {
         tag: course.crseId + '_' + course.strm + '_' + course.subject,
         key: key,
         color: generateColor(),
         active: true,
+        credits: parseFloat(group.unitsMinimum),
         selectedSectionIds: defaultSectionIdSelections(group)
     };
 }
@@ -949,6 +968,11 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.DESELECT_SECTION_TYPE:
             deselectSectionType(action.key, action.sectionType, true);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.SELECT_CREDITS:
+            selectCredits(action.key, action.credits);
             ScheduleStore.emitChange();
             break;
 

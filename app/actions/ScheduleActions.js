@@ -92,6 +92,19 @@ var ScheduleActions = {
     },
 
     /**
+     * Select a number of credits for a course.
+     * @param {string} key Key of the course to change the section selection of.
+     * @param {string} credits Number of credits to apply for the course.
+     */
+    selectCredits: function(key, credits) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.SELECT_CREDITS,
+            key: key,
+            credits: parseFloat(credits),
+        });
+    },
+
+    /**
      * Reinitialize the course list as empty in the event of logout.
      */
     clear: function() {
