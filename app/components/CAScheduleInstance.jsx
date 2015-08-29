@@ -22,6 +22,8 @@ var CAScheduleInstance = React.createClass({
             course: React.PropTypes.object.isRequired,
             section: React.PropTypes.object.isRequired,
             meeting: React.PropTypes.object.isRequired,
+            conflicts: React.PropTypes.bool.isRequired,
+            conflictRenderIndex: React.PropTypes.number.isRequired,
             day: React.PropTypes.string.isRequired,
             scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
@@ -52,18 +54,15 @@ var CAScheduleInstance = React.createClass({
             rootClass = classNames('ca-schedule-instance', this.props.day, {
                 // If instance is less than 1 hour long.
                 compact: ScheduleStore.timeDifference(meeting.timeEnd,
-                    meeting.timeStart) < 1
+                    meeting.timeStart) < 1,
+                'conflict-of-2': this.props.conflicts
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',
                 top: topAmount + 'px'
             },
-            headline = course.raw.subject + ' ' + course.raw.catalogNbr + ' - ' +
-                section.ssrComponent,
-            longHeadline = headline.length > 15,
-            headlineClass = classNames('instance-headline', {
-                'long-headline': longHeadline
-            }),
+            headline = course.raw.subject + ' ' + course.raw.catalogNbr,
+            sectionHeadline = section.ssrComponent + ' ' + section.section,
             time = this.formatTime(meeting.timeStart) + ' - ' +
                 this.formatTime(meeting.timeEnd),
             professor = meeting.professors.length ?
@@ -71,14 +70,41 @@ var CAScheduleInstance = React.createClass({
                 meeting.professors[0].lastName : 'Staff',
             includeHr;
 
+        if (this.props.conflicts) {
+            rootClass += ' conflict-column-' + this.props.conflictRenderIndex;
+
+            return (
+                <div className={rootClass}
+                    style={instanceWrapstyle}>
+
+                    <div className="schedule-instance">
+                        <div className="instance-wrap">
+                            <p className="instance-headline">
+                                {headline}
+                            </p>
+                            <p className="instance-section-headline">
+                                {sectionHeadline}
+                            </p>
+                            <p className="instance-time">
+                                {time}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className={rootClass}
                 style={instanceWrapstyle}>
 
                 <div className="schedule-instance">
                     <div className="instance-wrap">
-                        <p className={headlineClass}>
+                        <p className="instance-headline">
                             {headline}
+                        </p>
+                        <p className="instance-section-headline">
+                            {sectionHeadline}
                         </p>
                         <p className="instance-location">
                             {meeting.facilityDescr}

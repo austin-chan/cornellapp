@@ -30,7 +30,7 @@ function getAppState() {
     return {
         user: UserStore.getUser(),
         allCourses: ScheduleStore.getCourses(),
-        semester: ScheduleStore.getSemester(),
+        activeSemester: ScheduleStore.getSemester(),
         modal: ModalStore.getModalState(),
         catalog: ModalStore.getCatalogState()
     };
@@ -79,7 +79,7 @@ var CAApp = React.createClass({
                 <div className="container">
                     <div className="left">
                         <CABasket courses={this.state.allCourses}
-                            semester={this.state.semester} />
+                            semester={this.state.activeSemester} />
                     </div>
                     <div className="right">
                         <CASchedule courses={this.state.allCourses} />

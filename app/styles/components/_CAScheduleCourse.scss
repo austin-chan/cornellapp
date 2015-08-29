@@ -14,8 +14,12 @@
             }
         }
 
-        &:active {
-            pointer-events: none;
+        &.react-draggable-dragging {
+            pointer-events: none !important;
+
+            * {
+                pointer-events: none !important;
+            }
         }
     }
 

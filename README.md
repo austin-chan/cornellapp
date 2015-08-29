@@ -66,6 +66,18 @@ $ knex migrate:rollback
 # undo the last batch of migrations
 ```
 
+## Gulp
+[Gulp](http://gulpjs.com/) is used extensively to automate and organize development tasks. Configuration for the Gulp processes are in `Gulpfile.js`, and running `gulp` in the root directory of the project will start 3 automatic file-watching processes:
+
+### Client Side Script Bundling
+Cornellapp bundles the client side script with [Browserify](http://browserify.org/). The entrypoint file for the client side bundle is `main.jsx` located in `app/scripts`. Browserify includes all required modules and outputs a  bundled script for the client side.
+
+### Style Development
+Styling is done in SCSS ([Sass](http://sass-lang.com/)) and compiles from the `app/styles` directory to the `public/assets/css` directory.
+
+### Server Launching
+The entrypoint for launching the webserver is `server.js` and Gulp is customized to run the file to launch the server to start Cornellapp.
+
 ## Deployment
 Cornellapp is completely powered by [AWS](https://aws.amazon.com/). [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) is leveraged to host the application, [RDS](https://aws.amazon.com/rds/) to run the MySQL instances and [Route 53](https://aws.amazon.com/route53/) to host and route the cornellapp.com domain.
 

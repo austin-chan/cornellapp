@@ -218,7 +218,6 @@ function changeSemester(semester) {
  * @param {object} data Course selection data payload.
  */
 function merge(data) {
-    console.log('i');
     // Write _courses back to _data, like writing from registers to memory.
     _data[_semester.slug] = _courses;
 
@@ -623,11 +622,56 @@ function generateConflictMap(sectionList) {
             for (var i = startIndex; i < endIndex; i++) {
                 map[dayIndex][i] = Math.min(map[dayIndex][i] + 1, 2);
             }
-
         });
     });
 
     return map;
+}
+
+/**
+ * Take a conflict map or render map and return only the portion of the map
+ * that pertains to the duration of the meeting.
+ * @param {array} map Conflict map or render map.
+ * @param {object} meeting Meeting object to slice a portion for.
+ * @param {string} day Day component of the meeting.
+ * @return {array} Slice of the original map for the given meeting.
+ */
+function sliceConflictMap(map, meeting, day) {
+    var midnight = "12:00AM",
+        dayIndex = _.keys(_dayMap).indexOf(day),
+        mapStrip = map[dayIndex]
+        startIndex = timeDifference(meeting.timeStart, midnight,
+            'minutes'),
+        endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
+
+    startIndex = Math.round(startIndex / 5);
+    endIndex = Math.round(endIndex / 5);
+
+    return mapStrip.slice(startIndex, endIndex);
+}
+
+/**
+ * Iterate through a desired section of a conflict map or render map.
+ * @param {array} map Conflict map or render map.
+ * @param {object} meeting Meeting object to iterate through.
+ * @param {string} day Day component of the meeting.
+ * @param {function} callback Function to run on all increments of the map.
+ */
+function iterateConflictMap(map, meeting, day, callback) {
+    var midnight = "12:00AM",
+        dayIndex = _.keys(_dayMap).indexOf(day),
+        mapStrip = map[dayIndex]
+        startIndex = timeDifference(meeting.timeStart, midnight,
+            'minutes'),
+        endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
+
+    startIndex = Math.round(startIndex / 5);
+    endIndex = Math.round(endIndex / 5);
+
+    // Iterate through all desired increments.
+    for (var i = startIndex; i < endIndex; i++) {
+        callback(map[dayIndex][i]);
+    }
 }
 
 /**
@@ -806,6 +850,34 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      *      conflicts.
      */
     conflictInSections: conflictInSections,
+
+    /**
+     * Iterate through a desired section of a conflict map or render map.
+     * @param {array} map Conflict map or render map.
+     * @param {object} meeting Meeting object to iterate through.
+     * @param {string} day Day component of the meeting.
+     * @param {function} callback Function to run on all increments of the map.
+     */
+    iterateConflictMap: iterateConflictMap,
+
+    /**
+     * Get the conflict map for all the selected courses in the schedule.
+     * @return {array} A map representation for all the conflicts in the
+     *      schedule.
+     */
+    getScheduleConflictMap: function() {
+        return generateConflictMap(getAllSelectedSections());
+    },
+
+    /**
+     * Take a conflict map or render map and return only the portion of the map
+     * that pertains to the duration of the meeting.
+     * @param {array} map Conflict map or render map.
+     * @param {object} meeting Meeting object to slice a portion for.
+     * @param {string} day Day component of the meeting.
+     * @return {array} Slice of the original map for the given meeting.
+     */
+    sliceConflictMap: sliceConflictMap,
 
     /**
      * Generate a snapshot that can be converted to JSON and used by another

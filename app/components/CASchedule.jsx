@@ -105,6 +105,21 @@ var CASchedule = React.createClass({
     },
 
     /**
+     * Create an empty render map for a conflict map.
+     * @param {array} conflictMap Conflict map to generate a render map for.
+     * @return {array} Empty render map.
+     */
+    createRenderMap: function(conflictMap) {
+        // Iterate through each day in the conflict map.
+        return _.map(conflictMap, function(conflictStrip) {
+            // Iterate through each 5-min increment.
+            return _.map(conflictStrip, function() {
+                return [0, 0];
+            })
+        });
+    },
+
+    /**
      * Generate labels for all of the hours of the schedule.
      * @return {object} Generated React markup for the hour labels.
      */
@@ -157,10 +172,12 @@ var CASchedule = React.createClass({
             scheduleRows = this.renderScheduleRows(),
             courses = this.props.courses,
             courseItems = [],
-            dropTargets;
+            dropTargets,
+            conflictMap = ScheduleStore.getScheduleConflictMap(),
+            renderMap = this.createRenderMap(conflictMap);
 
-        // Loop through courses in reverse order.
-        _.each(courses.reverse(), function(course) {
+        // Loop through courses in order.
+        _.each(courses, function(course) {
             if (!course.selection.active)
                 return;
 
@@ -170,12 +187,15 @@ var CASchedule = React.createClass({
                     scheduleEndTime={this.endTime}
                     pixelsBetweenTimes={this.pixelsBetweenTimes}
                     course={course}
+                    conflictMap={conflictMap}
+                    renderMap={renderMap}
                     dayOffsetMap={this.dayOffsetMap}
                     onDragStart={this._onSectionDragStart}
                     onDragEnd={this._onSectionDragEnd} />
             );
         }, this);
 
+        // Render the drop targets if currently dragging a section around.
         if (this.state.isDragging)
             dropTargets =
                 <CAScheduleDropTargets
@@ -228,8 +248,11 @@ var CASchedule = React.createClass({
      * @param {object} draggable The ref for the draggable element.
      */
     _onSectionDragEnd: function(e, ui, draggable) {
-        // Reset the position back to identity matrix.
-        $(draggableNode).css({
+        var draggableNode = React.findDOMNode(draggable);
+
+        // Remove the dragging class and reset the position back to identity
+        // matrix.
+        $(draggableNode).removeClass('dragging').css({
             transform: 'translate(0, 0)',
         });
 
@@ -245,8 +268,6 @@ var CASchedule = React.createClass({
 
         // Or spring the section back to resting position.
         else {
-            var draggableNode = React.findDOMNode(draggable);
-
             // Animate the section back.
             $(draggableNode).velocity({
                 translateX: ui.position.left,

@@ -333,7 +333,7 @@ function getAppState() {
     return {
         user: UserStore.getUser(),
         allCourses: ScheduleStore.getCourses(),
-        semester: ScheduleStore.getSemester(),
+        activeSemester: ScheduleStore.getSemester(),
         modal: ModalStore.getModalState(),
         catalog: ModalStore.getCatalogState()
     };
@@ -382,7 +382,7 @@ var CAApp = React.createClass({displayName: "CAApp",
                 React.createElement("div", {className: "container"}, 
                     React.createElement("div", {className: "left"}, 
                         React.createElement(CABasket, {courses: this.state.allCourses, 
-                            semester: this.state.semester})
+                            semester: this.state.activeSemester})
                     ), 
                     React.createElement("div", {className: "right"}, 
                         React.createElement(CASchedule, {courses: this.state.allCourses})
@@ -2184,6 +2184,21 @@ var CASchedule = React.createClass({displayName: "CASchedule",
     },
 
     /**
+     * Create an empty render map for a conflict map.
+     * @param {array} conflictMap Conflict map to generate a render map for.
+     * @return {array} Empty render map.
+     */
+    createRenderMap: function(conflictMap) {
+        // Iterate through each day in the conflict map.
+        return _.map(conflictMap, function(conflictStrip) {
+            // Iterate through each 5-min increment.
+            return _.map(conflictStrip, function() {
+                return [0, 0];
+            })
+        });
+    },
+
+    /**
      * Generate labels for all of the hours of the schedule.
      * @return {object} Generated React markup for the hour labels.
      */
@@ -2236,10 +2251,12 @@ var CASchedule = React.createClass({displayName: "CASchedule",
             scheduleRows = this.renderScheduleRows(),
             courses = this.props.courses,
             courseItems = [],
-            dropTargets;
+            dropTargets,
+            conflictMap = ScheduleStore.getScheduleConflictMap(),
+            renderMap = this.createRenderMap(conflictMap);
 
-        // Loop through courses in reverse order.
-        _.each(courses.reverse(), function(course) {
+        // Loop through courses in order.
+        _.each(courses, function(course) {
             if (!course.selection.active)
                 return;
 
@@ -2249,12 +2266,15 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                     scheduleEndTime: this.endTime, 
                     pixelsBetweenTimes: this.pixelsBetweenTimes, 
                     course: course, 
+                    conflictMap: conflictMap, 
+                    renderMap: renderMap, 
                     dayOffsetMap: this.dayOffsetMap, 
                     onDragStart: this._onSectionDragStart, 
                     onDragEnd: this._onSectionDragEnd})
             );
         }, this);
 
+        // Render the drop targets if currently dragging a section around.
         if (this.state.isDragging)
             dropTargets =
                 React.createElement(CAScheduleDropTargets, {
@@ -2307,8 +2327,11 @@ var CASchedule = React.createClass({displayName: "CASchedule",
      * @param {object} draggable The ref for the draggable element.
      */
     _onSectionDragEnd: function(e, ui, draggable) {
-        // Reset the position back to identity matrix.
-        $(draggableNode).css({
+        var draggableNode = React.findDOMNode(draggable);
+
+        // Remove the dragging class and reset the position back to identity
+        // matrix.
+        $(draggableNode).removeClass('dragging').css({
             transform: 'translate(0, 0)',
         });
 
@@ -2324,8 +2347,6 @@ var CASchedule = React.createClass({displayName: "CASchedule",
 
         // Or spring the section back to resting position.
         else {
-            var draggableNode = React.findDOMNode(draggable);
-
             // Animate the section back.
             $(draggableNode).velocity({
                 translateX: ui.position.left,
@@ -2371,6 +2392,8 @@ var React = require('react/addons'),
 var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
     propTypes: {
         course: React.PropTypes.object.isRequired,
+        conflictMap: React.PropTypes.array.isRequired,
+        renderMap: React.PropTypes.array.isRequired,
         scheduleStartTime: React.PropTypes.string.isRequired,
         scheduleEndTime: React.PropTypes.string.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
@@ -2441,11 +2464,52 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
         ScheduleStore.iterateInstancesInSection(section,
             _.bind(function(meeting, meetingIndex, day) {
 
+            var conflictSlice = ScheduleStore.sliceConflictMap(
+                    this.props.conflictMap, meeting, day),
+                renderSlice = ScheduleStore.sliceConflictMap(
+                    this.props.renderMap, meeting, day),
+                conflicts = _.indexOf(conflictSlice, 2) !== -1,
+                conflictRenderIndex = 0;
+
+            // Calculate which way to render a conflict sections.
+            if (conflicts) {
+                var firstColumnEmpty = _.every(renderSlice, function(c) {
+                        return c[0] === 0;
+                    }),
+                    secondColumnEmpty = _.every(renderSlice, function(c) {
+                        return c[1] === 0;
+                    });
+
+                conflictRenderIndex = firstColumnEmpty ? 0 : 1;
+
+                // Use the least used column if something already is in the
+                // slot.
+                if (!firstColumnEmpty && !secondColumnEmpty) {
+                    var firstColumnDepth = _.filter(renderSlice, function(s) {
+                            return s[0] > 0;
+                        }).length,
+                        secondColumnDepth = _.max(renderSlice, function(s) {
+                            return s[1] > 0;
+                        }).length;
+
+                    conflictRenderIndex =
+                        (secondColumnDepth > firstColumnDepth) ? 1 : 0;
+                }
+
+                // Only need to keep track of rendering for conflict sections.
+                ScheduleStore.iterateConflictMap(this.props.renderMap,
+                    meeting, day, function(i) {
+                        i[conflictRenderIndex]++;
+                    });
+            }
+
             instances.push(
                 React.createElement(CAScheduleInstance, {key: meetingIndex + day, 
                     course: this.props.course, 
                     section: section, 
                     meeting: meeting, 
+                    conflicts: conflicts, 
+                    conflictRenderIndex: conflictRenderIndex, 
                     day: ScheduleStore.getDayMap()[day], 
                     scheduleStartTime: this.props.scheduleStartTime, 
                     pixelsBetweenTimes: this.props.pixelsBetweenTimes})
@@ -2668,6 +2732,8 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
             course: React.PropTypes.object.isRequired,
             section: React.PropTypes.object.isRequired,
             meeting: React.PropTypes.object.isRequired,
+            conflicts: React.PropTypes.bool.isRequired,
+            conflictRenderIndex: React.PropTypes.number.isRequired,
             day: React.PropTypes.string.isRequired,
             scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
@@ -2698,18 +2764,15 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
             rootClass = classNames('ca-schedule-instance', this.props.day, {
                 // If instance is less than 1 hour long.
                 compact: ScheduleStore.timeDifference(meeting.timeEnd,
-                    meeting.timeStart) < 1
+                    meeting.timeStart) < 1,
+                'conflict-of-2': this.props.conflicts
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',
                 top: topAmount + 'px'
             },
-            headline = course.raw.subject + ' ' + course.raw.catalogNbr + ' - ' +
-                section.ssrComponent,
-            longHeadline = headline.length > 15,
-            headlineClass = classNames('instance-headline', {
-                'long-headline': longHeadline
-            }),
+            headline = course.raw.subject + ' ' + course.raw.catalogNbr,
+            sectionHeadline = section.ssrComponent + ' ' + section.section,
             time = this.formatTime(meeting.timeStart) + ' - ' +
                 this.formatTime(meeting.timeEnd),
             professor = meeting.professors.length ?
@@ -2717,14 +2780,41 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
                 meeting.professors[0].lastName : 'Staff',
             includeHr;
 
+        if (this.props.conflicts) {
+            rootClass += ' conflict-column-' + this.props.conflictRenderIndex;
+
+            return (
+                React.createElement("div", {className: rootClass, 
+                    style: instanceWrapstyle}, 
+
+                    React.createElement("div", {className: "schedule-instance"}, 
+                        React.createElement("div", {className: "instance-wrap"}, 
+                            React.createElement("p", {className: "instance-headline"}, 
+                                headline
+                            ), 
+                            React.createElement("p", {className: "instance-section-headline"}, 
+                                sectionHeadline
+                            ), 
+                            React.createElement("p", {className: "instance-time"}, 
+                                time
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
         return (
             React.createElement("div", {className: rootClass, 
                 style: instanceWrapstyle}, 
 
                 React.createElement("div", {className: "schedule-instance"}, 
                     React.createElement("div", {className: "instance-wrap"}, 
-                        React.createElement("p", {className: headlineClass}, 
+                        React.createElement("p", {className: "instance-headline"}, 
                             headline
+                        ), 
+                        React.createElement("p", {className: "instance-section-headline"}, 
+                            sectionHeadline
                         ), 
                         React.createElement("p", {className: "instance-location"}, 
                             meeting.facilityDescr
@@ -3414,7 +3504,6 @@ function changeSemester(semester) {
  * @param {object} data Course selection data payload.
  */
 function merge(data) {
-    console.log('i');
     // Write _courses back to _data, like writing from registers to memory.
     _data[_semester.slug] = _courses;
 
@@ -3819,11 +3908,56 @@ function generateConflictMap(sectionList) {
             for (var i = startIndex; i < endIndex; i++) {
                 map[dayIndex][i] = Math.min(map[dayIndex][i] + 1, 2);
             }
-
         });
     });
 
     return map;
+}
+
+/**
+ * Take a conflict map or render map and return only the portion of the map
+ * that pertains to the duration of the meeting.
+ * @param {array} map Conflict map or render map.
+ * @param {object} meeting Meeting object to slice a portion for.
+ * @param {string} day Day component of the meeting.
+ * @return {array} Slice of the original map for the given meeting.
+ */
+function sliceConflictMap(map, meeting, day) {
+    var midnight = "12:00AM",
+        dayIndex = _.keys(_dayMap).indexOf(day),
+        mapStrip = map[dayIndex]
+        startIndex = timeDifference(meeting.timeStart, midnight,
+            'minutes'),
+        endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
+
+    startIndex = Math.round(startIndex / 5);
+    endIndex = Math.round(endIndex / 5);
+
+    return mapStrip.slice(startIndex, endIndex);
+}
+
+/**
+ * Iterate through a desired section of a conflict map or render map.
+ * @param {array} map Conflict map or render map.
+ * @param {object} meeting Meeting object to iterate through.
+ * @param {string} day Day component of the meeting.
+ * @param {function} callback Function to run on all increments of the map.
+ */
+function iterateConflictMap(map, meeting, day, callback) {
+    var midnight = "12:00AM",
+        dayIndex = _.keys(_dayMap).indexOf(day),
+        mapStrip = map[dayIndex]
+        startIndex = timeDifference(meeting.timeStart, midnight,
+            'minutes'),
+        endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
+
+    startIndex = Math.round(startIndex / 5);
+    endIndex = Math.round(endIndex / 5);
+
+    // Iterate through all desired increments.
+    for (var i = startIndex; i < endIndex; i++) {
+        callback(map[dayIndex][i]);
+    }
 }
 
 /**
@@ -4002,6 +4136,34 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      *      conflicts.
      */
     conflictInSections: conflictInSections,
+
+    /**
+     * Iterate through a desired section of a conflict map or render map.
+     * @param {array} map Conflict map or render map.
+     * @param {object} meeting Meeting object to iterate through.
+     * @param {string} day Day component of the meeting.
+     * @param {function} callback Function to run on all increments of the map.
+     */
+    iterateConflictMap: iterateConflictMap,
+
+    /**
+     * Get the conflict map for all the selected courses in the schedule.
+     * @return {array} A map representation for all the conflicts in the
+     *      schedule.
+     */
+    getScheduleConflictMap: function() {
+        return generateConflictMap(getAllSelectedSections());
+    },
+
+    /**
+     * Take a conflict map or render map and return only the portion of the map
+     * that pertains to the duration of the meeting.
+     * @param {array} map Conflict map or render map.
+     * @param {object} meeting Meeting object to slice a portion for.
+     * @param {string} day Day component of the meeting.
+     * @return {array} Slice of the original map for the given meeting.
+     */
+    sliceConflictMap: sliceConflictMap,
 
     /**
      * Generate a snapshot that can be converted to JSON and used by another

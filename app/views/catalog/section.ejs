@@ -1,0 +1,28 @@
+<div class="section">
+    <div class="first">
+        <div class="tag"><%= section.get('ssrComponent') %> <%= section.get('catalogNbr') %></div>
+        <div class="classId"><%= section.get('classNbr') %></div>
+    </div>
+    <div class="meetings">
+<%
+    var meetings = section.related('meetings');
+    for (var m = 0; m < meetings.length; m++) {
+        var meeting = meetings.at(m).toJSON();
+%>
+        <%- include('meeting', { meeting: meeting}) %>
+<%
+    }
+%>
+    </div>
+<%
+    var notes = JSON.parse(section.get('notes'));
+    if (notes.length) {
+%>
+    <div class="fifth">
+        <%= notes.join('; ') %>
+    </div>
+
+<%
+    }
+%>
+</div>
