@@ -142,8 +142,8 @@ var catalogrouter = function(app) {
     });
 
     /**
-     * Retrieve all likes information for the courses and then prepare the data to
-     * deliver to the client side.
+     * Retrieve all likes information for the courses and then prepare the data
+     * to deliver to the client side.
      * @param {object} req Request object for the process.
      * @param {object} res Response object for the process.
      * @param {object} courses Collection of course models.
