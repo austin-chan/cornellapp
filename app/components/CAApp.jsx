@@ -29,7 +29,7 @@ var React = require('react/addons'),
 function getAppState() {
     return {
         user: UserStore.getUser(),
-        allCourses: ScheduleStore.getCourses(),
+        allEntries: ScheduleStore.getEntries(),
         activeSemester: ScheduleStore.getSemester(),
         modal: ModalStore.getModalState(),
         catalog: ModalStore.getCatalogState()
@@ -78,11 +78,11 @@ var CAApp = React.createClass({
                 <CAHeader user={this.state.user} />
                 <div className="container">
                     <div className="left">
-                        <CABasket courses={this.state.allCourses}
+                        <CABasket entries={this.state.allEntries}
                             semester={this.state.activeSemester} />
                     </div>
                     <div className="right">
-                        <CASchedule courses={this.state.allCourses} />
+                        <CASchedule entries={this.state.allEntries} />
                     </div>
                 </div>
                 <p className="footer">

@@ -26,8 +26,8 @@ var ScheduleActions = {
     },
 
     /**
-     * Remove a course from the schedule.
-     * @param {string} key Key of course to remove.
+     * Remove a course or event from the schedule.
+     * @param {string} key Key of course or event to remove.
      */
     remove: function(key) {
         AppDispatcher.dispatch({
@@ -37,29 +37,29 @@ var ScheduleActions = {
     },
 
     /**
-     * Set a course either active or unactive.
-     * @param {string} key Key of course to update active state for.
-     * @param {bool} active True to make the course active, false to make the
-     *      course inactive.
+     * Set a course or event either active or unactive.
+     * @param {string} key Key of course or event to update active state for.
+     * @param {bool} active True to make the course or event active, false to
+     *      make the course inactive.
      */
     toggle: function(key, active) {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.TOGGLE,
             key: key,
-            active: active,
+            active: active
         });
     },
 
     /**
-     * Change the color of a course.
-     * @param {string} key Key of course to change the color.
+     * Change the color of a course or event.
+     * @param {string} key Key of course or event to change the color.
      * @param {string} color Color string to change to.
      */
     setColor: function(key, color) {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.SET_COLOR,
             key: key,
-            color: color,
+            color: color
         });
     },
 
@@ -73,7 +73,7 @@ var ScheduleActions = {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.SELECT_SECTION,
             key: key,
-            sectionId: sectionId,
+            sectionId: sectionId
         });
     },
 
@@ -87,7 +87,7 @@ var ScheduleActions = {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.DESELECT_SECTION_TYPE,
             key: key,
-            sectionType: sectionType,
+            sectionType: sectionType
         });
     },
 
@@ -100,7 +100,16 @@ var ScheduleActions = {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.SELECT_CREDITS,
             key: key,
-            credits: parseFloat(credits),
+            credits: parseFloat(credits)
+        });
+    },
+
+    /**
+     * Add an event to the schedule.
+     */
+    addEvent: function() {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.ADD_EVENT
         });
     },
 

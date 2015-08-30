@@ -15,12 +15,13 @@ var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
     ScheduleActions = require('../actions/ScheduleActions'),
     CAScheduleCourse = require('./CAScheduleCourse'),
+    CAScheduleEvent = require('./CAScheduleEvent'),
     CAScheduleDropTargets = require('./CAScheduleDropTargets'),
     _ = require('underscore');
 
 var CASchedule = React.createClass({
     propTypes: {
-        courses: React.PropTypes.array.isRequired,
+        entries: React.PropTypes.array.isRequired,
         size: React.PropTypes.string
     },
 
@@ -115,7 +116,7 @@ var CASchedule = React.createClass({
             // Iterate through each 5-min increment.
             return _.map(conflictStrip, function() {
                 return [0, 0];
-            })
+            });
         });
     },
 
@@ -170,29 +171,44 @@ var CASchedule = React.createClass({
         var hourLabels = this.renderHourLabels(),
             dayLabels = this.renderDayLabels(),
             scheduleRows = this.renderScheduleRows(),
-            courses = this.props.courses,
-            courseItems = [],
+            entries = this.props.entries,
+            entryItems = [],
             dropTargets,
             conflictMap = ScheduleStore.getScheduleConflictMap(),
             renderMap = this.createRenderMap(conflictMap);
 
-        // Loop through courses in order.
-        _.each(courses, function(course) {
-            if (!course.selection.active)
-                return;
+        // Loop through courses and events in order.
+        _.each(entries, function(entry) {
+            if (entry.raw) {
+                if (!entry.selection.active)
+                    return;
 
-            courseItems.push(
-                <CAScheduleCourse key={course.selection.key}
-                    scheduleStartTime={this.startTime}
-                    scheduleEndTime={this.endTime}
-                    pixelsBetweenTimes={this.pixelsBetweenTimes}
-                    course={course}
-                    conflictMap={conflictMap}
-                    renderMap={renderMap}
-                    dayOffsetMap={this.dayOffsetMap}
-                    onDragStart={this._onSectionDragStart}
-                    onDragEnd={this._onSectionDragEnd} />
-            );
+                entryItems.push(
+                    <CAScheduleCourse key={entry.selection.key}
+                        scheduleStartTime={this.startTime}
+                        scheduleEndTime={this.endTime}
+                        pixelsBetweenTimes={this.pixelsBetweenTimes}
+                        course={entry}
+                        conflictMap={conflictMap}
+                        renderMap={renderMap}
+                        dayOffsetMap={this.dayOffsetMap}
+                        onDragStart={this._onSectionDragStart}
+                        onDragEnd={this._onSectionDragEnd} />
+                );
+            } else {
+                if (!entry.active)
+                    return;
+
+                entryItems.push(
+                    <CAScheduleEvent key={entry.key}
+                        scheduleStartTime={this.startTime}
+                        scheduleEndTime={this.endTime}
+                        pixelsBetweenTimes={this.pixelsBetweenTimes}
+                        event={entry}
+                        renderMap={renderMap}
+                        dayOffsetMap={this.dayOffsetMap} />
+                );
+            }
         }, this);
 
         // Render the drop targets if currently dragging a section around.
@@ -218,7 +234,7 @@ var CASchedule = React.createClass({
                             {scheduleRows}
                         </div>
                         <div className="courses-area" ref="coursesArea">
-                            {courseItems}
+                            {entryItems}
                             {dropTargets}
                         </div>
                     </div>

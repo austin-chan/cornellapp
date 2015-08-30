@@ -267,7 +267,7 @@ module.exports = function(models) {
 				return callback('Selection doesn\'t exist');
 
 			if (selection.get('userId') !== user.id)
-				return callback('Selection does\'t belong to user.');
+				return callback('Selection does\'t belong to user');
 
 			prepareSelectionData(p);
 
@@ -294,9 +294,33 @@ module.exports = function(models) {
 				return callback('Selection doesn\'t exist');
 
 			if (selection.get('userId') !== user.id)
-				return callback('Selection does\'t belong to user.');
+				return callback('Selection does\'t belong to user');
 
 			selection.destroy().then(function() {
+				callback();
+			});
+		});
+	};
+
+	/**
+	 * Perform an event creation operation for a user.
+	 * @param {object} user User object of logged in user.
+	 * @param {object} p Body object from the request object.
+	 * @param {function} callback Callback function to be called when the
+	 * 		operation is complete. The function will be called with one
+	 *		parameter, an error, if an error occurs. Otherwise, no parameters
+	 *		will be passed.
+	 */
+	m.createEvent = function(user, p, callback) {
+		// Check that the key isn't already taken.
+		new models.event({ userId: user.id, strm: p.strm, key: p.key }).fetch()
+			.then(function(e) {
+
+			if (e)
+				return callback('Event already exists');
+
+			p.userId = user.id;
+			new models.event(p).save().then(function() {
 				callback();
 			});
 		});

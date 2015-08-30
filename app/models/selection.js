@@ -7,7 +7,7 @@
  * tree.
  *
  *
- * The model class for selection.
+ * The model class for selections.
  */
 
 var selection = function(bookshelf, models) {

@@ -2,37 +2,6 @@
     @include basket-item();
     height: 184px;
 
-    .item-header {
-        height: 35px;
-        border-radius: 3px 3px 0 0;
-        color: white;
-        font-size: 13px;
-        padding: 12px 0px 0 33px;
-        box-sizing: border-box;
-        font-weight: 400;
-        @include transition(.13s background ease-in-out);
-
-        .ca-toggle {
-            position: absolute;
-            height: 35px;
-            width: 30px;
-            top: 0px;
-            left: 0px;
-        }
-
-        .ca-close {
-            position: absolute;
-            height: 35px;
-            width: 30px;
-            right: 0;
-            top: 0;
-            text-align: center;
-            font-size: 23px;
-            padding-top: 5px;
-            padding-right: 3px;
-        }
-    }
-
     .item-content {
         padding: 12px 10px 0;
 
@@ -103,28 +72,6 @@
             margin-top: 12px;
             line-height: 1.42;
             font-weight: 500;
-        }
-    }
-
-    .ca-color-panel {
-        position: absolute;
-        top: 35px;
-        bottom: 0;
-        right: 0;
-        left: 0;
-    }
-
-    @each $color-name, $color in $ca-colors {
-        &.#{$color-name} {
-            .item-header {
-                background: $color;
-            }
-        }
-    }
-
-    &.inactive {
-        .item-header {
-            background: #919191 !important;
         }
     }
 }

@@ -7,46 +7,54 @@
  * tree.
  *
  *
- * CABasket lists all the courses a user has added. Component styles are located
- * in _CABasket.scss.
+ * CABasket lists all the courses and events a user has added. Component styles
+ * are located in _CABasket.scss.
  */
 
 var React = require('react/addons'),
     CABasketAdder = require('./CABasketAdder'),
     CABasketReview = require('./CABasketReview'),
     CABasketCourse = require('./CABasketCourse'),
+    CABasketEvent = require('./CABasketEvent'),
     classNames = require('classnames'),
     _ = require('underscore');
 
 var CABasket = React.createClass({
     propTypes: {
-        courses: React.PropTypes.array.isRequired,
+        entries: React.PropTypes.array.isRequired,
         semester: React.PropTypes.object.isRequired,
     },
 
     render: function() {
-        var courseItems = [],
-            courses = this.props.courses,
+        var entryItems = [],
+            entries = this.props.entries,
             rootClass = classNames('ca-basket',
-                { empty: !_.size(this.props.courses) }),
+                { empty: !_.size(this.props.entries) }),
             review;
 
-        // Loop through all courses.
-        _.each(courses, function(course) {
-            courseItems.push(
-                <CABasketCourse key={course.selection.key}
-                    course={course} />
-            );
+        // Loop through all entries.
+        _.each(entries, function(entry) {
+            if (entry.raw) // is a course
+                entryItems.push(
+                    <CABasketCourse key={entry.selection.key}
+                        course={entry} />
+                );
+            else // is an event
+                entryItems.push(
+                    <CABasketEvent key={entry.key}
+                        event={entry} />
+                );
+
         });
 
-        if (courseItems.length)
-            review = <CABasketReview courses={this.props.courses} />;
+        if (entryItems.length)
+            review = <CABasketReview entries={this.props.entries} />;
 
         return (
             <div className={rootClass}>
                 <CABasketAdder semester={this.props.semester} />
                 <p className="empty-label">No Courses Added</p>
-                {courseItems}
+                {entryItems}
                 {review}
             </div>
         );

@@ -27,6 +27,13 @@ var user = function(bookshelf, models) {
             return this.hasMany(models.selection, 'userId').query('where',
                 'strm', 'IN', strms);
         },
+        events: function() {
+            var strms = _.map(_.values(config.semesters), function(semester) {
+                return semester.strm;
+            });
+            return this.hasMany(models.event, 'userId').query('where', 'strm',
+                'IN', strms);
+        },
 
         /**
          * Output user attributes without sensitive data as JSON.
@@ -110,7 +117,10 @@ var user = function(bookshelf, models) {
                     };
                 });
 
-                data[semester.slug] = selectionsForSemester;
+                data[semester.slug] = {
+                    courses: selectionsForSemester,
+                    events: {}
+                };
             });
 
             return data;

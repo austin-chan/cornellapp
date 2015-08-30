@@ -22,6 +22,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var CHANGE_EVENT = 'schedule_change';
 
 var _courses = {},
+    _events = {},
     _semester = {},
     _data = {},
     _colors = ['blue', 'purple', 'light-blue', 'red', 'green', 'yellow',
@@ -55,7 +56,10 @@ else
             snapshot._data = req.user.getSelectionData();
         else
             snapshot._data = _.mapObject(config.semesters, function(s) {
-                return {};
+                return {
+                    courses: {},
+                    events: {}
+                };
             });
 
         // Use a cookie set semester if it is set.
@@ -74,7 +78,8 @@ else
  * instance of the store to restore it back to an identical state.
  */
 function snapshot() {
-    _data[_semester.slug] = _courses;
+    _data[_semester.slug].courses = _courses;
+    _data[_semester.slug].events = _events;
 
     return {
         _data: _data,
@@ -89,7 +94,8 @@ function snapshot() {
 function restore(snapshot) {
     _data = snapshot._data;
     _semester = snapshot._semester;
-    _courses = _data[_semester.slug];
+    _courses = _data[_semester.slug].courses;
+    _events = _data[_semester.slug].events;
 }
 
 /**
@@ -106,8 +112,7 @@ function add(course) {
         selection: selection
     };
 
-    // Server side persist if logged in user.
-    if (UserStore.getUser() !== false)
+    if (UserStore.isLoggedIn())
         request('post', _courses[selection.key]).success(function(data) {
             if (_courses[selection.key])
                 _courses[selection.key].selection.id = data;
@@ -117,24 +122,45 @@ function add(course) {
 }
 
 /**
- * Remove a course from the schedule.
- * @param {string} key Key of course to remove.
+ * Add an event to the schedule.
  */
-function remove(key) {
-    request('delete', _courses[key]);
-    delete _courses[key];
+function addEvent() {
+    var event = defaultEvent();
+    _events[event.key] = event;
+
+    requestEvent('post', event);
 }
 
 /**
- * Toggle a course active state to on or off.
- * @param {string} key Key of course to toggle.
- * @param {boolean} active Active state to set for the course.
+ * Remove a course or event from the schedule.
+ * @param {string} key Key of course or event to remove.
+ */
+function remove(key) {
+    if (_courses[key]) { // is a course
+        request('delete', _courses[key]);
+        delete _courses[key];
+
+    } else if (_events[key]) { // is an event
+        requestEvent('delete', _events[key]);
+        delete _events[key];
+    }
+}
+
+/**
+ * Set a course or event either active or unactive.
+ * @param {string} key Key of course or event to update active state for.
+ * @param {bool} active True to make the course or event active, false to
+ *      make the course inactive.
  */
 function toggle(key, active) {
-    var course = _courses[key];
-    _courses[key].selection.active = active;
+    if (_courses[key]) { // is a course
+        _courses[key].selection.active = active;
+        request('put', _courses[key]);
 
-    request('put', _courses[key]);
+    } else if (_events[key]) { // is an event
+        _events[key].active = active;
+        requestEvent('put', _events[key]);
+    }
 }
 
 /**
@@ -144,11 +170,23 @@ function toggle(key, active) {
  */
 function setColor(key, color) {
     // Make sure color is in _colors and is not already selected.
-    if (_colors.indexOf(color) === -1 && color != _courses[key].selection.color)
+    if (_colors.indexOf(color) === -1)
         return;
 
-    _courses[key].selection.color = color;
-    request('put', _courses[key]);
+    if (_courses[key]) { // is a course
+        if (color == _courses[key].selection.color)
+            return;
+
+        _courses[key].selection.color = color;
+        request('put', _courses[key]);
+
+    } else if (_events[key]) { // is an event
+        if (color == _events[key].color)
+            return;
+
+        _events[key].color = color;
+        requestEvent('put', _events[key]);
+    }
 }
 
 /**
@@ -221,11 +259,12 @@ function changeSemester(semester) {
     // Save new semester slug as a cookie.
     $.cookie('semester_slug', semester.slug);
 
-    // Save the active _courses into _data.
-    _data[_semester.slug] = _courses;
+    // Save the active _courses and _events into _data.
+    _data[_semester.slug].courses = _courses;
+    _data[_semester.slug].events = _events;
 
     // Swap the new semester into _courses, like a context switch.
-    _courses = _data[semesterExists.slug];
+    _courses = _data[semesterExists.slug].courses;
 
     // Finally change the semester.
     _semester = semesterExists;
@@ -237,7 +276,7 @@ function changeSemester(semester) {
  */
 function merge(data) {
     // Write _courses back to _data, like writing from registers to memory.
-    _data[_semester.slug] = _courses;
+    _data[_semester.slug].courses = _courses;
 
     // No courses were loaded client side.
     var originallyEmpty = _.every(_data, function(s) {
@@ -245,21 +284,22 @@ function merge(data) {
     });
 
     _.each(data, function(semesterData, slug) {
-        _.each(semesterData, function(course, key) {
+        // Iterate through each course in the semester.
+        _.each(semesterData.courses, function(course, key) {
             // Skip if course is already in the store.
-            var exists = _.some(_data[slug], function(c) {
+            var exists = _.some(_data[slug].courses, function(c) {
                     return c.selection.tag === course.selection.tag;
                 });
             if (exists)
                 return;
 
             // Move into the store.
-            _data[slug][key] = course;
+            _data[slug].courses[key] = course;
         });
     });
 
     // Restore _courses from _data, like the L1 cache if you've taken 3410.
-    _courses = _data[_semester.slug];
+    _courses = _data[_semester.slug].courses;
 
     if (originallyEmpty)
         return;
@@ -267,9 +307,12 @@ function merge(data) {
     // Then send the whole package to the backend to sync, but omit the raw
     // component because it is too big.
     var d = _.mapObject(_data, function(semesterData) {
-        return _.mapObject(semesterData, function(course) {
-            return _.omit(course, 'raw');
-        });
+        return {
+            courses: _.mapObject(semesterData.courses, function(course) {
+                return _.omit(course, 'raw');
+            }),
+            events: semesterData.events
+        };
     });
     _requestCount++;
     $.ajax({
@@ -351,17 +394,50 @@ function request(type, course) {
 }
 
 /**
+ * Initiate a request to persist data about events. Similar to the request
+ * except for events.
+ * @param {string} type Method of request.
+ * @param {object} event Event object to save or delete.
+ */
+function requestEvent(type, event) {
+    if (!UserStore.isLoggedIn())
+        return;
+
+    var data;
+    if (type === 'post') {
+        data = JSON.parse(JSON.stringify(event));
+        data.strm = _semester.strm;
+    }
+
+    _requestCount++;
+    return $.ajax({
+        type: type,
+        url: '/api/event',
+        data: data
+    }).always(function() {
+        _requestCount--;
+    });
+}
+
+/**
+ * Generate a random key for a newly created course or event.
+ * @return {string} Newly generated random key.
+ */
+function generateKey() {
+    // Using the current timestamp + random number for the key. This is good
+    // enough unless functionality needs to be built to allow the course
+    // order to change.
+    return (+new Date() + Math.floor(Math.random() * 100)).toString(36);
+}
+
+/**
  * Generates a default selection object for a course object.
  * @param {object} course Course object to calculate a selection for.
  * @return {object} Default selection object for the course.
  */
 function defaultSelection(course) {
-    // Using the current timestamp + random number for the key. This is good
-    // enough unless functionality needs to be built to allow the course
-    // order to change.
     var group = course.groups[0],
-        key = (+new Date() + Math.floor(Math.random() * 100))
-            .toString(36);
+        key = generateKey();
 
     return {
         tag: course.crseId + '_' + course.strm + '_' + course.subject,
@@ -371,6 +447,31 @@ function defaultSelection(course) {
         credits: parseFloat(group.unitsMinimum),
         selectedSectionIds: defaultSectionIdSelections(group)
     };
+}
+
+/**
+ * Generates a default event object for a newly created event.
+ * @return {object} Default event object.
+ */
+function defaultEvent() {
+    var event = {
+        key: generateKey(),
+        name: 'Event Name',
+        startTime: '12:00PM',
+        endTime: '1:00PM',
+        credits: 0,
+        location: '',
+        color: generateColor(),
+        active: true,
+    };
+
+    // Drake reference, I should have put more easter eggs in this thing.
+    if (Math.random() < 0.2) {
+        event.name = "Eatin' crab out in Malibu";
+        event.location = 'Nobu';
+    }
+
+    return event;
 }
 
 /**
@@ -658,7 +759,7 @@ function generateConflictMap(sectionList) {
 function sliceConflictMap(map, meeting, day) {
     var midnight = "12:00AM",
         dayIndex = _.keys(_dayMap).indexOf(day),
-        mapStrip = map[dayIndex]
+        mapStrip = map[dayIndex],
         startIndex = timeDifference(meeting.timeStart, midnight,
             'minutes'),
         endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
@@ -679,7 +780,7 @@ function sliceConflictMap(map, meeting, day) {
 function iterateConflictMap(map, meeting, day, callback) {
     var midnight = "12:00AM",
         dayIndex = _.keys(_dayMap).indexOf(day),
-        mapStrip = map[dayIndex]
+        mapStrip = map[dayIndex],
         startIndex = timeDifference(meeting.timeStart, midnight,
             'minutes'),
         endIndex = timeDifference(meeting.timeEnd, midnight, 'minutes');
@@ -776,6 +877,22 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
         return _.map(_.sortBy(_.keys(_courses)).reverse(), function(key) {
             return _courses[key];
         });
+    },
+
+    /**
+     * Get all of the courses and events in the schedule ordered from most
+     * recent to oldest.
+     * @return {array} Ordered list of courses and events.
+     */
+    getEntries: function() {
+        var entries = _.values(_courses).concat(_.values(_events));
+        return _.sortBy(entries, function(entry) {
+            // Sort the courses with a different attribute than the events.
+            if (entry.raw)
+                return entry.selection.key;
+
+            return entry.key;
+        }).reverse();
     },
 
     /**
@@ -973,6 +1090,11 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.SELECT_CREDITS:
             selectCredits(action.key, action.credits);
+            ScheduleStore.emitChange();
+            break;
+
+        case ScheduleConstants.ADD_EVENT:
+            addEvent();
             ScheduleStore.emitChange();
             break;
 

@@ -88,6 +88,32 @@ var selectionrouter = function(app, blockValidationErrors) {
         });
     });
 
+    // Route for adding an event.
+    app.post('/api/event', authorize, function(req, res) {
+        req.checkBody('strm', 'Provide a strm.').notEmpty();
+        req.checkBody('key', 'Provide a key.').notEmpty();
+        req.checkBody('name', 'Provide a name.').notEmpty();
+        req.checkBody('location', 'Provide a location.');
+        req.checkBody('startTime', 'Provide a start time.').notEmpty();
+        req.checkBody('endTime', 'Provide an end time.').notEmpty();
+        req.checkBody('color', 'Provide a color.').notEmpty();
+        req.checkBody('credits', 'Provide credits.').notEmpty();
+        req.checkBody('active', 'Provide an active.').notEmpty().isBoolean();
+
+        blockValidationErrors(req, res, function() {
+            apiutil.createEvent(req.user, req.body,
+                function(err, increment) {
+                if (err) {
+                    res.status(400);
+                    res.send('An error occurred adding the course.');
+                    return;
+                }
+
+                res.send('ok');
+            });
+        });
+    });
+
     // Route for syncing a large number of selections during sign up and log in.
     app.post('/api/selection/sync', authorize, function(req, res) {
         req.checkBody('_data', 'Provide _data.').notEmpty();
@@ -100,7 +126,10 @@ var selectionrouter = function(app, blockValidationErrors) {
             // Iterate through all semesters and courses in semesters and
             // syncing all courses.
             async.forEachOf(_data, function(semesterData, slug, callback) {
-                async.forEachOf(semesterData, function(course, key, callback) {
+                var semesterCourses = semesterData.courses;
+                async.forEachOf(semesterCourses,
+                    function(course, key, callback) {
+
                     var matchingExisting =
                         _.find(data[slug], function(dataCourse) {
                             if (dataCourse.selection.tag ===
