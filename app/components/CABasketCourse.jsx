@@ -46,10 +46,10 @@ var CABasketCourse = React.createClass({
                 selectedCredits = course.selection.credits,
                 creditsMin = parseFloat(group.unitsMinimum),
                 creditsMax = parseFloat(group.unitsMaximum),
-                smallIncrements = creditsMax % 1 != 0 || creditsMin % 1 != 0;
+                smallIncrements = creditsMax % 1 !== 0 || creditsMin % 1 !== 0;
 
             for (var i = creditsMin; i <= creditsMax;
-                i += smallIncrements ? .5 : 1) {
+                i += smallIncrements ? 0.5 : 1) {
 
                 creditOptions.push(
                     <option key={i} value={i}>
@@ -65,7 +65,7 @@ var CABasketCourse = React.createClass({
                         value={selectedCredits}>
                         {creditOptions}
                     </select>
-                    <i className="icon-arrow_drop_down"></i>
+                    <i className="icon-arrow_drop_down dropdown"></i>
                 </span>
             );
 

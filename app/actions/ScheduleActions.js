@@ -114,6 +114,63 @@ var ScheduleActions = {
     },
 
     /**
+     * Change the name of an event.
+     * @param {string} key Key of the event to change the name for.
+     * @param {string} name Name to change to.
+     */
+    changeEventName: function(key, name) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CHANGE_EVENT_NAME,
+            key: key,
+            name: name
+        });
+    },
+
+    /**
+     * Change the location of an event.
+     * @param {string} key Key of the event to change the location for.
+     * @param {string} location Location to change to.
+     */
+    changeEventLocation: function(key, location) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CHANGE_EVENT_LOCATION,
+            key: key,
+            location: location
+        });
+    },
+
+    /**
+     * Toggle an event on or off for day.
+     * @param {string} key Key of the event to change the time for.
+     * @param {string} time Time to change the event to.
+     * @param {boolean} isEndTime True to change the end time, false to change
+     *      the start time.
+     */
+    changeEventTime: function(key, time, isEndTime) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CHANGE_EVENT_TIME,
+            key: key,
+            time: time,
+            isEndTime: isEndTime
+        });
+    },
+
+    /**
+     * Toggle an event on or off for day.
+     * @param {string} key Key of the event to toggle a day for.
+     * @param {string} daySlug Day to toggle for the event.
+     * @param {boolean} selected Select or Deselect the day.
+     */
+    toggleEventDay: function(key, daySlug, selected) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.TOGGLE_EVENT_DAY,
+            key: key,
+            daySlug: daySlug,
+            selected: selected
+        });
+    },
+
+    /**
      * Reinitialize the course list as empty in the event of logout.
      */
     clear: function() {

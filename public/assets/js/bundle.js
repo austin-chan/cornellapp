@@ -238,6 +238,63 @@ var ScheduleActions = {
     },
 
     /**
+     * Change the name of an event.
+     * @param {string} key Key of the event to change the name for.
+     * @param {string} name Name to change to.
+     */
+    changeEventName: function(key, name) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CHANGE_EVENT_NAME,
+            key: key,
+            name: name
+        });
+    },
+
+    /**
+     * Change the location of an event.
+     * @param {string} key Key of the event to change the location for.
+     * @param {string} location Location to change to.
+     */
+    changeEventLocation: function(key, location) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CHANGE_EVENT_LOCATION,
+            key: key,
+            location: location
+        });
+    },
+
+    /**
+     * Toggle an event on or off for day.
+     * @param {string} key Key of the event to change the time for.
+     * @param {string} time Time to change the event to.
+     * @param {boolean} isEndTime True to change the end time, false to change
+     *      the start time.
+     */
+    changeEventTime: function(key, time, isEndTime) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.CHANGE_EVENT_TIME,
+            key: key,
+            time: time,
+            isEndTime: isEndTime
+        });
+    },
+
+    /**
+     * Toggle an event on or off for day.
+     * @param {string} key Key of the event to toggle a day for.
+     * @param {string} daySlug Day to toggle for the event.
+     * @param {boolean} selected Select or Deselect the day.
+     */
+    toggleEventDay: function(key, daySlug, selected) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.TOGGLE_EVENT_DAY,
+            key: key,
+            daySlug: daySlug,
+            selected: selected
+        });
+    },
+
+    /**
      * Reinitialize the course list as empty in the event of logout.
      */
     clear: function() {
@@ -642,10 +699,10 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
                 selectedCredits = course.selection.credits,
                 creditsMin = parseFloat(group.unitsMinimum),
                 creditsMax = parseFloat(group.unitsMaximum),
-                smallIncrements = creditsMax % 1 != 0 || creditsMin % 1 != 0;
+                smallIncrements = creditsMax % 1 !== 0 || creditsMin % 1 !== 0;
 
             for (var i = creditsMin; i <= creditsMax;
-                i += smallIncrements ? .5 : 1) {
+                i += smallIncrements ? 0.5 : 1) {
 
                 creditOptions.push(
                     React.createElement("option", {key: i, value: i}, 
@@ -661,7 +718,7 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
                         value: selectedCredits}, 
                         creditOptions
                     ), 
-                    React.createElement("i", {className: "icon-arrow_drop_down"})
+                    React.createElement("i", {className: "icon-arrow_drop_down dropdown"})
                 )
             );
 
@@ -909,6 +966,8 @@ var React = require('react/addons'),
     CAColorPanel = require('./CAColorPanel'),
     ScheduleStore = require('../stores/ScheduleStore'),
     ScheduleActions = require('../actions/ScheduleActions'),
+    strutil = require('../utils/strutil'),
+    pluralize = require('pluralize'),
     classNames = require('classnames'),
     _ = require('underscore');
 
@@ -925,31 +984,113 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
 
     /**
      * Render toggles for the days of the week.
-     * @return {array} Array of toggles for all of the days of the week.
+     * @return {object} Renderable object containing all of the toggles.
      */
     renderDayToggles: function() {
         var event = this.props.event,
             dayToggles = [],
-            dayValues = _.values(ScheduleStore.getDayMap()),
-            days = _.pick(event.pattern.split(/(?=[A-Z])/), _.identity),
+            allDays = _.keys(ScheduleStore.dayMap),
+            selectedDays = ScheduleStore.daysFromPattern(event.pattern),
             dayLabels = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'];
 
         // Iterate through all of the days of the week.
         _.each(dayLabels, function(dayLabel, i) {
             // Pattern representation of the day.
-            var daySlug = dayValues[i],
-                selected = _.contains(daySlug, days);
+            var day = allDays[i],
+                selected = _.contains(selectedDays, day);
 
             dayToggles.push(
                 React.createElement("div", {className: "toggle-item", key: dayLabel}, 
                     React.createElement("p", null, dayLabel), 
                     React.createElement(CAToggle, {selected: selected, 
-                        onToggle: this._onDayToggle.bind(this, daySlug)})
+                        onToggle: this._onDayToggle.bind(this, day)})
                 )
             );
         }, this);
 
-        return dayToggles;
+        return (
+            React.createElement("div", {className: "day-toggles"}, 
+                dayToggles
+            )
+        );
+    },
+
+    /**
+     * Render the selects to change the start and end time and credit count.
+     * @return {object} Renderable object containing all of the selects.
+     */
+    renderSelects: function() {
+        var event = this.props.event,
+            times = [],
+            credits = [],
+            increments = ScheduleStore.getAllIncrements();
+
+        // Create option elements for each 5 min intervals in the schedule.
+        _.each(increments, function(increment) {
+            var formatted = strutil.formatTime(increment, true);
+            times.push(
+                React.createElement("option", {key: increment, value: increment}, formatted)
+            );
+        });
+
+        // Iterate through all credit possibilities.
+        for (var c = 0; c <= 12; c += 0.5) {
+            credits.push(
+                React.createElement("option", {key: c, value: c}, 
+                    c, " ", pluralize('credits', c)
+                )
+            );
+        }
+
+        return (
+            React.createElement("div", {className: "selects"}, 
+                React.createElement("div", {className: "start-time select-wrap"}, 
+                    React.createElement("p", null, "Start Time"), 
+                    React.createElement("select", {className: "freight-sans-pro", 
+                        value: event.startTime, 
+                        onChange: this._onTimeChange.bind(this, false)}, 
+                        times
+                    ), 
+                    React.createElement("i", {className: "icon-arrow_drop_down dropdown"})
+                ), 
+                React.createElement("div", {className: "end-time select-wrap"}, 
+                    React.createElement("p", null, "End Time"), 
+                    React.createElement("select", {className: "freight-sans-pro", 
+                        value: event.endTime, 
+                        onChange: this._onTimeChange.bind(this, true)}, 
+                        times
+                    ), 
+                    React.createElement("i", {className: "icon-arrow_drop_down dropdown"})
+                ), 
+                React.createElement("div", {className: "credits select-wrap"}, 
+                    React.createElement("p", null, "Credits"), 
+                    React.createElement("select", {className: "freight-sans-pro", 
+                        value: event.credits, 
+                        onChange: this._onCreditChange}, 
+                        credits
+                    ), 
+                    React.createElement("i", {className: "icon-arrow_drop_down dropdown"})
+                )
+            )
+        );
+    },
+
+    /**
+     * Render the location input to change the location of the event.
+     * @return {object} Renderable object that represents the location of the
+     *      event.
+     */
+    renderLocation: function() {
+        var event = this.props.event;
+
+        return (
+            React.createElement("div", {className: "location"}, 
+                React.createElement("input", {className: "ca-clear-input", type: "text", 
+                    defaultValue: event.location, ref: "locationInput", 
+                    placeholder: "Location", onKeyDown: this._onLocationDown, 
+                    onBlur: this._onLocationBlur})
+            )
+        );
     },
 
     render: function() {
@@ -957,23 +1098,27 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
             active = event.active,
             rootClass = classNames('ca-basket-item', 'ca-basket-event',
                 event.color, { inactive: !active }),
-            dayToggles = this.renderDayToggles();
+            dayToggles = this.renderDayToggles(),
+            selects = this.renderSelects(),
+            location = this.renderLocation();
 
         return (
             React.createElement("div", {className: rootClass}, 
                 React.createElement("div", {className: "item-header"}, 
                     React.createElement(CAToggle, {selected: active, onToggle: this._onToggle}), 
                     React.createElement("div", {className: "input-wrap"}, 
-                        React.createElement("input", {defaultValue: event.name})
+                        React.createElement("input", {defaultValue: event.name, ref: "nameInput", 
+                            onKeyDown: this._onNameDown, 
+                            onBlur: this._onNameBlur})
                     ), 
                     React.createElement("div", {className: "ca-close", onClick: this._onRemove}, 
                         React.createElement("i", {className: "icon-close"})
                     )
                 ), 
                 React.createElement("div", {className: "item-content"}, 
-                    React.createElement("div", {className: "day-toggles"}, 
-                        dayToggles
-                    ), 
+                    location, 
+                    dayToggles, 
+                    selects, 
                     React.createElement("div", {className: "button-area"}, 
                         React.createElement("button", {className: "ca-simple-button", 
                             onClick: this._onColorSelecting.bind(this, true)}, 
@@ -994,15 +1139,90 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
     },
 
     /**
-     * Event handler for toggling a day on and off for an event in the schedule.
+     * Event handler for changing the credit count for an event.
+     * @param {object} e Event object for the select change.
      */
-    _onDayToggle: function(daySlug) {
-        // ScheduleActions.toggle(this.props.event.key, selected);
+    _onCreditChange: function(e) {
+        var credits = e.target.value;
+        ScheduleActions.selectCredits(this.props.event.key, credits);
+    },
+
+    /**
+     * Event handler for changing the start or end time of the event.
+     * @param {boolean} isEndTime True to change the end time, false to change
+     *      the start time.
+     * @param {object} e Event object for the select change.
+     */
+    _onTimeChange: function(isEndTime, e) {
+        var time = e.target.value;
+        ScheduleActions.changeEventTime(this.props.event.key, time, isEndTime);
+    },
+
+    /**
+     * Event handler for releasing focus form the event location input.
+     */
+    _onLocationBlur: function() {
+        var inputNode = React.findDOMNode(this.refs.locationInput),
+            value = inputNode.value;
+
+        ScheduleActions.changeEventLocation(this.props.event.key, value);
+    },
+
+    /**
+     * Event handler for keying down on the event name input.
+     */
+    _onLocationDown: function(e) {
+        var inputNode = React.findDOMNode(this.refs.locationInput);
+        // Trigger the blur event to process the name change.
+        if (e.key === 'Enter')
+            inputNode.blur();
+    },
+
+    /**
+     * Event handler for releasing focus form the event name input.
+     */
+    _onNameBlur: function(e) {
+        var inputNode = React.findDOMNode(this.refs.nameInput),
+            value = inputNode.value;
+
+        // Reset the name if it was changed to an empty string.
+        if (!value.trim().length)
+            inputNode.value = this.props.event.name;
+        else
+            ScheduleActions.changeEventName(this.props.event.key, value);
+    },
+
+    /**
+     * Event handler for keying down on the event name input.
+     */
+    _onNameDown: function(e) {
+        var inputNode = React.findDOMNode(this.refs.nameInput);
+        // Trigger the blur event to process the name change.
+        if (e.key === 'Enter')
+            inputNode.blur();
+    },
+
+    /**
+     * Event handler for editing the name of the event.
+     */
+    _onEditName: function() {
+        var inputNode = React.findDOMNode(this.refs.nameInput);
+        inputNode.select();
+    },
+
+    /**
+     * Event handler for toggling a day on and off for an event in the schedule.
+     * @param {string} daySlug Slug of the day to toggle on or off.
+     * @param {boolean} selected Select or deselect the day for the event.
+     */
+    _onDayToggle: function(daySlug, selected) {
+        ScheduleActions.toggleEventDay(this.props.event.key, daySlug, selected);
     },
 
     /**
      * Event handler for toggling the event on and off to apply the event to
      * the schedule.
+     * @param {boolean} selected Select or deselect the event.
      */
     _onToggle: function(selected) {
         ScheduleActions.toggle(this.props.event.key, selected);
@@ -1037,7 +1257,7 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
 
 module.exports = CABasketEvent;
 
-},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"./CAColorPanel":11,"./CAToggle":24,"classnames":38,"react/addons":53,"underscore":226}],9:[function(require,module,exports){
+},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"../utils/strutil":34,"./CAColorPanel":11,"./CAToggle":24,"classnames":38,"pluralize":48,"react/addons":53,"underscore":226}],9:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2378,10 +2598,8 @@ var CASchedule = React.createClass({displayName: "CASchedule",
 
     componentWillMount: function() {
         this.hourHeight = this.props.size === 'normal' ? 75 : 120;
-        this.startTime = '08:00AM';
-        this.endTime = '11:00PM';
         this.dayOffsetMap = {}; // will be overriden in componentDidMount
-        this.dayMap = ScheduleStore.getDayMap();
+        this.dayMap = ScheduleStore.dayMap;
     },
 
     /**
@@ -2523,8 +2741,6 @@ var CASchedule = React.createClass({displayName: "CASchedule",
 
                 entryItems.push(
                     React.createElement(CAScheduleCourse, {key: entry.selection.key, 
-                        scheduleStartTime: this.startTime, 
-                        scheduleEndTime: this.endTime, 
                         pixelsBetweenTimes: this.pixelsBetweenTimes, 
                         course: entry, 
                         conflictMap: conflictMap, 
@@ -2537,10 +2753,13 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                 if (!entry.active)
                     return;
 
+                // Skip if the event's start and end times are backwards.
+                if (ScheduleStore.timeDifference(entry.endTime,
+                    entry.startTime) <= 0)
+                    return;
+
                 entryItems.push(
                     React.createElement(CAScheduleEvent, {key: entry.key, 
-                        scheduleStartTime: this.startTime, 
-                        scheduleEndTime: this.endTime, 
                         pixelsBetweenTimes: this.pixelsBetweenTimes, 
                         event: entry, 
                         conflictMap: conflictMap, 
@@ -2556,7 +2775,6 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                 React.createElement(CAScheduleDropTargets, {
                     course: this.state.dragCourse, 
                     sectionType: this.state.dragSectionType, 
-                    scheduleStartTime: this.startTime, 
                     pixelsBetweenTimes: this.pixelsBetweenTimes});
 
         return (
@@ -2670,8 +2888,6 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
         course: React.PropTypes.object.isRequired,
         conflictMap: React.PropTypes.array.isRequired,
         renderMap: React.PropTypes.array.isRequired,
-        scheduleStartTime: React.PropTypes.string.isRequired,
-        scheduleEndTime: React.PropTypes.string.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
         dayOffsetMap: React.PropTypes.object.isRequired,
         onDragStart: React.PropTypes.func.isRequired,
@@ -2704,9 +2920,9 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
 
                 var horizontalMap = this.props.dayOffsetMap[day],
                     top = this.props.pixelsBetweenTimes(
-                        this.props.scheduleStartTime, meeting.timeStart),
+                        ScheduleStore.startTime, meeting.timeStart),
                     bottom = this.props.pixelsBetweenTimes(
-                        this.props.scheduleEndTime, meeting.timeEnd);
+                        ScheduleStore.endTime, meeting.timeEnd);
 
                 bounds.top = Math.max(top, bounds.top);
                 bounds.left = Math.max(horizontalMap.left, bounds.left);
@@ -2740,44 +2956,10 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
         ScheduleStore.iterateInstancesInSection(section,
             _.bind(function(meeting, meetingIndex, day) {
 
-            var conflictSlice = ScheduleStore.sliceConflictMap(
-                    this.props.conflictMap, meeting, day),
-                renderSlice = ScheduleStore.sliceConflictMap(
-                    this.props.renderMap, meeting, day),
-                conflicts = _.indexOf(conflictSlice, 2) !== -1,
-                conflictRenderIndex = 0;
-
-            // Calculate which way to render a conflict sections.
-            if (conflicts) {
-                var firstColumnEmpty = _.every(renderSlice, function(c) {
-                        return c[0] === 0;
-                    }),
-                    secondColumnEmpty = _.every(renderSlice, function(c) {
-                        return c[1] === 0;
-                    });
-
-                conflictRenderIndex = firstColumnEmpty ? 0 : 1;
-
-                // Use the least used column if something already is in the
-                // slot.
-                if (!firstColumnEmpty && !secondColumnEmpty) {
-                    var firstColumnDepth = _.filter(renderSlice, function(s) {
-                            return s[0] > 0;
-                        }).length,
-                        secondColumnDepth = _.filter(renderSlice, function(s) {
-                            return s[1] > 0;
-                        }).length;
-
-                    conflictRenderIndex =
-                        (secondColumnDepth < firstColumnDepth) ? 1 : 0;
-                }
-
-                // Only need to keep track of rendering for conflict sections.
-                ScheduleStore.iterateConflictMap(this.props.renderMap,
-                    meeting, day, function(i) {
-                        i[conflictRenderIndex]++;
-                    });
-            }
+            var conflictAnalysis = ScheduleStore.conflictAnalysis(
+                    this.props.conflictMap, this.props.renderMap, meeting, day),
+                conflicts = conflictAnalysis[0],
+                conflictRenderIndex = conflictAnalysis[1];
 
             instances.push(
                 React.createElement(CAScheduleInstance, {key: meetingIndex + day, 
@@ -2786,8 +2968,7 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
                     meeting: meeting, 
                     conflicts: conflicts, 
                     conflictRenderIndex: conflictRenderIndex, 
-                    day: ScheduleStore.getDayMap()[day], 
-                    scheduleStartTime: this.props.scheduleStartTime, 
+                    day: ScheduleStore.dayMap[day], 
                     pixelsBetweenTimes: this.props.pixelsBetweenTimes})
             );
         }, this));
@@ -2885,7 +3066,6 @@ var CAScheduleDropTargets = React.createClass({displayName: "CAScheduleDropTarge
         return {
             course: React.PropTypes.object.isRequired,
             sectionType: React.PropTypes.string.isRequired,
-            scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
         };
     },
@@ -2933,8 +3113,7 @@ var CAScheduleDropTargets = React.createClass({displayName: "CAScheduleDropTarge
                             course: course, 
                             section: sectionOption, 
                             meeting: meeting, 
-                            day: ScheduleStore.getDayMap()[day], 
-                            scheduleStartTime: this.props.scheduleStartTime, 
+                            day: ScheduleStore.dayMap[day], 
                             pixelsBetweenTimes: this.props.pixelsBetweenTimes}
                             )
                     );
@@ -2998,6 +3177,9 @@ module.exports = CAScheduleDropTargets;
  */
 
 var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    strutil = require('../utils/strutil'),
+    classNames = require('classnames'),
     _ = require('underscore');
 
 var CAScheduleEvent = React.createClass({displayName: "CAScheduleEvent",
@@ -3005,22 +3187,87 @@ var CAScheduleEvent = React.createClass({displayName: "CAScheduleEvent",
         event: React.PropTypes.object.isRequired,
         conflictMap: React.PropTypes.array.isRequired,
         renderMap: React.PropTypes.array.isRequired,
-        scheduleStartTime: React.PropTypes.string.isRequired,
-        scheduleEndTime: React.PropTypes.string.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
         dayOffsetMap: React.PropTypes.object.isRequired,
     },
 
-    render: function() {
+    /**
+     * Render instances for an event.
+     * @param {string} day Day slug for the instance.
+     * @return {object} Renderable object
+     */
+    renderEventInstance: function(day) {
+        var event = this.props.event,
+            meetingAdapter = {
+                timeStart: event.startTime,
+                timeEnd: event.endTime
+            },
+            conflictAnalysis = ScheduleStore.conflictAnalysis(
+                this.props.conflictMap, this.props.renderMap, meetingAdapter,
+                day),
+            conflicts = conflictAnalysis[0],
+            conflictRenderIndex = conflictAnalysis[1],
+            heightAmount = this.props.pixelsBetweenTimes(event.endTime,
+                event.startTime),
+            topAmount = this.props.pixelsBetweenTimes(event.startTime,
+                ScheduleStore.startTime),
+            instanceClass = classNames('ca-schedule-instance',
+                ScheduleStore.dayMap[day], {
+                'conflict-of-2': conflicts
+            }),
+            instanceWrapstyle = {
+                height: heightAmount + 'px',
+                top: topAmount + 'px'
+            },
+            time = strutil.formatTime(event.startTime) + ' - ' +
+                strutil.formatTime(event.endTime),
+            location;
+
+        if (conflicts)
+            instanceClass += ' conflict-column-' + conflictRenderIndex;
+
+        if (event.location.trim().length)
+            location = (
+                React.createElement("p", {className: "event-location"}, event.location)
+            );
+
         return (
-            React.createElement("div", null)
+            React.createElement("div", {className: instanceClass, key: day, 
+                style: instanceWrapstyle}, 
+
+                React.createElement("div", {className: "schedule-instance"}, 
+                    React.createElement("div", {className: "instance-wrap"}, 
+                        React.createElement("p", {className: "event-name"}, event.name), 
+                        location, 
+                        React.createElement("p", {className: "event-time"}, time)
+                    )
+                )
+            )
+        );
+    },
+
+    render: function() {
+        var event = this.props.event,
+            selectedDays = ScheduleStore.daysFromPattern(event.pattern),
+            eventInstances = [],
+            rootClass = 'ca-schedule-event ' + event.color;
+
+        // Iterate through each selected day.
+        _.each(selectedDays, function(day) {
+            eventInstances.push(this.renderEventInstance(day));
+        }, this);
+
+        return (
+            React.createElement("div", {className: rootClass}, 
+                eventInstances
+            )
         );
     }
 });
 
 module.exports = CAScheduleEvent;
 
-},{"react/addons":53,"underscore":226}],23:[function(require,module,exports){
+},{"../stores/ScheduleStore":32,"../utils/strutil":34,"classnames":38,"react/addons":53,"underscore":226}],23:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3037,6 +3284,7 @@ module.exports = CAScheduleEvent;
 
 var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    strutil = require('../utils/strutil'),
     classNames = require('classnames');
 
 var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
@@ -3048,22 +3296,8 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
             conflicts: React.PropTypes.bool.isRequired,
             conflictRenderIndex: React.PropTypes.number.isRequired,
             day: React.PropTypes.string.isRequired,
-            scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
         };
-    },
-
-    /**
-     * Format a time string to render as a label in the instance. Example:
-     * "04:30PM" returns "4:30".
-     * @param {string} time Time to format.
-     * @return {string} Formatted time to render.
-     */
-    formatTime: function(time) {
-        if (time[0] === '0')
-            time = time.substring(1);
-
-        return time.replace(/[^0-9:]+/, '');
     },
 
     render: function() {
@@ -3073,7 +3307,7 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
             heightAmount = this.props.pixelsBetweenTimes(meeting.timeEnd,
                 meeting.timeStart),
             topAmount = this.props.pixelsBetweenTimes(meeting.timeStart,
-                this.props.scheduleStartTime),
+                ScheduleStore.startTime),
             rootClass = classNames('ca-schedule-instance', this.props.day, {
                 // If instance is less than 1 hour long.
                 compact: ScheduleStore.timeDifference(meeting.timeEnd,
@@ -3086,8 +3320,8 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
             },
             headline = course.raw.subject + ' ' + course.raw.catalogNbr,
             sectionHeadline = section.ssrComponent + ' ' + section.section,
-            time = this.formatTime(meeting.timeStart) + ' - ' +
-                this.formatTime(meeting.timeEnd),
+            time = strutil.formatTime(meeting.timeStart) + ' - ' +
+                strutil.formatTime(meeting.timeEnd),
             professor = meeting.professors.length ?
                 meeting.professors[0].firstName + ' ' +
                 meeting.professors[0].lastName : 'Staff',
@@ -3148,7 +3382,7 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
 
 module.exports = CAScheduleInstance;
 
-},{"../stores/ScheduleStore":32,"classnames":38,"react/addons":53}],24:[function(require,module,exports){
+},{"../stores/ScheduleStore":32,"../utils/strutil":34,"classnames":38,"react/addons":53}],24:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3243,6 +3477,10 @@ module.exports = {
     DESELECT_SECTION_TYPE: 'SCHEDULE_DESELECT_SECTION_TYPE',
     SELECT_CREDITS: 'SCHEDULE_SELECT_CREDITS',
     ADD_EVENT: 'SCHEDULE_ADD_EVENT',
+    CHANGE_EVENT_NAME: 'SCHEDULE_CHANGE_EVENT_NAME',
+    CHANGE_EVENT_LOCATION: 'SCHEDULE_CHANGE_EVENT_LOCATION',
+    CHANGE_EVENT_TIME: 'SCHEDULE_CHANGE_EVENT_TIME',
+    TOGGLE_EVENT_DAY: 'SCHEDULE_TOGGLE_EVENT_DAY',
     CLEAR: 'SCHEDULE_CLEAR',
     CHANGE_SEMESTER: 'SCHEDULE_CHANGE_SEMESTER',
     MERGE: 'SCHEDULE_MERGE'
@@ -3637,6 +3875,8 @@ var _courses = {},
         S: 'saturday',
         Su: 'sunday'
     },
+    _startTime = '08:00AM',
+    _endTime = '11:00PM',
     _requestCount = 0;
 
 /**
@@ -3830,14 +4070,18 @@ function selectSection(key, sectionId) {
  * @param {string} credits Number of credits to apply for the course.
  */
 function selectCredits(key, credits) {
-    var course = _courses[key];
+    if (_courses[key]) { // is a course
+        // Skip if process didn't change anything.
+        if (_courses[key].selection.credits == credits)
+            return;
 
-    // Skip if process didn't change anything.
-    if (course.selection.credits == credits)
-        return;
+        _courses[key].selection.credits = credits;
+        request('put', _courses[key]);
 
-    course.selection.credits = credits;
-    request('put', _courses[key]);
+    } else if (_events[key]) { // is an event
+        _events[key].credits = credits;
+        requestEvent('put', _events[key]);
+    }
 }
 
 /**
@@ -3965,6 +4209,74 @@ function deselectSectionType(key, sectionType, sendRequest) {
 }
 
 /**
+ * Change the name of an event.
+ * @param {string} key Key of the event to change the name for.
+ * @param {string} name Name to change to.
+ */
+ function changeEventName(key, name) {
+    _events[key].name = name;
+
+    requestEvent('put', _events[key]);
+ }
+
+/**
+ * Change the location of an event.
+ * @param {string} key Key of the event to change the location for.
+ * @param {string} location Location to change to.
+ */
+ function changeEventLocation(key, location) {
+    _events[key].location = location;
+
+    requestEvent('put', _events[key]);
+ }
+
+ /**
+ * Toggle an event on or off for day.
+ * @param {string} key Key of the event to change the time for.
+ * @param {string} time Time to change the event to.
+ * @param {boolean} isEndTime True to change the end time, false to change
+ *      the start time.
+ */
+function changeEventTime(key, time, isEndTime) {
+    // Set the startTime or endTime of the event.
+    if (isEndTime)
+        _events[key].endTime = time;
+    else
+        _events[key].startTime = time;
+
+    requestEvent('put', _events[key]);
+}
+
+ /**
+ * Toggle an event on or off for day.
+ * @param {string} key Key of the event to toggle a day for.
+ * @param {string} daySlug Day to toggle for the event.
+ * @param {boolean} selected Select or Deselect the day.
+ */
+ function toggleEventDay(key, daySlug, selected) {
+    var event = _events[key],
+        orderedDays = _.keys(_dayMap),
+        days = daysFromPattern(event.pattern);
+
+    // Select the day if it is not already selected.
+    if (selected && !_.contains(days, daySlug)) {
+        days.push(daySlug);
+
+    // Deselect the day if it is currently selected.
+    } else if (!selected) {
+        days = _.without(days, daySlug);
+    }
+
+    days = _.sortBy(days, function(day) {
+        return _.indexOf(orderedDays, day);
+    });
+
+    _events[key].pattern = days.join('');
+
+    requestEvent('put', _events[key]);
+}
+
+/**
  * Initiate a request to persist data about selections.
  * @param {string} type Method of request.
  * @param {object} course Course object to save or delete.
@@ -4064,21 +4376,30 @@ function defaultEvent() {
         key: generateKey(),
         name: 'Event Name',
         startTime: '12:00PM',
-        endTime: '1:00PM',
+        endTime: '01:00PM',
         credits: 0,
         location: '',
-        pattern: '',
+        pattern: 'M',
         color: generateColor(),
         active: true,
     };
 
     // Drake reference, I should have put more easter eggs in this thing.
-    if (Math.random() < 0.2) {
+    if (Math.random() < 0.4) {
         event.name = "Eatin' crab out in Malibu";
         event.location = 'Nobu';
     }
 
     return event;
+}
+
+/**
+ * Get a list of day slugs from a pattern of day slugs.
+ * @param {string} pattern Pattern of days.
+ * @return {array} List of days by slug.
+ */
+function daysFromPattern(pattern) {
+    return _.without(pattern.split(/(?=[A-Z])/), '');
 }
 
 /**
@@ -4294,6 +4615,15 @@ function momentForTime(time) {
 }
 
 /**
+ * Format a moment object and return the string representation of the time.
+ * @param {object} moment Moment object to format into a string.
+ * @return {string} Formatted string representation of the time.
+ */
+function timeForMoment(moment) {
+    return moment.format('hh:mmA');
+}
+
+/**
  * Calculate the number of unit of time measurements between two times with
  * float precision.
  * @param {string} bTime Time string minuend.
@@ -4313,6 +4643,8 @@ function timeDifference(bTime, aTime, unit) {
  * contained in the sections in sectionList.
  * @param {array} sectionList Array of sections to generate the conflict map
  *      for.
+ * @param {array} eventList Optional array of events to include in the
+ *      conflicts.
  * @return {array} Conflict map representation of all the sections. The map
  *      is structured as an array of 7 arrays, one for each day of the week.
  *      Each index of the subarrays represents a 5 minute period, and the
@@ -4322,7 +4654,7 @@ function timeDifference(bTime, aTime, unit) {
  *      place, and a value of 2 indicates that there is a conflict during that
  *      period, or at least 2 meetings overlap during that period.
  */
-function generateConflictMap(sectionList) {
+function generateConflictMap(sectionList, eventList) {
     // Create an array with seven subarrays, each with 288 zeroes initialized.
     var midnight = "12:00AM",
         map = _.times(7, function() {
@@ -4352,6 +4684,34 @@ function generateConflictMap(sectionList) {
         });
     });
 
+    // Include events if eventList was provided.
+    if (eventList) {
+        _.each(eventList, function(event) {
+            var days = daysFromPattern(event.pattern);
+
+            // Iterate through each day of the event.
+            _.each(days, function(day) {
+                var dayIndex = _.keys(_dayMap).indexOf(day),
+                    // Calculate corresponding map indices for the meeting start
+                    // and end times.
+                    startIndex = timeDifference(event.startTime, midnight,
+                        'minutes'),
+                    endIndex = timeDifference(event.endTime, midnight,
+                        'minutes');
+
+                startIndex = Math.round(startIndex / 5);
+                endIndex = Math.round(endIndex / 5);
+
+                // Loop through all 5 minute periods in between the start and end
+                // time and mark it as conflicted (1) or conflicted (2).
+                for (var i = startIndex; i < endIndex; i++) {
+                    map[dayIndex][i] = Math.min(map[dayIndex][i] + 1, 2);
+                }
+
+            });
+        });
+    }
+
     return map;
 }
 
@@ -4378,9 +4738,9 @@ function sliceConflictMap(map, meeting, day) {
 }
 
 /**
- * Iterate through a desired section of a conflict map or render map.
+ * Iterate through a desired interval of a conflict map or render map.
  * @param {array} map Conflict map or render map.
- * @param {object} meeting Meeting object to iterate through.
+ * @param {object} meeting Meeting or event object to iterate for.
  * @param {string} day Day component of the meeting.
  * @param {function} callback Function to run on all increments of the map.
  */
@@ -4414,6 +4774,62 @@ function conflictInSections(sectionList) {
 }
 
 /**
+ * Analyze a time interval against a conflict and render map and determine if
+ * there is a conflict during the time interval conflicts and in which column to
+ * render the interval in the case of a conflict. The render map will be
+ * updated to reflect the analyzed time interval. The time interval may
+ * represent a course or event instance.
+ * @param {array} conflictMap Conflict map to compare the interval against.
+ * @param {array} renderMap Render map of already rendered instances.
+ * @param {object} meeting Meeting or event object of the time interval.
+ * @param {day} day Day of the time interval.
+ * @return {array} An array of two values, a boolean of whether there is a
+ *      conflict during the time interval and an integer of the index of the
+ *      column to render the time interval.
+ */
+function conflictAnalysis(conflictMap, renderMap, meeting, day) {
+    var conflictSlice = sliceConflictMap(conflictMap, meeting, day),
+        renderSlice = sliceConflictMap(renderMap, meeting, day),
+        conflicts = _.indexOf(conflictSlice, 2) !== -1,
+        conflictRenderIndex = 0;
+
+    // Calculate which way to render a conflict sections.
+    if (conflicts) {
+        var firstColumnEmpty = _.every(renderSlice, function(c) {
+                return c[0] === 0;
+            }),
+            secondColumnEmpty = _.every(renderSlice, function(c) {
+                return c[1] === 0;
+            });
+
+        conflictRenderIndex = firstColumnEmpty ? 0 : 1;
+
+        // Use the least used column if something already is in the
+        // slot.
+        if (!firstColumnEmpty && !secondColumnEmpty) {
+            var firstColumnDepth = _.filter(renderSlice, function(s) {
+                    return s[0] > 0;
+                }).length,
+                secondColumnDepth = _.filter(renderSlice, function(s) {
+                    return s[1] > 0;
+                }).length;
+
+            conflictRenderIndex = secondColumnDepth < firstColumnDepth ? 1 : 0;
+        }
+
+        // Only need to keep track of rendering for conflict sections.
+        iterateConflictMap(renderMap, meeting, day, function(increment) {
+            increment[conflictRenderIndex]++;
+        });
+    }
+
+    return [
+        conflicts,
+        conflictRenderIndex
+    ];
+}
+
+/**
  * Iterate through each instance of a section and perform a callback function
  * supplied.
  * @param {object} section Section object to iterate through.
@@ -4426,12 +4842,10 @@ function iterateInstancesInSection(section, callback) {
     _.each(section.meetings, function(meeting, meetingIndex) {
 
         // Filter empty strings, handles TBA cases.
-        var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
-            _.identity);
+        var days = daysFromPattern(meeting.pattern);
 
         // Loop through each letter in the pattern of the meeting.
         _.each(days, function(day) {
-
             callback(meeting, meetingIndex, day);
         });
     });
@@ -4460,20 +4874,17 @@ function clear() {
 
 var ScheduleStore = assign({}, EventEmitter.prototype, {
     /**
+     * Get the day map that represents the possible day options in the pattern
+     * attribute of all meetings options.
+     */
+    dayMap: _dayMap,
+
+    /**
      * Get all available colors for courses.
      * @return {array} List of color strings.
      */
     getColors: function() {
         return _colors;
-    },
-
-    /**
-     * Get the day map that represents the possible day options in the pattern
-     * attribute of all meetings options.
-     * @return {object} Day map representation of possible day options.
-     */
-    getDayMap: function() {
-        return _dayMap;
     },
 
     /**
@@ -4567,6 +4978,13 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     getSelectedSectionOfType: getSelectedSectionOfType,
 
     /**
+     * Get a list of day slugs from a pattern of day slugs.
+     * @param {string} pattern Pattern of days.
+     * @return {array} List of days by slug.
+     */
+    daysFromPattern: daysFromPattern,
+
+    /**
      * Calculate the number of unit of time measurements between two times. with
      * float precision.
      * @param {string} bTime Time string minuend.
@@ -4610,7 +5028,7 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      *      schedule.
      */
     getScheduleConflictMap: function() {
-        return generateConflictMap(getAllSelectedSections());
+        return generateConflictMap(getAllSelectedSections(), _.values(_events));
     },
 
     /**
@@ -4622,6 +5040,53 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @return {array} Slice of the original map for the given meeting.
      */
     sliceConflictMap: sliceConflictMap,
+
+    /**
+     * Analyze a time interval against a conflict and render map and determine
+     * if there is a conflict during the time interval conflicts and in which
+     * column to render the interval in the case of a conflict. The render map
+     * will be updated to reflect the analyzed time interval. The time interval
+     * may represent a course or event instance.
+     * @param {array} conflictMap Conflict map to compare the interval against.
+     * @param {array} renderMap Render map of already rendered instances.
+     * @param {string} stringTime Beginning time of the time interval.
+     * @param {string} endTime End time of the time interval.
+     * @param {day} day Day of the time interval.
+     * @return {array} An array of two values, a boolean of whether there is a
+     *      conflict during the time interval and an integer of the index of the
+     *      column to render the time interval.
+     */
+    conflictAnalysis: conflictAnalysis,
+
+    /**
+     * Generate all possible 5 min intervals in the schedule in order from
+     * earliest to latest.
+     * @return {array} List of all possible 5 min intervals in the schedule.
+     */
+    getAllIncrements: function() {
+        var iterator = _startTime,
+            increments = [_startTime];
+
+        // Continue looping until the end of the schedule is reached.
+        while(timeDifference(_endTime, iterator) > 0) {
+            var addedMoment = momentForTime(iterator).add(5, 'minutes');
+
+            iterator = timeForMoment(addedMoment);
+            increments.push(iterator);
+        }
+
+        return increments;
+    },
+
+    /**
+     * Beginning time of the rendered schedule.
+     */
+    startTime: _startTime,
+
+    /**
+     * End time of the rendered schedule.
+     */
+    endTime: _endTime,
 
     /**
      * Generate a snapshot that can be converted to JSON and used by another
@@ -4703,6 +5168,26 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.ADD_EVENT:
             addEvent();
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.CHANGE_EVENT_NAME:
+            changeEventName(action.key, action.name);
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.CHANGE_EVENT_LOCATION:
+            changeEventLocation(action.key, action.location);
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.CHANGE_EVENT_TIME:
+            changeEventTime(action.key, action.time, action.isEndTime);
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.TOGGLE_EVENT_DAY:
+            toggleEventDay(action.key, action.daySlug, action.selected);
             ScheduleStore.emitChange();
             break;
 
@@ -4908,6 +5393,28 @@ module.exports = UserStore;
  */
 
 var m = {};
+
+/**
+ * Format a time string to render as a label in the instance. Example:
+ * "04:30PM" returns "4:30" or "4:30 AM".
+ * @param {string} time Time to format.
+ * @param {boolean} withMeridiam Optional value to include or exclude AM/PM.
+ *      By default, AM/PM is excluded.
+ * @return {string} Formatted time to render.
+ */
+m.formatTime = function(time, withMeridiam) {
+    withMeridiam = typeof withMeridiam === 'undefined' ? false : time;
+
+    if (time[0] === '0')
+        time = time.substring(1);
+
+    if (!withMeridiam)
+        return time.replace(/[^0-9:]+/, '');
+
+    var indexFirstLetter = time.indexOf(time.match('[a-zA-Z]')[0]);
+    return time.substring(0, indexFirstLetter) + ' ' +
+        time.substring(indexFirstLetter);
+};
 
 /**
  * Capitalizes the first letter in a string.

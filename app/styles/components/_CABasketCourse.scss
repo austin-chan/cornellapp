@@ -35,34 +35,6 @@
                         margin-right: 0px;
                     }
                 }
-
-                select {
-                    cursor: pointer;
-                    background: transparent;
-                    outline: none;
-                    color: #535353;
-                    font-weight: 500;
-                    font-size: 12px;
-                    border: none;
-                    @include appearance(none);
-                    @include transition(.13s all ease-in-out);
-
-                    option {
-                        padding-right: 15px;
-                    }
-
-                    &:hover {
-                        opacity: .64;
-                    }
-                }
-
-                i {
-                    pointer-events: none;
-                    font-size: 15px;
-                    line-height: 0;
-                    vertical-align: middle;
-                    color: #888;
-                }
             }
         }
 

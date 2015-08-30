@@ -1,0 +1,31 @@
+.ca-schedule-event {
+
+    @each $color-name, $color in $ca-colors {
+        &.#{$color-name} .schedule-instance {
+            background: $color;
+        }
+    }
+
+    .schedule-instance {
+        cursor: default !important;
+
+        &:hover {
+            border: none !important;
+        }
+    }
+
+    .event-name {
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .event-location {
+        font-size: 10px;
+        margin-top: 6px;
+    }
+
+    .event-time {
+        font-size: 9px;
+        margin-top: 3px;
+    }
+}

@@ -22,7 +22,6 @@ var CAScheduleDropTargets = React.createClass({
         return {
             course: React.PropTypes.object.isRequired,
             sectionType: React.PropTypes.string.isRequired,
-            scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
         };
     },
@@ -70,8 +69,7 @@ var CAScheduleDropTargets = React.createClass({
                             course={course}
                             section={sectionOption}
                             meeting={meeting}
-                            day={ScheduleStore.getDayMap()[day]}
-                            scheduleStartTime={this.props.scheduleStartTime}
+                            day={ScheduleStore.dayMap[day]}
                             pixelsBetweenTimes={this.props.pixelsBetweenTimes}
                             />
                     );

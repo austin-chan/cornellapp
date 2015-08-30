@@ -16,7 +16,7 @@ exports.up = function(knex, Promise) {
             table.string('color').notNullable();
             table.string('pattern').notNullable();
             table.boolean('active').notNullable();
-            table.integer('credits').notNullable().unsigned();
+            table.float('credits').notNullable().unsigned();
             table.string('location').notNullable();
         }),
     ]);

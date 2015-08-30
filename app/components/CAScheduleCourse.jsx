@@ -23,8 +23,6 @@ var CAScheduleCourse = React.createClass({
         course: React.PropTypes.object.isRequired,
         conflictMap: React.PropTypes.array.isRequired,
         renderMap: React.PropTypes.array.isRequired,
-        scheduleStartTime: React.PropTypes.string.isRequired,
-        scheduleEndTime: React.PropTypes.string.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
         dayOffsetMap: React.PropTypes.object.isRequired,
         onDragStart: React.PropTypes.func.isRequired,
@@ -57,9 +55,9 @@ var CAScheduleCourse = React.createClass({
 
                 var horizontalMap = this.props.dayOffsetMap[day],
                     top = this.props.pixelsBetweenTimes(
-                        this.props.scheduleStartTime, meeting.timeStart),
+                        ScheduleStore.startTime, meeting.timeStart),
                     bottom = this.props.pixelsBetweenTimes(
-                        this.props.scheduleEndTime, meeting.timeEnd);
+                        ScheduleStore.endTime, meeting.timeEnd);
 
                 bounds.top = Math.max(top, bounds.top);
                 bounds.left = Math.max(horizontalMap.left, bounds.left);
@@ -93,44 +91,10 @@ var CAScheduleCourse = React.createClass({
         ScheduleStore.iterateInstancesInSection(section,
             _.bind(function(meeting, meetingIndex, day) {
 
-            var conflictSlice = ScheduleStore.sliceConflictMap(
-                    this.props.conflictMap, meeting, day),
-                renderSlice = ScheduleStore.sliceConflictMap(
-                    this.props.renderMap, meeting, day),
-                conflicts = _.indexOf(conflictSlice, 2) !== -1,
-                conflictRenderIndex = 0;
-
-            // Calculate which way to render a conflict sections.
-            if (conflicts) {
-                var firstColumnEmpty = _.every(renderSlice, function(c) {
-                        return c[0] === 0;
-                    }),
-                    secondColumnEmpty = _.every(renderSlice, function(c) {
-                        return c[1] === 0;
-                    });
-
-                conflictRenderIndex = firstColumnEmpty ? 0 : 1;
-
-                // Use the least used column if something already is in the
-                // slot.
-                if (!firstColumnEmpty && !secondColumnEmpty) {
-                    var firstColumnDepth = _.filter(renderSlice, function(s) {
-                            return s[0] > 0;
-                        }).length,
-                        secondColumnDepth = _.filter(renderSlice, function(s) {
-                            return s[1] > 0;
-                        }).length;
-
-                    conflictRenderIndex =
-                        (secondColumnDepth < firstColumnDepth) ? 1 : 0;
-                }
-
-                // Only need to keep track of rendering for conflict sections.
-                ScheduleStore.iterateConflictMap(this.props.renderMap,
-                    meeting, day, function(i) {
-                        i[conflictRenderIndex]++;
-                    });
-            }
+            var conflictAnalysis = ScheduleStore.conflictAnalysis(
+                    this.props.conflictMap, this.props.renderMap, meeting, day),
+                conflicts = conflictAnalysis[0],
+                conflictRenderIndex = conflictAnalysis[1];
 
             instances.push(
                 <CAScheduleInstance key={meetingIndex + day}
@@ -139,8 +103,7 @@ var CAScheduleCourse = React.createClass({
                     meeting={meeting}
                     conflicts={conflicts}
                     conflictRenderIndex={conflictRenderIndex}
-                    day={ScheduleStore.getDayMap()[day]}
-                    scheduleStartTime={this.props.scheduleStartTime}
+                    day={ScheduleStore.dayMap[day]}
                     pixelsBetweenTimes={this.props.pixelsBetweenTimes} />
             );
         }, this));

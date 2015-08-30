@@ -13,6 +13,28 @@
 var m = {};
 
 /**
+ * Format a time string to render as a label in the instance. Example:
+ * "04:30PM" returns "4:30" or "4:30 AM".
+ * @param {string} time Time to format.
+ * @param {boolean} withMeridiam Optional value to include or exclude AM/PM.
+ *      By default, AM/PM is excluded.
+ * @return {string} Formatted time to render.
+ */
+m.formatTime = function(time, withMeridiam) {
+    withMeridiam = typeof withMeridiam === 'undefined' ? false : time;
+
+    if (time[0] === '0')
+        time = time.substring(1);
+
+    if (!withMeridiam)
+        return time.replace(/[^0-9:]+/, '');
+
+    var indexFirstLetter = time.indexOf(time.match('[a-zA-Z]')[0]);
+    return time.substring(0, indexFirstLetter) + ' ' +
+        time.substring(indexFirstLetter);
+};
+
+/**
  * Capitalizes the first letter in a string.
  * @param {string} str String to be capitalized.
  * @return {string} The capitalized string. No operation is completed if the

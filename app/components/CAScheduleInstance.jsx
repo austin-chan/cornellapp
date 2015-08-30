@@ -14,6 +14,7 @@
 
 var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    strutil = require('../utils/strutil'),
     classNames = require('classnames');
 
 var CAScheduleInstance = React.createClass({
@@ -25,22 +26,8 @@ var CAScheduleInstance = React.createClass({
             conflicts: React.PropTypes.bool.isRequired,
             conflictRenderIndex: React.PropTypes.number.isRequired,
             day: React.PropTypes.string.isRequired,
-            scheduleStartTime: React.PropTypes.string.isRequired,
             pixelsBetweenTimes: React.PropTypes.func.isRequired
         };
-    },
-
-    /**
-     * Format a time string to render as a label in the instance. Example:
-     * "04:30PM" returns "4:30".
-     * @param {string} time Time to format.
-     * @return {string} Formatted time to render.
-     */
-    formatTime: function(time) {
-        if (time[0] === '0')
-            time = time.substring(1);
-
-        return time.replace(/[^0-9:]+/, '');
     },
 
     render: function() {
@@ -50,7 +37,7 @@ var CAScheduleInstance = React.createClass({
             heightAmount = this.props.pixelsBetweenTimes(meeting.timeEnd,
                 meeting.timeStart),
             topAmount = this.props.pixelsBetweenTimes(meeting.timeStart,
-                this.props.scheduleStartTime),
+                ScheduleStore.startTime),
             rootClass = classNames('ca-schedule-instance', this.props.day, {
                 // If instance is less than 1 hour long.
                 compact: ScheduleStore.timeDifference(meeting.timeEnd,
@@ -63,8 +50,8 @@ var CAScheduleInstance = React.createClass({
             },
             headline = course.raw.subject + ' ' + course.raw.catalogNbr,
             sectionHeadline = section.ssrComponent + ' ' + section.section,
-            time = this.formatTime(meeting.timeStart) + ' - ' +
-                this.formatTime(meeting.timeEnd),
+            time = strutil.formatTime(meeting.timeStart) + ' - ' +
+                strutil.formatTime(meeting.timeEnd),
             professor = meeting.professors.length ?
                 meeting.professors[0].firstName + ' ' +
                 meeting.professors[0].lastName : 'Staff',

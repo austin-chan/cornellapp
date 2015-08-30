@@ -84,7 +84,7 @@
         font-size: 14px;
         overflow: hidden;
         cursor: pointer;
-        @include transition(.13s all ease-in-out);
+        @include transition(.13s border ease-in-out);
 
         .instance-wrap {
             position: absolute;

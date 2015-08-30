@@ -36,6 +36,8 @@ var _courses = {},
         S: 'saturday',
         Su: 'sunday'
     },
+    _startTime = '08:00AM',
+    _endTime = '11:00PM',
     _requestCount = 0;
 
 /**
@@ -229,14 +231,18 @@ function selectSection(key, sectionId) {
  * @param {string} credits Number of credits to apply for the course.
  */
 function selectCredits(key, credits) {
-    var course = _courses[key];
+    if (_courses[key]) { // is a course
+        // Skip if process didn't change anything.
+        if (_courses[key].selection.credits == credits)
+            return;
 
-    // Skip if process didn't change anything.
-    if (course.selection.credits == credits)
-        return;
+        _courses[key].selection.credits = credits;
+        request('put', _courses[key]);
 
-    course.selection.credits = credits;
-    request('put', _courses[key]);
+    } else if (_events[key]) { // is an event
+        _events[key].credits = credits;
+        requestEvent('put', _events[key]);
+    }
 }
 
 /**
@@ -364,6 +370,74 @@ function deselectSectionType(key, sectionType, sendRequest) {
 }
 
 /**
+ * Change the name of an event.
+ * @param {string} key Key of the event to change the name for.
+ * @param {string} name Name to change to.
+ */
+ function changeEventName(key, name) {
+    _events[key].name = name;
+
+    requestEvent('put', _events[key]);
+ }
+
+/**
+ * Change the location of an event.
+ * @param {string} key Key of the event to change the location for.
+ * @param {string} location Location to change to.
+ */
+ function changeEventLocation(key, location) {
+    _events[key].location = location;
+
+    requestEvent('put', _events[key]);
+ }
+
+ /**
+ * Toggle an event on or off for day.
+ * @param {string} key Key of the event to change the time for.
+ * @param {string} time Time to change the event to.
+ * @param {boolean} isEndTime True to change the end time, false to change
+ *      the start time.
+ */
+function changeEventTime(key, time, isEndTime) {
+    // Set the startTime or endTime of the event.
+    if (isEndTime)
+        _events[key].endTime = time;
+    else
+        _events[key].startTime = time;
+
+    requestEvent('put', _events[key]);
+}
+
+ /**
+ * Toggle an event on or off for day.
+ * @param {string} key Key of the event to toggle a day for.
+ * @param {string} daySlug Day to toggle for the event.
+ * @param {boolean} selected Select or Deselect the day.
+ */
+ function toggleEventDay(key, daySlug, selected) {
+    var event = _events[key],
+        orderedDays = _.keys(_dayMap),
+        days = daysFromPattern(event.pattern);
+
+    // Select the day if it is not already selected.
+    if (selected && !_.contains(days, daySlug)) {
+        days.push(daySlug);
+
+    // Deselect the day if it is currently selected.
+    } else if (!selected) {
+        days = _.without(days, daySlug);
+    }
+
+    days = _.sortBy(days, function(day) {
+        return _.indexOf(orderedDays, day);
+    });
+
+    _events[key].pattern = days.join('');
+
+    requestEvent('put', _events[key]);
+}
+
+/**
  * Initiate a request to persist data about selections.
  * @param {string} type Method of request.
  * @param {object} course Course object to save or delete.
@@ -463,21 +537,30 @@ function defaultEvent() {
         key: generateKey(),
         name: 'Event Name',
         startTime: '12:00PM',
-        endTime: '1:00PM',
+        endTime: '01:00PM',
         credits: 0,
         location: '',
-        pattern: '',
+        pattern: 'M',
         color: generateColor(),
         active: true,
     };
 
     // Drake reference, I should have put more easter eggs in this thing.
-    if (Math.random() < 0.2) {
+    if (Math.random() < 0.4) {
         event.name = "Eatin' crab out in Malibu";
         event.location = 'Nobu';
     }
 
     return event;
+}
+
+/**
+ * Get a list of day slugs from a pattern of day slugs.
+ * @param {string} pattern Pattern of days.
+ * @return {array} List of days by slug.
+ */
+function daysFromPattern(pattern) {
+    return _.without(pattern.split(/(?=[A-Z])/), '');
 }
 
 /**
@@ -693,6 +776,15 @@ function momentForTime(time) {
 }
 
 /**
+ * Format a moment object and return the string representation of the time.
+ * @param {object} moment Moment object to format into a string.
+ * @return {string} Formatted string representation of the time.
+ */
+function timeForMoment(moment) {
+    return moment.format('hh:mmA');
+}
+
+/**
  * Calculate the number of unit of time measurements between two times with
  * float precision.
  * @param {string} bTime Time string minuend.
@@ -712,6 +804,8 @@ function timeDifference(bTime, aTime, unit) {
  * contained in the sections in sectionList.
  * @param {array} sectionList Array of sections to generate the conflict map
  *      for.
+ * @param {array} eventList Optional array of events to include in the
+ *      conflicts.
  * @return {array} Conflict map representation of all the sections. The map
  *      is structured as an array of 7 arrays, one for each day of the week.
  *      Each index of the subarrays represents a 5 minute period, and the
@@ -721,7 +815,7 @@ function timeDifference(bTime, aTime, unit) {
  *      place, and a value of 2 indicates that there is a conflict during that
  *      period, or at least 2 meetings overlap during that period.
  */
-function generateConflictMap(sectionList) {
+function generateConflictMap(sectionList, eventList) {
     // Create an array with seven subarrays, each with 288 zeroes initialized.
     var midnight = "12:00AM",
         map = _.times(7, function() {
@@ -751,6 +845,34 @@ function generateConflictMap(sectionList) {
         });
     });
 
+    // Include events if eventList was provided.
+    if (eventList) {
+        _.each(eventList, function(event) {
+            var days = daysFromPattern(event.pattern);
+
+            // Iterate through each day of the event.
+            _.each(days, function(day) {
+                var dayIndex = _.keys(_dayMap).indexOf(day),
+                    // Calculate corresponding map indices for the meeting start
+                    // and end times.
+                    startIndex = timeDifference(event.startTime, midnight,
+                        'minutes'),
+                    endIndex = timeDifference(event.endTime, midnight,
+                        'minutes');
+
+                startIndex = Math.round(startIndex / 5);
+                endIndex = Math.round(endIndex / 5);
+
+                // Loop through all 5 minute periods in between the start and end
+                // time and mark it as conflicted (1) or conflicted (2).
+                for (var i = startIndex; i < endIndex; i++) {
+                    map[dayIndex][i] = Math.min(map[dayIndex][i] + 1, 2);
+                }
+
+            });
+        });
+    }
+
     return map;
 }
 
@@ -777,9 +899,9 @@ function sliceConflictMap(map, meeting, day) {
 }
 
 /**
- * Iterate through a desired section of a conflict map or render map.
+ * Iterate through a desired interval of a conflict map or render map.
  * @param {array} map Conflict map or render map.
- * @param {object} meeting Meeting object to iterate through.
+ * @param {object} meeting Meeting or event object to iterate for.
  * @param {string} day Day component of the meeting.
  * @param {function} callback Function to run on all increments of the map.
  */
@@ -813,6 +935,62 @@ function conflictInSections(sectionList) {
 }
 
 /**
+ * Analyze a time interval against a conflict and render map and determine if
+ * there is a conflict during the time interval conflicts and in which column to
+ * render the interval in the case of a conflict. The render map will be
+ * updated to reflect the analyzed time interval. The time interval may
+ * represent a course or event instance.
+ * @param {array} conflictMap Conflict map to compare the interval against.
+ * @param {array} renderMap Render map of already rendered instances.
+ * @param {object} meeting Meeting or event object of the time interval.
+ * @param {day} day Day of the time interval.
+ * @return {array} An array of two values, a boolean of whether there is a
+ *      conflict during the time interval and an integer of the index of the
+ *      column to render the time interval.
+ */
+function conflictAnalysis(conflictMap, renderMap, meeting, day) {
+    var conflictSlice = sliceConflictMap(conflictMap, meeting, day),
+        renderSlice = sliceConflictMap(renderMap, meeting, day),
+        conflicts = _.indexOf(conflictSlice, 2) !== -1,
+        conflictRenderIndex = 0;
+
+    // Calculate which way to render a conflict sections.
+    if (conflicts) {
+        var firstColumnEmpty = _.every(renderSlice, function(c) {
+                return c[0] === 0;
+            }),
+            secondColumnEmpty = _.every(renderSlice, function(c) {
+                return c[1] === 0;
+            });
+
+        conflictRenderIndex = firstColumnEmpty ? 0 : 1;
+
+        // Use the least used column if something already is in the
+        // slot.
+        if (!firstColumnEmpty && !secondColumnEmpty) {
+            var firstColumnDepth = _.filter(renderSlice, function(s) {
+                    return s[0] > 0;
+                }).length,
+                secondColumnDepth = _.filter(renderSlice, function(s) {
+                    return s[1] > 0;
+                }).length;
+
+            conflictRenderIndex = secondColumnDepth < firstColumnDepth ? 1 : 0;
+        }
+
+        // Only need to keep track of rendering for conflict sections.
+        iterateConflictMap(renderMap, meeting, day, function(increment) {
+            increment[conflictRenderIndex]++;
+        });
+    }
+
+    return [
+        conflicts,
+        conflictRenderIndex
+    ];
+}
+
+/**
  * Iterate through each instance of a section and perform a callback function
  * supplied.
  * @param {object} section Section object to iterate through.
@@ -825,12 +1003,10 @@ function iterateInstancesInSection(section, callback) {
     _.each(section.meetings, function(meeting, meetingIndex) {
 
         // Filter empty strings, handles TBA cases.
-        var days = _.pick(meeting.pattern.split(/(?=[A-Z])/),
-            _.identity);
+        var days = daysFromPattern(meeting.pattern);
 
         // Loop through each letter in the pattern of the meeting.
         _.each(days, function(day) {
-
             callback(meeting, meetingIndex, day);
         });
     });
@@ -859,20 +1035,17 @@ function clear() {
 
 var ScheduleStore = assign({}, EventEmitter.prototype, {
     /**
+     * Get the day map that represents the possible day options in the pattern
+     * attribute of all meetings options.
+     */
+    dayMap: _dayMap,
+
+    /**
      * Get all available colors for courses.
      * @return {array} List of color strings.
      */
     getColors: function() {
         return _colors;
-    },
-
-    /**
-     * Get the day map that represents the possible day options in the pattern
-     * attribute of all meetings options.
-     * @return {object} Day map representation of possible day options.
-     */
-    getDayMap: function() {
-        return _dayMap;
     },
 
     /**
@@ -966,6 +1139,13 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
     getSelectedSectionOfType: getSelectedSectionOfType,
 
     /**
+     * Get a list of day slugs from a pattern of day slugs.
+     * @param {string} pattern Pattern of days.
+     * @return {array} List of days by slug.
+     */
+    daysFromPattern: daysFromPattern,
+
+    /**
      * Calculate the number of unit of time measurements between two times. with
      * float precision.
      * @param {string} bTime Time string minuend.
@@ -1009,7 +1189,7 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      *      schedule.
      */
     getScheduleConflictMap: function() {
-        return generateConflictMap(getAllSelectedSections());
+        return generateConflictMap(getAllSelectedSections(), _.values(_events));
     },
 
     /**
@@ -1021,6 +1201,53 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @return {array} Slice of the original map for the given meeting.
      */
     sliceConflictMap: sliceConflictMap,
+
+    /**
+     * Analyze a time interval against a conflict and render map and determine
+     * if there is a conflict during the time interval conflicts and in which
+     * column to render the interval in the case of a conflict. The render map
+     * will be updated to reflect the analyzed time interval. The time interval
+     * may represent a course or event instance.
+     * @param {array} conflictMap Conflict map to compare the interval against.
+     * @param {array} renderMap Render map of already rendered instances.
+     * @param {string} stringTime Beginning time of the time interval.
+     * @param {string} endTime End time of the time interval.
+     * @param {day} day Day of the time interval.
+     * @return {array} An array of two values, a boolean of whether there is a
+     *      conflict during the time interval and an integer of the index of the
+     *      column to render the time interval.
+     */
+    conflictAnalysis: conflictAnalysis,
+
+    /**
+     * Generate all possible 5 min intervals in the schedule in order from
+     * earliest to latest.
+     * @return {array} List of all possible 5 min intervals in the schedule.
+     */
+    getAllIncrements: function() {
+        var iterator = _startTime,
+            increments = [_startTime];
+
+        // Continue looping until the end of the schedule is reached.
+        while(timeDifference(_endTime, iterator) > 0) {
+            var addedMoment = momentForTime(iterator).add(5, 'minutes');
+
+            iterator = timeForMoment(addedMoment);
+            increments.push(iterator);
+        }
+
+        return increments;
+    },
+
+    /**
+     * Beginning time of the rendered schedule.
+     */
+    startTime: _startTime,
+
+    /**
+     * End time of the rendered schedule.
+     */
+    endTime: _endTime,
 
     /**
      * Generate a snapshot that can be converted to JSON and used by another
@@ -1102,6 +1329,26 @@ AppDispatcher.register(function(action) {
 
         case ScheduleConstants.ADD_EVENT:
             addEvent();
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.CHANGE_EVENT_NAME:
+            changeEventName(action.key, action.name);
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.CHANGE_EVENT_LOCATION:
+            changeEventLocation(action.key, action.location);
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.CHANGE_EVENT_TIME:
+            changeEventTime(action.key, action.time, action.isEndTime);
+            ScheduleStore.emitChange();
+            break;
+
+       case ScheduleConstants.TOGGLE_EVENT_DAY:
+            toggleEventDay(action.key, action.daySlug, action.selected);
             ScheduleStore.emitChange();
             break;
 

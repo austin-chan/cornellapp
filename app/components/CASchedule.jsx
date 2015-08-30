@@ -39,10 +39,8 @@ var CASchedule = React.createClass({
 
     componentWillMount: function() {
         this.hourHeight = this.props.size === 'normal' ? 75 : 120;
-        this.startTime = '08:00AM';
-        this.endTime = '11:00PM';
         this.dayOffsetMap = {}; // will be overriden in componentDidMount
-        this.dayMap = ScheduleStore.getDayMap();
+        this.dayMap = ScheduleStore.dayMap;
     },
 
     /**
@@ -184,8 +182,6 @@ var CASchedule = React.createClass({
 
                 entryItems.push(
                     <CAScheduleCourse key={entry.selection.key}
-                        scheduleStartTime={this.startTime}
-                        scheduleEndTime={this.endTime}
                         pixelsBetweenTimes={this.pixelsBetweenTimes}
                         course={entry}
                         conflictMap={conflictMap}
@@ -198,10 +194,13 @@ var CASchedule = React.createClass({
                 if (!entry.active)
                     return;
 
+                // Skip if the event's start and end times are backwards.
+                if (ScheduleStore.timeDifference(entry.endTime,
+                    entry.startTime) <= 0)
+                    return;
+
                 entryItems.push(
                     <CAScheduleEvent key={entry.key}
-                        scheduleStartTime={this.startTime}
-                        scheduleEndTime={this.endTime}
                         pixelsBetweenTimes={this.pixelsBetweenTimes}
                         event={entry}
                         conflictMap={conflictMap}
@@ -217,7 +216,6 @@ var CASchedule = React.createClass({
                 <CAScheduleDropTargets
                     course={this.state.dragCourse}
                     sectionType={this.state.dragSectionType}
-                    scheduleStartTime={this.startTime}
                     pixelsBetweenTimes={this.pixelsBetweenTimes} />;
 
         return (
