@@ -269,8 +269,9 @@ function changeSemester(semester) {
     _data[_semester.slug].courses = _courses;
     _data[_semester.slug].events = _events;
 
-    // Swap the new semester into _courses, like a context switch.
+    // Swap the new semester into _courses and _events, like a context switch.
     _courses = _data[semesterExists.slug].courses;
+    _events = _data[semesterExists.slug].events;
 
     // Finally change the semester.
     _semester = semesterExists;
