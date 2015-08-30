@@ -38,7 +38,7 @@ gulp.task('react', function() {
 
 gulp.task('uglify', function() {
     return gulp.src([
-        'public/assets/js/main.js'
+        'public/assets/js/bundle.js'
     ])
     .pipe(sourcemaps.init())
     .pipe(concat('concat.js'))

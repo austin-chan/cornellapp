@@ -14,7 +14,12 @@
         <%- contextString %>
     </script>
 
+<% if (process.env.NODE_ENV === 'development') { %>
     <script src="/assets/js/bundle.js"></script>
+<% } else { %>
+    <script src="/assets/js-built/app.js"></script>
+<% } %>
+
     <%- include('analytics') %>
 
 </body>

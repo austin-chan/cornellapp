@@ -16,10 +16,10 @@ jsx --watch react/ react-built/
 TODO
 Search for a course with slash /
 Search for chi gong
-Create events
 Write comments
 Sync calendars
 Auto screenshot
+Search Redo
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups
