@@ -121,8 +121,6 @@ var CAScheduleCourse = React.createClass({
                             return s[1] > 0;
                         }).length;
 
-                    console.log(firstColumnDepth);
-                    console.log(secondColumnDepth);
                     conflictRenderIndex =
                         (secondColumnDepth < firstColumnDepth) ? 1 : 0;
                 }

@@ -320,7 +320,60 @@ module.exports = function(models) {
 				return callback('Event already exists');
 
 			p.userId = user.id;
+			prepareEventData(p);
 			new models.event(p).save().then(function() {
+				callback();
+			});
+		});
+	};
+
+	/**
+	 * Perform an event update operation for a user.
+	 * @param {object} user User object of logged in user.
+	 * @param {object} p Body object from the request object.
+	 * @param {function} callback Callback function to be called when the
+	 * 		operation is complete. The function will be called with one
+	 *		parameter, an error, if an error occurs. Otherwise, no parameters
+	 *		will be passed.
+	 */
+	m.updateEvent = function(user, p, callback) {
+		// Check that the event exists.
+		new models.event({ userId: user.id, strm: p.strm, key: p.key }).fetch()
+			.then(function(e) {
+
+			if (!e)
+				return callback('Event doesn\'t exist');
+
+			p.userId = user.id;
+			prepareEventData(p);
+			models.knex('events').where('userId', user.id).where('strm', p.strm)
+				.where('key', p.key).update(p).then(function() {
+
+				callback();
+			});
+		});
+	};
+
+	/**
+	 * Perform an event deletion operation for a user.
+	 * @param {object} user User object of logged in user.
+	 * @param {object} p Body object from the request object.
+	 * @param {function} callback Callback function to be called when the
+	 * 		operation is complete. The function will be called with one
+	 *		parameter, an error, if an error occurs. Otherwise, no parameters
+	 *		will be passed.
+	 */
+	m.deleteEvent = function(user, p, callback) {
+		// Check that the event exists.
+		new models.event({ userId: user.id, strm: p.strm, key: p.key }).fetch()
+			.then(function(e) {
+
+			if (!e)
+				return callback('Event doesn\'t exist');
+
+			models.knex('events').where('userId', user.id).where('strm', p.strm)
+				.where('key', p.key).del().then(function() {
+
 				callback();
 			});
 		});
@@ -335,5 +388,13 @@ module.exports = function(models) {
  */
 function prepareSelectionData(data) {
 	data.selectedSectionIds = JSON.stringify(data.selectedSectionIds);
+	data.active = data.active == 'true';
+}
+
+/**
+ * Prepare fields of an event to the correct form of data before saving or
+ * updating.
+ */
+function prepareEventData(data) {
 	data.active = data.active == 'true';
 }

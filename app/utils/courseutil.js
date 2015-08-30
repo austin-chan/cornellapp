@@ -110,10 +110,6 @@ module.exports = function(models, knex) {
 			}
 		}
 
-		// console.log(copyCourseEntry);
-		// console.log(copyCourse);
-		// console.log(_.isEqual(copyCourseEntry, copyCourse));
-		// process.exit();
 		return _.isEqual(copyCourseEntry, copyCourse);
 	};
 

@@ -1,0 +1,46 @@
+.ca-basket-event {
+
+    .item-header .input-wrap {
+        margin-right: 32px;
+
+        input {
+            width: 100%;
+            border: 0;
+            background-color: transparent;
+            padding: 0;
+            display: inline;
+            margin: 0;
+            color: white;
+            font-size: 13px;
+            font-family: 'bunt';
+            outline: none;
+            margin-top: -3px;
+        }
+    }
+
+    .item-content {
+
+        .day-toggles {
+            padding-top: 3px;
+            font-size: 0;
+        }
+
+        .toggle-item {
+            width: 35px;
+            text-align: center;
+            display: inline-block;
+
+            p {
+                color: #535353;
+                font-size: 13px;
+            }
+
+            .ca-toggle {
+                color: #ADADAD;
+                margin-top: -5px;
+                font-size: 18px;
+                margin-left: 1px;
+            }
+        }
+    }
+}

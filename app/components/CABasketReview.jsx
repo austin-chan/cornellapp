@@ -38,14 +38,13 @@ var CABasketReview = React.createClass({
                     return;
 
                 credits += parseFloat(entry.selection.credits);
+                entryLength++;
             } else {
                 if (!entry.active)
                     return;
 
                 credits += parseFloat(entry.credits);
             }
-
-            entryLength++;
         });
 
 

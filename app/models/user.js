@@ -82,23 +82,31 @@ var user = function(bookshelf, models) {
         },
 
         /**
-         * Get course selection data for the user.
+         * Get course and event selection data for the user.
          * @return {object} Selection data for the user.
          */
         getSelectionData: function() {
             var selections = this.related('selections').toJSON(),
+                events = this.related('events').toJSON(),
                 semesters = _.values(config.semesters),
                 data = {};
 
             // Loop through each active semester for the application.
             _.each(semesters, function(semester) {
-                // Get only the selections for the semester
-                var selectionsForSemester = _.filter(selections, function(s) {
-                    return s.strm === semester.strm;
+
+                // Reformat both courses and events.
+                var entries = _.map([selections, events], function(collection) {
+                    // Get only the selections for the semester
+                    var filteredSemester = _.filter(collection, function(c) {
+                        return c.strm === semester.strm;
+                    });
+
+                    // Convert array to an object.
+                    return _.indexBy(filteredSemester, 'key');
                 });
 
-                // Convert array to an object.
-                selectionsForSemester = _.indexBy(selectionsForSemester, 'key');
+                var selectionsForSemester = entries[0],
+                    eventsForSemester = entries[1];
 
                 // Reformat to split course and selection.
                 selectionsForSemester = _.mapObject(selectionsForSemester,
@@ -117,9 +125,17 @@ var user = function(bookshelf, models) {
                     };
                 });
 
+                // Reformat events
+                eventsForSemester = _.mapObject(eventsForSemester,
+                    function(e) {
+
+                    e.active = !!e.active;
+                    return e;
+                });
+
                 data[semester.slug] = {
                     courses: selectionsForSemester,
-                    events: {}
+                    events: eventsForSemester
                 };
             });
 

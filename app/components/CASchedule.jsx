@@ -62,8 +62,7 @@ var CASchedule = React.createClass({
             $mockInstanceInner)));
 
         // Copy the day map to later replace values with dimension values.
-        var dayOffsetMap = JSON.parse(JSON.stringify(
-                ScheduleStore.getDayMap())),
+        var dayOffsetMap = JSON.parse(JSON.stringify(this.dayMap)),
             coursesAreaRight = $scheduleArea.offset().left +
                 $scheduleArea.outerWidth();
 
@@ -205,6 +204,7 @@ var CASchedule = React.createClass({
                         scheduleEndTime={this.endTime}
                         pixelsBetweenTimes={this.pixelsBetweenTimes}
                         event={entry}
+                        conflictMap={conflictMap}
                         renderMap={renderMap}
                         dayOffsetMap={this.dayOffsetMap} />
                 );

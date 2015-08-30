@@ -14,6 +14,7 @@ exports.up = function(knex, Promise) {
             table.string('startTime').notNullable();
             table.string('endTime').notNullable();
             table.string('color').notNullable();
+            table.string('pattern').notNullable();
             table.boolean('active').notNullable();
             table.integer('credits').notNullable().unsigned();
             table.string('location').notNullable();

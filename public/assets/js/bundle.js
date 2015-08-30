@@ -900,11 +900,14 @@ module.exports = CABasketCourse;
  *
  * CABasketEvent represents an user-created event. Component styles are located
  * in _CABasketEvent.scss.
+ *
+ * "been puttin' on a show, it was a sell out event"
  */
 
 var React = require('react/addons'),
     CAToggle = require('./CAToggle'),
     CAColorPanel = require('./CAColorPanel'),
+    ScheduleStore = require('../stores/ScheduleStore'),
     ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames'),
     _ = require('underscore');
@@ -920,23 +923,67 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
         };
     },
 
+    /**
+     * Render toggles for the days of the week.
+     * @return {array} Array of toggles for all of the days of the week.
+     */
+    renderDayToggles: function() {
+        var event = this.props.event,
+            dayToggles = [],
+            dayValues = _.values(ScheduleStore.getDayMap()),
+            days = _.pick(event.pattern.split(/(?=[A-Z])/), _.identity),
+            dayLabels = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'];
+
+        // Iterate through all of the days of the week.
+        _.each(dayLabels, function(dayLabel, i) {
+            // Pattern representation of the day.
+            var daySlug = dayValues[i],
+                selected = _.contains(daySlug, days);
+
+            dayToggles.push(
+                React.createElement("div", {className: "toggle-item", key: dayLabel}, 
+                    React.createElement("p", null, dayLabel), 
+                    React.createElement(CAToggle, {selected: selected, 
+                        onToggle: this._onDayToggle.bind(this, daySlug)})
+                )
+            );
+        }, this);
+
+        return dayToggles;
+    },
+
     render: function() {
         var event = this.props.event,
             active = event.active,
-            rootClass = classNames('ca-basket-item', event.color,
-            { inactive: !active });
+            rootClass = classNames('ca-basket-item', 'ca-basket-event',
+                event.color, { inactive: !active }),
+            dayToggles = this.renderDayToggles();
 
         return (
             React.createElement("div", {className: rootClass}, 
                 React.createElement("div", {className: "item-header"}, 
                     React.createElement(CAToggle, {selected: active, onToggle: this._onToggle}), 
-                    "Event", 
+                    React.createElement("div", {className: "input-wrap"}, 
+                        React.createElement("input", {defaultValue: event.name})
+                    ), 
                     React.createElement("div", {className: "ca-close", onClick: this._onRemove}, 
                         React.createElement("i", {className: "icon-close"})
                     )
                 ), 
-                React.createElement("div", {className: "item-content"}
-
+                React.createElement("div", {className: "item-content"}, 
+                    React.createElement("div", {className: "day-toggles"}, 
+                        dayToggles
+                    ), 
+                    React.createElement("div", {className: "button-area"}, 
+                        React.createElement("button", {className: "ca-simple-button", 
+                            onClick: this._onColorSelecting.bind(this, true)}, 
+                            "Change Color"
+                        ), 
+                        React.createElement("button", {className: "ca-simple-button", 
+                            onClick: this._onEditName}, 
+                            "Edit Event Name"
+                        )
+                    )
                 ), 
                 React.createElement(CAColorPanel, {selected: event.color, 
                     active: this.state.colorSelecting, 
@@ -944,6 +991,13 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
                     onColorChange: this._onColorChange})
             )
         );
+    },
+
+    /**
+     * Event handler for toggling a day on and off for an event in the schedule.
+     */
+    _onDayToggle: function(daySlug) {
+        // ScheduleActions.toggle(this.props.event.key, selected);
     },
 
     /**
@@ -977,13 +1031,13 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
      * @param {string} color Color to change course to.
      */
     _onColorChange: function(color) {
-        ScheduleActions.setColor(this.props.course.selection.key, color);
+        ScheduleActions.setColor(this.props.event.key, color);
     }
 });
 
 module.exports = CABasketEvent;
 
-},{"../actions/ScheduleActions":2,"./CAColorPanel":11,"./CAToggle":24,"classnames":38,"react/addons":53,"underscore":226}],9:[function(require,module,exports){
+},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"./CAColorPanel":11,"./CAToggle":24,"classnames":38,"react/addons":53,"underscore":226}],9:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1024,14 +1078,13 @@ var CABasketReview = React.createClass({displayName: "CABasketReview",
                     return;
 
                 credits += parseFloat(entry.selection.credits);
+                entryLength++;
             } else {
                 if (!entry.active)
                     return;
 
                 credits += parseFloat(entry.credits);
             }
-
-            entryLength++;
         });
 
 
@@ -2348,8 +2401,7 @@ var CASchedule = React.createClass({displayName: "CASchedule",
             $mockInstanceInner)));
 
         // Copy the day map to later replace values with dimension values.
-        var dayOffsetMap = JSON.parse(JSON.stringify(
-                ScheduleStore.getDayMap())),
+        var dayOffsetMap = JSON.parse(JSON.stringify(this.dayMap)),
             coursesAreaRight = $scheduleArea.offset().left +
                 $scheduleArea.outerWidth();
 
@@ -2491,6 +2543,7 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                         scheduleEndTime: this.endTime, 
                         pixelsBetweenTimes: this.pixelsBetweenTimes, 
                         event: entry, 
+                        conflictMap: conflictMap, 
                         renderMap: renderMap, 
                         dayOffsetMap: this.dayOffsetMap})
                 );
@@ -2715,8 +2768,6 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
                             return s[1] > 0;
                         }).length;
 
-                    console.log(firstColumnDepth);
-                    console.log(secondColumnDepth);
                     conflictRenderIndex =
                         (secondColumnDepth < firstColumnDepth) ? 1 : 0;
                 }
@@ -3827,10 +3878,11 @@ function changeSemester(semester) {
 function merge(data) {
     // Write _courses back to _data, like writing from registers to memory.
     _data[_semester.slug].courses = _courses;
+    _data[_semester.slug].events = _events;
 
     // No courses were loaded client side.
     var originallyEmpty = _.every(_data, function(s) {
-        return _.isEmpty(s);
+        return _.isEmpty(s.courses) && _.isEmpty(s.events);
     });
 
     _.each(data, function(semesterData, slug) {
@@ -3845,6 +3897,13 @@ function merge(data) {
 
             // Move into the store.
             _data[slug].courses[key] = course;
+        });
+
+        // Iterate through each event in the semester.
+        _.each(semesterData.events, function(event, key) {
+            // Move into the store because there is no possibility for
+            // duplicates.
+            _data[slug].events[key] = event;
         });
     });
 
@@ -3953,11 +4012,8 @@ function requestEvent(type, event) {
     if (!UserStore.isLoggedIn())
         return;
 
-    var data;
-    if (type === 'post') {
-        data = JSON.parse(JSON.stringify(event));
+    var data = JSON.parse(JSON.stringify(event));
         data.strm = _semester.strm;
-    }
 
     _requestCount++;
     return $.ajax({
@@ -4011,6 +4067,7 @@ function defaultEvent() {
         endTime: '1:00PM',
         credits: 0,
         location: '',
+        pattern: '',
         color: generateColor(),
         active: true,
     };
@@ -4398,6 +4455,7 @@ function exists(course) {
  */
 function clear() {
     _courses = {};
+    _events = {};
 }
 
 var ScheduleStore = assign({}, EventEmitter.prototype, {

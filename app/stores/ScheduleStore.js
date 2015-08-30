@@ -277,10 +277,11 @@ function changeSemester(semester) {
 function merge(data) {
     // Write _courses back to _data, like writing from registers to memory.
     _data[_semester.slug].courses = _courses;
+    _data[_semester.slug].events = _events;
 
     // No courses were loaded client side.
     var originallyEmpty = _.every(_data, function(s) {
-        return _.isEmpty(s);
+        return _.isEmpty(s.courses) && _.isEmpty(s.events);
     });
 
     _.each(data, function(semesterData, slug) {
@@ -295,6 +296,13 @@ function merge(data) {
 
             // Move into the store.
             _data[slug].courses[key] = course;
+        });
+
+        // Iterate through each event in the semester.
+        _.each(semesterData.events, function(event, key) {
+            // Move into the store because there is no possibility for
+            // duplicates.
+            _data[slug].events[key] = event;
         });
     });
 
@@ -403,11 +411,8 @@ function requestEvent(type, event) {
     if (!UserStore.isLoggedIn())
         return;
 
-    var data;
-    if (type === 'post') {
-        data = JSON.parse(JSON.stringify(event));
+    var data = JSON.parse(JSON.stringify(event));
         data.strm = _semester.strm;
-    }
 
     _requestCount++;
     return $.ajax({
@@ -461,6 +466,7 @@ function defaultEvent() {
         endTime: '1:00PM',
         credits: 0,
         location: '',
+        pattern: '',
         color: generateColor(),
         active: true,
     };
@@ -848,6 +854,7 @@ function exists(course) {
  */
 function clear() {
     _courses = {};
+    _events = {};
 }
 
 var ScheduleStore = assign({}, EventEmitter.prototype, {

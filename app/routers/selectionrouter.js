@@ -94,6 +94,7 @@ var selectionrouter = function(app, blockValidationErrors) {
         req.checkBody('key', 'Provide a key.').notEmpty();
         req.checkBody('name', 'Provide a name.').notEmpty();
         req.checkBody('location', 'Provide a location.');
+        req.checkBody('pattern', 'Provide a pattern.');
         req.checkBody('startTime', 'Provide a start time.').notEmpty();
         req.checkBody('endTime', 'Provide an end time.').notEmpty();
         req.checkBody('color', 'Provide a color.').notEmpty();
@@ -105,7 +106,53 @@ var selectionrouter = function(app, blockValidationErrors) {
                 function(err, increment) {
                 if (err) {
                     res.status(400);
-                    res.send('An error occurred adding the course.');
+                    res.send('An error occurred adding the course. ' + err);
+                    return;
+                }
+
+                res.send('ok');
+            });
+        });
+    });
+
+    // Route for updating an event.
+    app.put('/api/event', authorize, function(req, res) {
+        req.checkBody('strm', 'Provide a strm.').notEmpty();
+        req.checkBody('key', 'Provide a key.').notEmpty();
+        req.checkBody('name', 'Provide a name.').notEmpty();
+        req.checkBody('location', 'Provide a location.');
+        req.checkBody('pattern', 'Provide a pattern.');
+        req.checkBody('startTime', 'Provide a start time.').notEmpty();
+        req.checkBody('endTime', 'Provide an end time.').notEmpty();
+        req.checkBody('color', 'Provide a color.').notEmpty();
+        req.checkBody('credits', 'Provide credits.').notEmpty();
+        req.checkBody('active', 'Provide an active.').notEmpty().isBoolean();
+
+        blockValidationErrors(req, res, function() {
+            apiutil.updateEvent(req.user, req.body,
+                function(err, increment) {
+                if (err) {
+                    res.status(400);
+                    res.send('An error occurred updating the course. ' + err);
+                    return;
+                }
+
+                res.send('ok');
+            });
+        });
+    });
+
+    // Route for deleting an event.
+    app.delete('/api/event', authorize, function(req, res) {
+        req.checkBody('strm', 'Provide a strm.').notEmpty();
+        req.checkBody('key', 'Provide a key.').notEmpty();
+
+        blockValidationErrors(req, res, function() {
+            apiutil.deleteEvent(req.user, req.body,
+                function(err, increment) {
+                if (err) {
+                    res.status(400);
+                    res.send('An error occurred deleting the course. ' + err);
                     return;
                 }
 
@@ -126,40 +173,91 @@ var selectionrouter = function(app, blockValidationErrors) {
             // Iterate through all semesters and courses in semesters and
             // syncing all courses.
             async.forEachOf(_data, function(semesterData, slug, callback) {
-                var semesterCourses = semesterData.courses;
-                async.forEachOf(semesterCourses,
-                    function(course, key, callback) {
+                async.parallel([
+                    // Sync all courses.
+                    function(callback) {
+                        var semesterCourses = semesterData.courses;
+                        async.forEachOf(semesterCourses,
+                            function(course, key, callback) {
 
-                    var matchingExisting =
-                        _.find(data[slug], function(dataCourse) {
-                            if (dataCourse.selection.tag ===
-                                course.selection.tag)
-                            return dataCourse.selection;
-                        }),
-                        p;
+                            var matchingExisting =
+                                _.find(data[slug].courses, function(dataCourse)
+                                    {
+                                    if (dataCourse.selection.tag ===
+                                        course.selection.tag)
+                                    return dataCourse.selection;
+                                }),
+                                p;
 
-                    // Save new object.
-                    if (!matchingExisting) {
-                        p = _.pick(course.selection, ['tag', 'key', 'color',
-                            'credits', 'active', 'selectedSectionIds']);
-                        p.strm = config.semesters[slug].strm;
+                            // Save new object.
+                            if (!matchingExisting) {
+                                p = _.pick(course.selection, ['tag', 'key',
+                                    'color', 'credits', 'active',
+                                    'selectedSectionIds']);
+                                p.strm = config.semesters[slug].strm;
 
-                        apiutil.createSelection(req.user, p, callback);
+                                apiutil.createSelection(req.user, p, callback);
 
-                    // Or update
-                    } else {
-                        p = _.pick(course.selection, ['key', 'color',
-                            'credits', 'active', 'selectedSectionIds']);
-                        p.id = matchingExisting.selection.id;
+                            // Or update
+                            } else {
+                                p = _.pick(course.selection, ['key', 'color',
+                                    'credits', 'active', 'selectedSectionIds']);
+                                p.id = matchingExisting.selection.id;
 
-                        apiutil.updateSelection(req.user, p, callback);
+                                apiutil.updateSelection(req.user, p, callback);
+                            }
+
+                        }, function(err) {
+                            if (err)
+                                return callback(err);
+
+                            callback();
+                        });
+                    },
+                    function(callback) {
+                        // Sync all events.
+                        var semesterEvents = semesterData.events;
+                        async.forEachOf(semesterEvents,
+                            function(event, key, callback) {
+
+                            var matchingExisting =
+                                _.find(data[slug].events, function(dataEvent) {
+                                    if (dataEvent.key === event.key)
+                                        return dataEvent;
+                                }),
+                                p;
+                            console.log(matchingExisting);
+
+                            // Save new object.
+                            if (!matchingExisting) {
+                                p = _.pick(event, ['name', 'key',
+                                    'color', 'credits', 'active', 'startTime',
+                                    'endTime', 'pattern', 'location']);
+                                p.strm = config.semesters[slug].strm;
+
+                                apiutil.createEvent(req.user, p, callback);
+
+                            // Or update
+                            } else {
+                                p = _.pick(event, ['name', 'key',
+                                    'color', 'credits', 'active', 'startTime',
+                                    'endTime', 'pattern', 'location']);
+                                p.strm = config.semesters[slug].strm;
+
+                                apiutil.updateEvent(req.user, p, callback);
+                            }
+                        }, function(err) {
+                            if (err)
+                                return callback(err);
+
+                            callback();
+                        });
                     }
-
-                }, function(err) {
+                ], function(err) {
                     if (err)
                         return callback(err);
 
-                    callback();
+                    callback(null);
                 });
             }, function(err) {
                 if (err) {

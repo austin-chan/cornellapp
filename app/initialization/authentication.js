@@ -26,7 +26,8 @@ var authentication = function(passport, models) {
     passport.deserializeUser(function(id, done) {
         new models.user({ id: id }).fetch({
             withRelated: [
-                'selections.course.groups.sections.meetings.professors'
+                'selections.course.groups.sections.meetings.professors',
+                'events'
             ]
         }).then(function(user) {
             done(null, user);

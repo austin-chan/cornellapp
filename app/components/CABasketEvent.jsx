@@ -9,11 +9,14 @@
  *
  * CABasketEvent represents an user-created event. Component styles are located
  * in _CABasketEvent.scss.
+ *
+ * "been puttin' on a show, it was a sell out event"
  */
 
 var React = require('react/addons'),
     CAToggle = require('./CAToggle'),
     CAColorPanel = require('./CAColorPanel'),
+    ScheduleStore = require('../stores/ScheduleStore'),
     ScheduleActions = require('../actions/ScheduleActions'),
     classNames = require('classnames'),
     _ = require('underscore');
@@ -29,23 +32,67 @@ var CABasketEvent = React.createClass({
         };
     },
 
+    /**
+     * Render toggles for the days of the week.
+     * @return {array} Array of toggles for all of the days of the week.
+     */
+    renderDayToggles: function() {
+        var event = this.props.event,
+            dayToggles = [],
+            dayValues = _.values(ScheduleStore.getDayMap()),
+            days = _.pick(event.pattern.split(/(?=[A-Z])/), _.identity),
+            dayLabels = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'];
+
+        // Iterate through all of the days of the week.
+        _.each(dayLabels, function(dayLabel, i) {
+            // Pattern representation of the day.
+            var daySlug = dayValues[i],
+                selected = _.contains(daySlug, days);
+
+            dayToggles.push(
+                <div className="toggle-item" key={dayLabel}>
+                    <p>{dayLabel}</p>
+                    <CAToggle selected={selected}
+                        onToggle={this._onDayToggle.bind(this, daySlug)} />
+                </div>
+            );
+        }, this);
+
+        return dayToggles;
+    },
+
     render: function() {
         var event = this.props.event,
             active = event.active,
-            rootClass = classNames('ca-basket-item', event.color,
-            { inactive: !active });
+            rootClass = classNames('ca-basket-item', 'ca-basket-event',
+                event.color, { inactive: !active }),
+            dayToggles = this.renderDayToggles();
 
         return (
             <div className={rootClass}>
                 <div className="item-header">
                     <CAToggle selected={active} onToggle={this._onToggle} />
-                    Event
+                    <div className="input-wrap">
+                        <input defaultValue={event.name} />
+                    </div>
                     <div className="ca-close" onClick={this._onRemove}>
                         <i className="icon-close"></i>
                     </div>
                 </div>
                 <div className="item-content">
-
+                    <div className="day-toggles">
+                        {dayToggles}
+                    </div>
+                    <div className="button-area">
+                        <button className="ca-simple-button"
+                            onClick={this._onColorSelecting.bind(this, true)}>
+                            Change Color
+                        </button>
+                        <button className="ca-simple-button"
+                            onClick={this._onEditName}>
+                            Edit Event Name
+                        </button>
+                    </div>
                 </div>
                 <CAColorPanel selected={event.color}
                     active={this.state.colorSelecting}
@@ -53,6 +100,13 @@ var CABasketEvent = React.createClass({
                     onColorChange={this._onColorChange} />
             </div>
         );
+    },
+
+    /**
+     * Event handler for toggling a day on and off for an event in the schedule.
+     */
+    _onDayToggle: function(daySlug) {
+        // ScheduleActions.toggle(this.props.event.key, selected);
     },
 
     /**
@@ -86,7 +140,7 @@ var CABasketEvent = React.createClass({
      * @param {string} color Color to change course to.
      */
     _onColorChange: function(color) {
-        ScheduleActions.setColor(this.props.course.selection.key, color);
+        ScheduleActions.setColor(this.props.event.key, color);
     }
 });
 
