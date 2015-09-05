@@ -13,6 +13,7 @@
 var strutil = require('../utils/strutil'),
 	cornellutil = require('../utils/cornellutil'),
 	config = require('../../config'),
+	async = require('async'),
 	_ = require('underscore');
 
 var apirouter = function(app, blockValidationErrors) {
@@ -102,6 +103,102 @@ var apirouter = function(app, blockValidationErrors) {
 		}
 	});
 
+	// Route for commenting on a course.
+	app.post('/api/comment/:crseId', authorize, function(req, res) {
+		var crseId = req.params.crseId,
+			message = req.body.message,
+			id = req.body.id;
+
+		if (!crseId || !message.trim().length)
+			return res.send('error');
+
+		async.parallel([
+			// Make sure the course exists.
+			function(callback) {
+				new models.course({
+					crseId: crseId
+				}).fetch().then(function(course) {
+					if (!course)
+						callback(true);
+					else
+						callback();
+				});
+			},
+			// Make sure the id isn't already taken.
+			function(callback) {
+				new models.comment({
+					id: id
+				}).fetch().then(function(comment) {
+					if (comment)
+						callback(true);
+					else
+						callback();
+				});
+			}
+		], function(err) {
+			if (err)
+				return res.send('error');
+
+			new models.comment({
+				id: id,
+				crseId: crseId,
+				created: new Date(),
+				userId: req.user.id,
+				message: message.trim()
+			}).save({}, { method: 'insert'}).then(function() {
+				res.send('ok');
+			});
+		});
+	});
+
+	// Route for deleting comments.
+	app.delete('/api/comment/:id', authorize, function(req, res) {
+		var id = req.params.id;
+
+		new models.comment({
+			id: id
+		}).fetch().then(function(comment) {
+			// Make sure the comment belongs to the user.
+			if (!comment || comment.get('userId') != req.user.id)
+				return res.send('error');
+
+			comment.destroy();
+			res.send('ok');
+		});
+	});
+
+	// Route for upvoting a comment.
+	app.post('/api/upvote/:commentid', authorize, function(req, res) {
+		var commentid = req.params.commentid;
+
+		// Make sure upvote doesn't already exist.
+		new models.upvote({
+			userId: req.user.id,
+			comment_id: commentid
+		}).fetch().then(function(upvote) {
+			if (upvote)
+				return res.send('ok');
+
+			new models.upvote({
+				userId: req.user.id,
+				comment_id: commentid
+			}).save().then(function() {
+				res.send('ok');
+			});
+		});
+	});
+
+	// Route for unvoting a comment.
+	app.delete('/api/upvote/:commentid', authorize, function(req, res) {
+		var commentid = req.params.commentid;
+
+		knex('upvotes').where('userId', req.user.id)
+			.where('comment_id', commentid).del().then(function() {
+				res.send('ok');
+			});
+	});
+
+	// Route for updating the course catalog.
 	app.get('/admin/trawl/:semester', authorize, function(req, res) {
 		if (config.admins.indexOf(req.user.get('netid')) === -1)
 			return res.send('NOT AUTHORIZED');

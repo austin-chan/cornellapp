@@ -227,7 +227,8 @@ trawlutil.trawl = function(semester, log, printSuccess, exit) {
 
             log('Deleting ' + courseEntries.length + ' database entries');
             var count = 0;
-            async.each(courseEntries, function(courseEntry, callback) {
+            async.forEachOf(courseEntries, function(_, i, callback) {
+                var courseEntry = courseEntries.at(i);
                 courseutil.deleteCourse(courseEntry, function(err) {
                     if (++count % 100 === 0) {
                         log('Deleted ' + count + ' of ' +

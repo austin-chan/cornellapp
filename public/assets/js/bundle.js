@@ -1680,7 +1680,7 @@ var CAHeader = React.createClass({displayName: "CAHeader",
                     ), 
                     React.createElement("button", {className: "ca-outline-button", 
                         onClick: this._onCatalog}, 
-                        "Open Catalog"
+                        "Course Catalog"
                     )
                 )
             );

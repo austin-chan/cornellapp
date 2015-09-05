@@ -22,6 +22,10 @@ var course = function(bookshelf, models) {
 		},
 		groups: function() {
 			return this.hasMany(models.group, 'courseId');
+		},
+		comments: function() {
+			return models.comment.collection()
+				.query('where', 'crseId', this.get('crseId'));
 		}
 	}, {
         /**

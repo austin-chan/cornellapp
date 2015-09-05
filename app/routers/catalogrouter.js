@@ -70,22 +70,29 @@ var catalogrouter = function(app) {
                 if (!c)
                     return res.send('An error occured.');
 
-                knex.table('likes')
-                    .where('crseId_subject', c.get('crseId') + '_' +
-                        c.get('subject'))
-                    .select()
-                    .then(function(like) {
-                        res.render('catalog', {
-                            title: '(' + subject + ' ' + number + ') ' +
-                                c.get('titleLong'),
-                            type: 'course',
-                            course: c,
-                            context: [c.toJSON()],
-                            like: like,
-                            user: req.user ? req.user.id : false,
-                            _: _
+                c.comments().fetch({ withRelated: ['upvotes'] })
+                    .then(function(comments) {
+
+                    comments = comments.toJSON();
+
+                    knex.table('likes')
+                        .where('crseId_subject', c.get('crseId') + '_' +
+                            c.get('subject'))
+                        .select()
+                        .then(function(like) {
+                            res.render('catalog', {
+                                title: '(' + subject + ' ' + number + ') ' +
+                                    c.get('titleLong'),
+                                type: 'course',
+                                course: c,
+                                context: [c.toJSON()],
+                                comments: comments,
+                                like: like,
+                                user: req.user ? req.user.id : false,
+                                _: _
+                            });
                         });
-                    });
+                });
             });
     });
 

@@ -66,28 +66,6 @@
             </div>
         </div>
     </div>
-    <div class="enrollment">
-        <h3>Enrollment Options</h3>
-        <%
-            var componentMap = {
-                LAB: 'laboratory',
-                DIS: 'discussion',
-                LEC: 'lecture',
-                SEM: 'seminar',
-                RSC: 'research',
-                FLD: 'field studies',
-                CLN: 'clinical',
-                STU: 'studio',
-                TA: 'tutor group',
-                IND: 'independent study',
-            }
-            for (var g = 0; g < course.related('groups').length; g++) {
-                var group = course.related('groups').at(g);
-        %>
-                <%- include('group', { group: group,
-                        componentMap: componentMap }) %>
-        <%
-            }
-        %>
-    </div>
+    <%- include('enrollment', { course: course }) %>
+    <%- include('comments', { comments: comments }) %>
 </div>

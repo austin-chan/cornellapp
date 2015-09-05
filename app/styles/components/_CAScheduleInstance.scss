@@ -46,6 +46,17 @@
 
     &.conflict-column-0 {
         right: 0;
+
+        .schedule-instance {
+            border-radius: 3px 0 0 3px !important;
+        }
+    }
+
+    &.conflict-column-1 {
+
+        .schedule-instance {
+            border-radius: 0 3px 3px 0 !important;
+        }
     }
 
     $day-map: (

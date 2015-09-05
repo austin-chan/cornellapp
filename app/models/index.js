@@ -11,13 +11,16 @@
  * bookshelf object as an argument to initialize all of the models.
  */
 
-var models = function(bookshelf) {
-	var m = {};
+var m = {};
 
+var models = function(bookshelf) {
 	m.knex = bookshelf.knex;
 	m.user = require('./user.js')(bookshelf, m);
 	m.selection = require('./selection.js')(bookshelf, m);
 	m.event = require('./event.js')(bookshelf, m);
+	m.comment = require('./comment.js')(bookshelf, m);
+	m.upvote = require('./upvote.js')(bookshelf, m);
+	m.rating = require('./rating.js')(bookshelf, m);
 	m.semester = require('./semester.js')(bookshelf, m);
 	m.course = require('./course.js')(bookshelf, m);
 	m.group = require('./group.js')(bookshelf, m);

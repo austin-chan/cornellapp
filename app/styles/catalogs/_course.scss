@@ -9,6 +9,14 @@
         font-size: 16px;
     }
 
+    .section {
+        padding-top: 30px;
+
+        > h3 {
+            padding-bottom: 10px;
+        }
+    }
+
     .enrollment {
 
         .group {
@@ -132,6 +140,111 @@
 
             &:last-of-type {
                 display: none;
+            }
+        }
+    }
+
+    .comments {
+
+        &.empty {
+
+            .empty-message {
+                display: block;
+            }
+        }
+
+        .empty-message {
+            margin-top: 25px;
+            font-size: 15px;
+            color: #717171;
+            display: none;
+        }
+
+        .comment-box {
+            overflow: auto;
+            outline: none;
+            box-shadow: none;
+            border: 1px solid #CCCCCC;
+            border-radius: 4px;
+            resize: none;
+            font-family: 'bunt';
+            box-sizing: border-box;
+            width: 492px;
+            height: 80px;
+            font-size: 12px;
+            padding: 9px 11px;
+            color: #717171;
+            display: block;
+
+            @include placeholder {
+                color: #CFCFCF;
+            }
+        }
+
+        .add-comment {
+            margin-top: 11px;
+        }
+
+        .comment-item {
+            padding-top: 25px;
+
+            &.creation-schema {
+                display: none;
+            }
+
+            .message {
+                color: #717171;
+                font-size: 14px;
+                line-height: 1.34;
+                font-weight: 500;
+            }
+
+            .upvote {
+                padding: 0px;
+                height: 20px;
+                padding-right: 6px;
+
+                i {
+                    font-size: 20px;
+                    display: inline-block;
+                    margin-top: -1px;
+                    margin-left: -1px;
+                }
+
+                .label {
+                    display: inline-block;
+                    margin-top: -8px;
+                    font-size: 10px;
+                    position: relative;
+                    margin-left: -9px;
+                    top: -5px;
+                }
+
+                &.selected {
+                    color: #D17E7B;
+                }
+            }
+
+            .created {
+                margin-top: 1px;
+                font-size: 11px;
+                color: #D2D2D2;
+                margin-right: 14px - 3px; // .ca-catalog-button has padding
+                font-family: 'bunt';
+            }
+
+            .delete {
+                margin-top: 1px;
+            }
+
+            .bottom {
+                padding-top: 12px;
+            }
+
+            .bottom-item {
+                display: inline-block;
+                vertical-align: middle;
+                margin-right: 14px;
             }
         }
     }

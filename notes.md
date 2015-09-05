@@ -20,6 +20,8 @@ Write comments
 Sync calendars
 Auto screenshot
 Search Redo
+Handling changed course data
+Review on top
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups
