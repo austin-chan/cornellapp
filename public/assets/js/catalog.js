@@ -1,4 +1,6 @@
-// Override click action behavior and pass to the parent.
+/**
+ * Override link click behavior and pass link source to the parent.
+ */
 $(document).on('click', 'a', function(e) {
     e.preventDefault();
 
@@ -6,11 +8,17 @@ $(document).on('click', 'a', function(e) {
     parent.receiveLink(href);
 });
 
-// Click on like button.
+/**
+ * Click on like button.
+ */
 $(document).on('click', '.like', function(e) {
     var liked = $(this).hasClass('liked'),
         count = parseInt($(this).find('.label').text()),
         likeDif = liked ? -1 : 1;
+
+    // Skip for non-logged in users.
+    if (!parent.isLoggedIn())
+        return;
 
     count = count + likeDif;
 
@@ -28,7 +36,10 @@ $(document).on('click', '.like', function(e) {
     })
 });
 
-// Click on add to courses button.
+
+/**
+ * Click on add to courses button.
+ */
 $(document).on('click', '.add', function(e) {
     var number = $(this).data('number'),
         subject = $(this).data('subject');
@@ -40,7 +51,9 @@ $(document).on('click', '.add', function(e) {
     parent.addCourse(found);
 });
 
-// Submit a new comment.
+/**
+ * Submit a new comment.
+ */
 $(document).on('click', '.add-comment', function() {
     var $addButton = $(this),
         $textarea = $addButton.siblings('textarea'),
@@ -82,7 +95,9 @@ $(document).on('click', '.add-comment', function() {
     });
 });
 
-// Delete a comment.
+/**
+ * Delete a comment.
+ */
 $(document).on('click', '.comment-item .delete', function() {
     var $commentItem = $(this).closest('.comment-item'),
         $comments = $commentItem.closest('.comments');
@@ -104,14 +119,16 @@ $(document).on('click', '.comment-item .delete', function() {
     })
 });
 
-// Upvote a comment.
+/**
+ * Upvote a comment.
+ */
 $(document).on('click', '.comment-item .upvote', function() {
     var vote = !!$(this).hasClass('selected'),
         value = parseInt($(this).find('.label').html()),
         $commentItem = $(this).closest('.comment-item');
 
     // Skip for non-logged in users.
-    if ($(this).data('user') == 'false')
+    if (!parent.isLoggedIn())
         return;
 
     // Voted for the comment.

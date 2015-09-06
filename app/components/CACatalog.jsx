@@ -14,6 +14,7 @@
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
     ScheduleActions = require('../actions/ScheduleActions'),
+    UserStore = require('../stores/UserStore'),
     classNames = require('classnames'),
     ScheduleStore = require('../stores/ScheduleStore'),
     strutil = require('../utils/strutil'),
@@ -47,12 +48,19 @@ var CACatalog = React.createClass({
             });
         });
 
+        // Global function to direct the catalog to a new page.
         window.receiveLink = function(link) {
             ModalActions.catalog(link);
         };
 
+        // Global function to add a course to the schedule.
         window.addCourse = function(course) {
             ScheduleActions.add(course);
+        };
+
+        // Global function to check if a user is logged in.
+        window.isLoggedIn = function() {
+            return UserStore.isLoggedIn();
         };
     },
 

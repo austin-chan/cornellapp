@@ -10,7 +10,10 @@
  * Router submodule for handling all catalog routes.
  */
 
-var async = require('async');
+var React = require('react/addons'),
+    CACatalogSubjects = React.createFactory(
+        require('../components/CACatalogSubjects')),
+    async = require('async');
 
 var catalogrouter = function(app) {
     var models = app.get('models'),
@@ -18,19 +21,28 @@ var catalogrouter = function(app) {
         apiutil = require('../utils/apiutil')(models),
         _ = require('underscore');
 
-    // Route for rendering all of the available departments.
+    /**
+     * Route for rendering all of the available departments.
+     */
     app.get('/catalog/:strm/departments', function(req, res) {
         var strm = req.params.strm;
 
+        // Retrieve all subjects for the semester.
         new models.semester({ strm: strm }).fetch().then(function(s) {
+            // Error if semester was not found.
             if (!s)
                 return res.send('An error occured.');
 
+            var subjects = JSON.parse(s.get('subject_list')),
+                reactOutput = React.renderToString(CACatalogSubjects({
+                    subjects: subjects
+                }));
+
             res.render('catalog', {
                 title: 'All Departments',
-                type: 'departments',
-                data: JSON.parse(s.get('subject_list')),
-                _: _
+                reactOutput: reactOutput,
+                contextString: '',
+                script: false
             });
         });
     });

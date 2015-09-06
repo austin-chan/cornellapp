@@ -1,0 +1,36 @@
+.ca-catalog-subjects {
+    @extend .cf;
+
+    a {
+        display: block;
+        text-decoration: none;
+        padding-bottom: 7px;
+        @include transition(all .13s ease-in-out);
+
+        &:hover {
+            opacity: .7;
+        }
+    }
+
+    .abbreviation {
+        color: #BC625F;
+        font-weight: 500;
+        float: left;
+        font-size: 14px;
+    }
+
+    .description {
+        color: #7C7C7C;
+        margin-left: 76px;
+        font-size: 13px;
+        display: block;
+    }
+
+    .left {
+        @include span(6 of 12);
+    }
+
+    .right {
+        @include span(6 of 12 last);
+    }
+}

@@ -9,6 +9,12 @@
             <span class="label"><%= comment.upvotes ? comment.upvotes.length : 0 %></span>
         </div>
         <div class="created bottom-item timeago" title="<%= comment.created ? comment.created.toISOString() : '' %>"></div>
+    <%
+        if (user && user == comment.userId) {
+    %>
         <div class="ca-simple-button delete bottom-item">Delete Comment</div>
+    <%
+        }
+    %>
     </div>
 </div>

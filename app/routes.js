@@ -35,7 +35,7 @@ module.exports = function(app) {
                 ScheduleStoreSnapshot: ScheduleStore.snapshot()
             });
 
-        res.render('index.ejs', {
+        res.render('index', {
             reactOutput: reactOutput,
             contextString: contextString
         });

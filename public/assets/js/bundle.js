@@ -1378,6 +1378,7 @@ module.exports = CABasketReview;
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
     ScheduleActions = require('../actions/ScheduleActions'),
+    UserStore = require('../stores/UserStore'),
     classNames = require('classnames'),
     ScheduleStore = require('../stores/ScheduleStore'),
     strutil = require('../utils/strutil'),
@@ -1411,12 +1412,19 @@ var CACatalog = React.createClass({displayName: "CACatalog",
             });
         });
 
+        // Global function to direct the catalog to a new page.
         window.receiveLink = function(link) {
             ModalActions.catalog(link);
         };
 
+        // Global function to add a course to the schedule.
         window.addCourse = function(course) {
             ScheduleActions.add(course);
+        };
+
+        // Global function to check if a user is logged in.
+        window.isLoggedIn = function() {
+            return UserStore.isLoggedIn();
         };
     },
 
@@ -1549,7 +1557,7 @@ var CACatalog = React.createClass({displayName: "CACatalog",
 
 module.exports = CACatalog;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"../utils/strutil":34,"classnames":38,"react/addons":53,"underscore":226}],11:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"../stores/UserStore":33,"../utils/strutil":34,"classnames":38,"react/addons":53,"underscore":226}],11:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
