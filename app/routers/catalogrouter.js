@@ -13,6 +13,7 @@
 var React = require('react/addons'),
     CACatalogSubjects = React.createFactory(
         require('../components/CACatalogSubjects')),
+    CACatalogList = React.createFactory(require('../components/CACatalogList')),
     async = require('async');
 
 var catalogrouter = function(app) {
@@ -22,9 +23,9 @@ var catalogrouter = function(app) {
         _ = require('underscore');
 
     /**
-     * Route for rendering all of the available departments.
+     * Route for rendering all of the available subjects.
      */
-    app.get('/catalog/:strm/departments', function(req, res) {
+    app.get('/catalog/:strm/subjects', function(req, res) {
         var strm = req.params.strm;
 
         // Retrieve all subjects for the semester.
@@ -39,7 +40,7 @@ var catalogrouter = function(app) {
                 }));
 
             res.render('catalog', {
-                title: 'All Departments',
+                title: 'All Subjects',
                 reactOutput: reactOutput,
                 contextString: '',
                 script: false
@@ -47,26 +48,51 @@ var catalogrouter = function(app) {
         });
     });
 
-    // Route for rendering all of the courses for a department.
-    app.get('/catalog/:strm/department/:department', function(req, res) {
+    /**
+     * Route for rendering courses for a subject.
+     */
+    app.get('/catalog/:strm/subject/:subject', function(req, res) {
         var strm = req.params.strm,
-            department = req.params.department.toUpperCase();
+            subject = req.params.subject.toUpperCase();
 
-        new models.course().where('strm', strm).where('subject', department)
-            .fetchAll({ withRelated: ['groups.sections.meetings.professors'] })
-            .then(function(courses) {
-            if (!courses.length)
-                return res.send('An error occured.');
+        async.parallel([
+            // Retrieve all courses for the subject.
+            function(callback) {
+                new models.course().where('strm', strm)
+                    .where('subject', subject)
+                    .fetchAll({
+                        withRelated: ['groups.sections.meetings.professors']
+                    })
+                    .then(function(courses) {
+                        // Skip if no courses were found.
+                        if (!courses.length)
+                            callback('No courses were found');
 
-            new models.semester({ strm: strm }).fetch()
-                .then(function(ss) {
-                var s = _.find(JSON.parse(ss.get('subject_list')), function(s) {
-                    return s.value === department;
+                        callback(null, courses);
+                    });
+            },
+            // Retrieve the formal name of the subject.
+            function(callback) {
+                new models.semester({ strm: strm }).fetch()
+                    .then(function(semester) {
+                    // Find the desired subject element.
+                    var formalName =
+                        _.find(
+                            JSON.parse(semester.get('subject_list')),
+                            function(s) { return s.value === subject; }
+                        ).descrformal;
+
+                    callback(null, formalName);
                 });
+            }
+        ], function(err, result) {
+            if (err)
+                return res.send('An error occured. ' + err);
 
-                aggregateResponse(req, res, courses, s.descrformal,
-                    'department');
-            });
+            var courses = result[0],
+                formalName = result[1];
+
+            catalogListResponse(req, res, courses, formalName);
         });
     });
 
@@ -167,29 +193,41 @@ var catalogrouter = function(app) {
      * @param {object} res Response object for the process.
      * @param {object} courses Collection of course models.
      * @param {string} title Title of the page.
-     * @param {string} pageType Type of page to render.
      */
-    function aggregateResponse(req, res, courses, title, pageType) {
-        var cs = courses.toJSON();
+    function catalogListResponse(req, res, courses, title) {
+        courses = courses.toJSON();
 
-        async.map(cs, function(c, callback) {
-            knex.table('likes')
-                .where('crseId_subject', c.crseId + '_' + c.subject)
-                .select()
-                .then(function(ls) {
-                    callback(null, ls);
-                });
-        }, function(err, likes) {
-            res.render('catalog', {
-                title: title,
-                type: pageType,
-                courses: courses,
-                context: cs,
-                likes: likes,
-                user: req.user ? req.user.id : false,
-                _: _
+        var tagList = _.map(courses, function(course) {
+                return course.crseId + '_' + course.subject;
             });
-        });
+
+        // Retrieve all likes associated with the courses.
+        knex('likes')
+            .whereIn('crseId_subject', tagList)
+            .select()
+            .then(function(likes) {
+                // Attach likes to each course object.
+                _.each(courses, function(course) {
+                    // Filter associated likes for the course.
+                    var likesArray = _.filter(likes, function(like) {
+                        return like.crseId_subject ===
+                            course.crseId + '_' + course.subject;
+                    });
+
+                    course.likes = likesArray;
+                });
+
+                var reactOutput = React.renderToString(CACatalogList({
+                    courses: courses
+                }));
+
+                res.render('catalog', {
+                    title: 'All Subjects',
+                    reactOutput: reactOutput,
+                    contextString: '',
+                    script: false
+                });
+            });
     }
 };
 

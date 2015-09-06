@@ -11,15 +11,40 @@
  * Component styles are located in _CACatalogList.scss.
  */
 
-var React = require('react/addons');
+var React = require('react/addons'),
+    CACatalogItem = require('./CACatalogItem');
 
 var CACatalogList = React.createClass({
     propTypes: {
         courses: React.PropTypes.array.isRequired
     },
 
-    render: function() {
+    /**
+     * Render a course item preview.
+     * @param {object} course Course object to render a preview for.
+     * @return {object} Renderable object to display the course information
+     *      preview.
+     */
+    renderCourse: function(course) {
+        return (
+            <CACatalogItem />
+        );
+    },
 
+    render: function() {
+        var courses = this.props.courses,
+            itemList = [];
+
+        for (var c = 0; c < courses.length; c++) {
+            var course = courses[c];
+            itemList.push(this.renderCourse(course));
+        }
+
+        return (
+            <div class="ca-catalog-list">
+                {itemList}
+            </div>
+        );
     }
 });
 

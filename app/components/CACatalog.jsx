@@ -110,8 +110,8 @@ var CACatalog = React.createClass({
                         </div>
                         <div className="navigation-tabs">
                             <button className="ca-simple-button"
-                                onClick={this._onAllDepartments}>
-                                All Departments
+                                onClick={this._onAllSubjects}>
+                                All Subjects
                             </button>
                             <button className="ca-simple-button"
                                 onClick={this._onRandomCourses}>
@@ -163,10 +163,10 @@ var CACatalog = React.createClass({
     },
 
     /**
-     * Event handler for clicking on All Departments button.
+     * Event handler for clicking on All Subjects button.
      */
-    _onAllDepartments: function() {
-        ModalActions.catalog('departments');
+    _onAllSubjects: function() {
+        ModalActions.catalog('subjects');
     },
 
     /**

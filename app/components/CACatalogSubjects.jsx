@@ -7,7 +7,7 @@
  * tree.
  *
  *
- * CACatalogSubjects is the component that displays all of the departments
+ * CACatalogSubjects is the component that displays all of the subjects
  * that offer classes during a semester. Component styles are located in
  * _CACatalogSubjects.scss.
  */
@@ -25,7 +25,7 @@ var CACatalogSubjects = React.createClass({
      * @return {object} Renderable object for the subject item.
      */
     renderSubjectItem: function(subject) {
-        var href = 'department/' + subject.value;
+        var href = 'subject/' + subject.value;
 
         return (
             <a key={subject.value} href={href}>

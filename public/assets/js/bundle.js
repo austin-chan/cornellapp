@@ -1474,8 +1474,8 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                         ), 
                         React.createElement("div", {className: "navigation-tabs"}, 
                             React.createElement("button", {className: "ca-simple-button", 
-                                onClick: this._onAllDepartments}, 
-                                "All Departments"
+                                onClick: this._onAllSubjects}, 
+                                "All Subjects"
                             ), 
                             React.createElement("button", {className: "ca-simple-button", 
                                 onClick: this._onRandomCourses}, 
@@ -1527,10 +1527,10 @@ var CACatalog = React.createClass({displayName: "CACatalog",
     },
 
     /**
-     * Event handler for clicking on All Departments button.
+     * Event handler for clicking on All Subjects button.
      */
-    _onAllDepartments: function() {
-        ModalActions.catalog('departments');
+    _onAllSubjects: function() {
+        ModalActions.catalog('subjects');
     },
 
     /**
@@ -3705,7 +3705,7 @@ function catalogForward() {
 function catalogReset() {
     _catalogStack = [];
     _catalogStackForward = [];
-    setCatalogPage('departments');
+    setCatalogPage('subjects');
 }
 
 /**

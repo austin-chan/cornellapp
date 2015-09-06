@@ -125,7 +125,7 @@ function catalogForward() {
 function catalogReset() {
     _catalogStack = [];
     _catalogStackForward = [];
-    setCatalogPage('departments');
+    setCatalogPage('subjects');
 }
 
 /**
