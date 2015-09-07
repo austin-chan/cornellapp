@@ -162,6 +162,10 @@
         color: #F1F1F1;
     }
 
+    &.added {
+        opacity: .36 !important;
+    }
+
     &.like {
         border-radius: 15px;
         height: 22px;

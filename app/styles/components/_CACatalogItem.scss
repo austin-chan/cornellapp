@@ -1,0 +1,90 @@
+.ca-catalog-item {
+    padding-bottom: 40px;
+
+    .upper {
+        font-size: 17px;
+        @extend .cf;
+
+        .tag {
+            float: left;
+            color: #BC625F;
+            font-weight: 500;
+
+            .subject {
+                cursor: pointer;
+                text-decoration: none;
+                color: #BC625F;
+                @include transition(.13s all ease-in-out);
+
+                &:hover {
+                    opacity: .62;
+                }
+            }
+        }
+
+        .title {
+            cursor: pointer;
+            margin-left: 116px;
+            color: #7C7C7C;
+            text-decoration: none;
+            display: block;
+            @include transition(.13s all ease-in-out);
+
+            &:hover {
+                opacity: .62;
+            }
+        }
+
+        .when {
+            float: right;
+            color: #B8B8B8;
+            font-size: 10px;
+        }
+    }
+
+    .lower {
+        padding-top: 10px;
+        @extend .cf;
+
+        .description {
+            padding-bottom: 12px;
+            font-weight: 500;
+            color: #8E8E8E;
+            font-size: 13px;
+            line-height: 1.31;
+        }
+
+        .action-buttons {
+            float: right;
+            font-size: 0;
+            padding-left: 15px;
+
+            .button {
+                margin-left: 8px;
+            }
+        }
+
+        .extra-info {
+            color: #8E8E8E;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.24;
+
+            .info {
+                margin-bottom: 7px;
+            }
+
+            strong {
+                font-weight: 600;
+            }
+
+            .outcomes {
+                padding-left: 35px;
+
+                li {
+                    list-style-type: circle;
+                }
+            }
+        }
+    }
+}

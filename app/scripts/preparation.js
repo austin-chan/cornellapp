@@ -16,5 +16,12 @@ require('devbridge-autocomplete');
 require('velocity-animate');
 require('form-serializer');
 require('jquery.cookie');
+require('timeago');
 
+// Initialize global render context.
 global.context = JSON.parse(document.getElementById('context').textContent);
+
+// Initialize timeago plugin.
+$(document).ready(function() {
+    $(".timeago").timeago();
+});

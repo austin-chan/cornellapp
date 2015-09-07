@@ -12,11 +12,38 @@
  * _CACatalogSubjects.scss.
  */
 
-var React = require('react/addons');
+var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    ModalActions = require('../actions/ModalActions'),
+    _ = require('underscore');
 
 var CACatalogSubjects = React.createClass({
     propTypes: {
-        subjects: React.PropTypes.array.isRequired
+        page: React.PropTypes.object.isRequired
+    },
+
+    getInitialState: function() {
+        return {
+            subjects: []
+        };
+    },
+
+    componentDidMount: function() {
+        this.load();
+    },
+
+    /**
+     * Load the rendering data from the backend.
+     */
+    load: function() {
+        $.ajax({
+            url: '/catalog/' + this.props.page.strm + '/subjects',
+            success: _.bind(function(data) {
+                this.setState({
+                    subjects: data
+                });
+            }, this)
+        });
     },
 
     /**
@@ -25,18 +52,18 @@ var CACatalogSubjects = React.createClass({
      * @return {object} Renderable object for the subject item.
      */
     renderSubjectItem: function(subject) {
-        var href = 'subject/' + subject.value;
-
         return (
-            <a key={subject.value} href={href}>
+            <div className="subject-item" key={subject.value}
+                onClick={this._onSubjectClick.bind(this, subject.value,
+                    subject.descrformal)}>
                 <span className="abbreviation">{subject.value}</span>
                 <span className="description">{subject.descrformal}</span>
-            </a>
+            </div>
         );
     },
 
     render: function() {
-        var subjects = this.props.subjects,
+        var subjects = this.state.subjects,
             leftColumnSubjects = [],
             rightColumnSubjects = [];
 
@@ -65,6 +92,19 @@ var CACatalogSubjects = React.createClass({
                 </div>
             </div>
         );
+    },
+
+    /**
+     * Event handler for selecting a subject and changing the catalog page.
+     * @param {string} subject Subject abbreviation to change the catalog to.
+     * @param {string} formalName Full name of the subject.
+     */
+    _onSubjectClick: function(subject, formalName) {
+        ModalActions.catalog({
+            type: 'subject',
+            title: formalName,
+            subject: subject
+        });
     }
 });
 

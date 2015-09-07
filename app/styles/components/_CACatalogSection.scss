@@ -1,0 +1,45 @@
+.ca-catalog-section {
+    padding-top: 15px;
+    @extend .cf;
+
+    .meetings {
+        float: left
+    }
+
+    .first-column {
+        width: 100px;
+        float: left;
+
+        .tag {
+            color: #D17E7B;
+            font-size: 13px;
+        }
+
+        .classId {
+            color: #CACACA;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+    }
+
+    .notes {
+        clear: both;
+        color: #B5B5B5;
+        font-size: 11px;
+        padding-top: 6px;
+        padding-bottom: 8px;
+    }
+
+    .credits {
+        color: #7C7C7C;
+        font-size: 15px;
+        clear: both;
+        padding-top: 10px;
+
+        .secondary {
+            color: #B5B5B5;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+    }
+}

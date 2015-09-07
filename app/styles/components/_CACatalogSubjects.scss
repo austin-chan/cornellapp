@@ -1,10 +1,11 @@
 .ca-catalog-subjects {
     @extend .cf;
 
-    a {
+    .subject-item {
         display: block;
         text-decoration: none;
         padding-bottom: 7px;
+        cursor: pointer;
         @include transition(all .13s ease-in-out);
 
         &:hover {

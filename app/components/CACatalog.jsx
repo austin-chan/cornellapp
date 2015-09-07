@@ -15,53 +15,37 @@ var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
     ScheduleActions = require('../actions/ScheduleActions'),
     UserStore = require('../stores/UserStore'),
-    classNames = require('classnames'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    CACatalogSubjects = require('./CACatalogSubjects'),
+    CACatalogList = require('./CACatalogList'),
+    CACatalogCourse = require('./CACatalogCourse'),
+    classNames = require('classnames'),
     strutil = require('../utils/strutil'),
     _ = require('underscore');
 
 var CACatalog = React.createClass({
     propTypes: {
         active: React.PropTypes.bool.isRequired,
-        page: React.PropTypes.string.isRequired,
+        page: React.PropTypes.object.isRequired,
         hasBack: React.PropTypes.bool.isRequired,
         hasForward: React.PropTypes.bool.isRequired
     },
 
-    getInitialState: function() {
-        return {
-            iframeTitle: ''
-        };
-    },
-
     /**
-     * Automatically update the title of the catalog when the page changes and
-     * listen for link clicking in the iframe.
+     * Render page content for the catalog.
+     * @return {object} Renderable object for the catalog content.
      */
-    componentDidMount: function() {
-        var self = this;
-        $(React.findDOMNode(this.refs.iframe)).on('load', function() {
-            var iframeTitle = strutil.shorten(this.contentDocument.title, 48);
+    renderContent: function() {
+        var page = this.props.page;
 
-            self.setState({
-                iframeTitle: iframeTitle
-            });
-        });
+        if (page.type === 'subjects')
+            return <CACatalogSubjects page={page} />;
 
-        // Global function to direct the catalog to a new page.
-        window.receiveLink = function(link) {
-            ModalActions.catalog(link);
-        };
+        else if (_.contains(['subject'], page.type))
+            return <CACatalogList page={page} />;
 
-        // Global function to add a course to the schedule.
-        window.addCourse = function(course) {
-            ScheduleActions.add(course);
-        };
-
-        // Global function to check if a user is logged in.
-        window.isLoggedIn = function() {
-            return UserStore.isLoggedIn();
-        };
+        else if (page.type == 'course')
+            return <CACatalogCourse page={page} />;
     },
 
     render: function() {
@@ -73,7 +57,8 @@ var CACatalog = React.createClass({
             }),
             forwardClass = classNames('forward-button', {
                 disabled: !this.props.hasForward
-            });
+            }),
+            content = this.renderContent();
 
         return (
             <div className={rootClass}>
@@ -92,39 +77,44 @@ var CACatalog = React.createClass({
                             <div className="label">Close</div>
                         </div>
                     </div>
-                    <div className="navigation-bar">
-                        <div className="upper">
-                            <div className="navigation-buttons">
-                                <button className={backClass}
-                                    onClick={this._onBack}>
-                                    <i className="icon-keyboard_arrow_left">
-                                    </i>
+                    <div className="scroll-area">
+                        <div className="navigation-bar">
+                            <div className="upper">
+                                <div className="navigation-buttons">
+                                    <button className={backClass}
+                                        onClick={this._onBack}>
+                                        <i className="icon-keyboard_arrow_left">
+                                        </i>
+                                    </button>
+                                    <button className={forwardClass}
+                                        onClick={this._onForward}>
+                                        <i className=
+                                            "icon-keyboard_arrow_right">
+                                        </i>
+                                    </button>
+                                </div>
+                                <p className="title">
+                                    {this.props.page.title}
+                                </p>
+                            </div>
+                            <div className="navigation-tabs">
+                                <button className="ca-simple-button"
+                                    onClick={this._onAllSubjects}>
+                                    All Subjects
                                 </button>
-                                <button className={forwardClass}
-                                    onClick={this._onForward}>
-                                    <i className="icon-keyboard_arrow_right">
-                                    </i>
+                                <button className="ca-simple-button"
+                                    onClick={this._onRandomCourses}>
+                                    Random Courses
+                                </button>
+                                <button className="ca-simple-button"
+                                    onClick={this._onMostLiked}>
+                                    Most Liked
                                 </button>
                             </div>
-                            <p className="title">{this.state.iframeTitle}</p>
                         </div>
-                        <div className="navigation-tabs">
-                            <button className="ca-simple-button"
-                                onClick={this._onAllSubjects}>
-                                All Subjects
-                            </button>
-                            <button className="ca-simple-button"
-                                onClick={this._onRandomCourses}>
-                                Random Courses
-                            </button>
-                            <button className="ca-simple-button"
-                                onClick={this._onMostLiked}>
-                                Most Liked
-                            </button>
+                        <div className="content-wrap">
+                            {content}
                         </div>
-                    </div>
-                    <div className="iframe-wrap">
-                        <iframe ref="iframe" src={this.props.page}></iframe>
                     </div>
                 </div>
             </div>

@@ -116,7 +116,7 @@ $(document).on('click', '.comment-item .delete', function() {
     $.ajax({
         type: 'delete',
         url: '/api/comment/' + id
-    })
+    });
 });
 
 /**

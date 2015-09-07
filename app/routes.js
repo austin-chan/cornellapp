@@ -18,27 +18,37 @@ var React = require('react/addons'),
     ModalStore = require('./stores/ModalStore');
 
 module.exports = function(app) {
-    var config = app.get('config');
+    var config = app.get('config'),
+        knex = app.get('knex');
 
     app.get('/health', function(req, res) {
         res.send('ok');
     });
 
     app.get('/', function(req, res) {
-        ScheduleStore.reset(req);
-        ModalStore.reset();
-        UserStore.reset(req);
+        var slugs = _.keys(config.semesters);
 
-        var reactOutput = React.renderToString(CAApp()),
-            contextString = JSON.stringify({
-                UserStoreSnapshot: UserStore.snapshot(),
-                ScheduleStoreSnapshot: ScheduleStore.snapshot()
+        // Get subject definitions for relevant semesters.
+        knex('semesters')
+            .whereIn('slug', slugs)
+            .select('slug', 'subject_list')
+            .then(function(semesters) {
+                ScheduleStore.reset(req, semesters);
+                ModalStore.reset();
+                UserStore.reset(req);
+
+                var reactOutput = React.renderToString(CAApp()),
+                    contextString = JSON.stringify({
+                        UserStoreSnapshot: UserStore.snapshot(),
+                        ScheduleStoreSnapshot: ScheduleStore.snapshot()
+                    });
+
+                res.render('index', {
+                    reactOutput: reactOutput,
+                    contextString: contextString
+                });
+
             });
-
-        res.render('index', {
-            reactOutput: reactOutput,
-            contextString: contextString
-        });
     });
 
     // "/api"

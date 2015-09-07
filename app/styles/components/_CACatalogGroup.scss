@@ -1,0 +1,44 @@
+.ca-catalog-group {
+    padding-bottom: 10px;
+    padding-top: 12px;
+
+    .byline {
+        font-size: 13px;
+        color: #A3A3A3;
+
+        .combination-link {
+            color: #616161;
+            cursor: pointer;
+            text-decoration: none;
+            @include transition(all .13s ease-in-out);
+
+            &:hover {
+                opacity: .73;
+            }
+        }
+    }
+
+    .credits {
+        color: #7C7C7C;
+        font-size: 15px;
+        clear: both;
+        padding-top: 10px;
+
+        .secondary {
+            color: #B5B5B5;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+    }
+
+    hr {
+        border: none;
+        background-color: #E7E7E7;
+        height: 1px;
+        margin: 12px 0px -12px;
+    }
+
+    &:last-of-type hr {
+        display: none;
+    }
+}

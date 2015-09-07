@@ -56,6 +56,7 @@
     "jquery": "^2.1.4",
     "jquery.cookie": "^1.4.1",
     "reactify": "^1.1.1",
+    "timeago": "^1.4.2",
     "uglify": "^0.1.5",
     "vinyl-source-stream": "^1.1.0"
   },

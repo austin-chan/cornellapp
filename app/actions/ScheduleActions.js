@@ -37,6 +37,17 @@ var ScheduleActions = {
     },
 
     /**
+     * Remove a course from the schedule by the course object.
+     * @param {string} course Course object to remove.
+     */
+    removeCourse: function(course) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.REMOVE_COURSE,
+            course: course
+        });
+    },
+
+    /**
      * Set a course or event either active or unactive.
      * @param {string} key Key of course or event to update active state for.
      * @param {bool} active True to make the course or event active, false to

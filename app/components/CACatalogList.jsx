@@ -12,11 +12,39 @@
  */
 
 var React = require('react/addons'),
-    CACatalogItem = require('./CACatalogItem');
+    CACatalogItem = require('./CACatalogItem'),
+    _ = require('underscore');
 
 var CACatalogList = React.createClass({
     propTypes: {
-        courses: React.PropTypes.array.isRequired
+        page: React.PropTypes.object.isRequired
+    },
+
+    getInitialState: function() {
+        return {
+            courses: []
+        };
+    },
+
+    componentDidMount: function() {
+        this.load();
+    },
+
+    /**
+     * Load the rendering data from the backend.
+     */
+    load: function() {
+        if (this.props.page.type === 'subject') {
+            $.ajax({
+                url: '/catalog/' + this.props.page.strm + '/subject/' +
+                    this.props.page.subject,
+                success: _.bind(function(data) {
+                    this.setState({
+                        courses: data
+                    });
+                }, this)
+            });
+        }
     },
 
     /**
@@ -27,12 +55,12 @@ var CACatalogList = React.createClass({
      */
     renderCourse: function(course) {
         return (
-            <CACatalogItem />
+            <CACatalogItem key={course.id} course={course} />
         );
     },
 
     render: function() {
-        var courses = this.props.courses,
+        var courses = this.state.courses,
             itemList = [];
 
         for (var c = 0; c < courses.length; c++) {
@@ -41,7 +69,7 @@ var CACatalogList = React.createClass({
         }
 
         return (
-            <div class="ca-catalog-list">
+            <div className="ca-catalog-list">
                 {itemList}
             </div>
         );

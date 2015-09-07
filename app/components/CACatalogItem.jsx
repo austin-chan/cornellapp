@@ -7,59 +7,135 @@
  * tree.
  *
  *
- * CACatalogItem is the component that renders a small preview of a course.
+ * CACatalogItem is the component that renders a preview item for a course.
  * Component styles are located in _CACatalogItem.scss.
  */
 
-var React = require('react/addons');
+var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    ModalActions = require('../actions/ModalActions'),
+    CACatalogLike = require('./CACatalogLike'),
+    CACatalogAdd = require('./CACatalogAdd'),
+    _ = require('underscore');
 
 var CACatalogItem = React.createClass({
     propTypes: {
-        course: React.PropTypes.array.isRequired
+        course: React.PropTypes.object.isRequired
+    },
+
+    /**
+     * Render extra info for the course if there is any to display.
+     * @return {array} Array of renderable objects to display extra info.
+     */
+    renderExtraInfo: function() {
+        var course = this.props.course,
+            infoList = [],
+            infos = [
+                ['Satisfies Requirement', 'catalogSatisfiesReq'],
+                ['Breadth Requirement', 'catalogBreadth'],
+                ['Distribution Category', 'catalogDistr'],
+            ];
+
+        _.each(infos, function(info) {
+            if (course[info[1]])
+                infoList.push(
+                    <p key={info[1]} className="info">
+                        <strong>{info[0]}:</strong>&nbsp;
+                        {info[0]}
+                    </p>
+                );
+        }, this);
+
+        return infoList;
+    },
+
+    /**
+     * Render the like button for the item.
+     * @return {object} Renderable object for the like button.
+     */
+    renderLikeButton: function() {
+        return (
+            <CACatalogLike course={this.props.course} />
+        );
+    },
+
+    /**
+     * Render the add course to schedule button.
+     * @return {object} Renderable object for the add button.
+     */
+    renderAddButton: function() {
+        return (
+            <CACatalogAdd course={this.props.course} />
+        );
     },
 
     render: function() {
         var course = this.props.course,
-            courseHref = 'course/' + course.subject + '/' + course.catalogNbr,
-            subjectHref = 'department/' + course.subject;
+            description = course.description || 'No description available.',
+            extraInfo = this.renderExtraInfo(),
+            likeButton = this.renderLikeButton(),
+            addButton = this.renderAddButton();
 
         return (
             <div className="ca-catalog-item">
                 <div className="upper">
                     <span className="tag">
-                        <a href={departmentHref}>{course.subject}</a>
+                        <a className="subject"
+                            onClick={this._onSubjectClick}>
+                            {course.subject}
+                        </a>&nbsp;
                         {course.catalogNbr}
                     </span>
                     <span className="when">{course.catalogWhenOffered}</span>
-                    <a href={courseHref} className="title">
+                    <p className="title" onClick={this._onCourseClick}>
                         {course.titleLong}
-                    </a>
+                    </p>
                 </div>
                 <div className="lower">
                     <p className="description freight-sans-pro">
-                        <%- course.get('description') || 'No description available.' %>
+                        {description}
                     </p>
                     <div className="action-buttons">
-                        <%- include('like', { course: course, like: like }) %>
-                        <%- include('add', { course: course }) %>
-                        <a href="<%- courseLink %>" className="ca-catalog-button button">
+                        {likeButton}
+                        {addButton}
+                        <div onClick={this._onCourseClick}
+                            className="ca-catalog-button button">
                             View Details
-                        </a>
+                        </div>
                     </div>
                     <div className="extra-info freight-sans-pro">
-                        <% if (course.get('catalogSatisfiesReq')) { %>
-                            <p className="info"><strong>Satisfies Requirement:</strong> <%= course.get('catalogSatisfiesReq') %></p>
-                        <% } %>
-                        <% if (course.get('catalogBreadth')) { %>
-                            <p className="info"><strong>Breadth Requirement:</strong> <%= course.get('catalogBreadth') %></p>
-                        <% } %>
-                        <% if (course.get('catalogDistr')) { %>
-                            <p className="info"><strong>Distribution Category:</strong> <%= course.get('catalogDistr') %></p>
-                        <% } %>
+                        {extraInfo}
                     </div>
                 </div>
             </div>
         );
+    },
+
+    /**
+     * Event handler for clicking on a subject link.
+     */
+    _onSubjectClick: function() {
+        var course = this.props.course;
+
+        ModalActions.catalog({
+            type: 'subject',
+            title: ScheduleStore.getSubjectName(course.subject),
+            subject: course.subject
+        });
+    },
+
+    /**
+     * Event handler for clicking on a course link.
+     */
+    _onCourseClick: function() {
+        var course = this.props.course;
+
+        ModalActions.catalog({
+            type: 'course',
+            title: course.subject + ' ' + course.catalogNbr,
+            subject: course.subject,
+            number: course.catalogNbr
+        });
     }
 });
 

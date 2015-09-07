@@ -125,23 +125,26 @@ function catalogForward() {
 function catalogReset() {
     _catalogStack = [];
     _catalogStackForward = [];
-    setCatalogPage('subjects');
+    setCatalogPage({
+        type: 'subjects',
+        title: 'All Subjects'
+    });
 }
 
 /**
  * Set the catalog's page.
  */
-function setCatalogPage(link) {
+function setCatalogPage(page) {
     var currentPage = _.last(_catalogStack);
 
-    link = '/catalog/' + ScheduleStore.getSemester().strm + '/' + link;
+    page.strm = ScheduleStore.getSemester().strm;
 
-    // Skip if link is already selected.
-    if (currentPage === link)
+    // Skip if page is already in view.
+    if (_.isEqual(currentPage, page))
         return;
 
     _catalogStackForward = [];
-    _catalogStack.push(link);
+    _catalogStack.push(page);
 }
 
 /**

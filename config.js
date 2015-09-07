@@ -44,12 +44,10 @@ var config = {
         "SU15": {
             "slug": "SU15",
             "strm": 2594,
-            "descr": "Summer 2015"
         },
         "FA15": {
             "slug": "FA15",
             "strm": 2608,
-            "descr": "Fall 2015"
         }
     },
     "admins": [

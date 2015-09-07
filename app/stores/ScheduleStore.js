@@ -25,6 +25,7 @@ var _courses = {},
     _events = {},
     _semester = {},
     _data = {},
+    _allSemesters = {},
     _colors = ['blue', 'purple', 'light-blue', 'red', 'green', 'yellow',
         'pink'],
     _dayMap = {
@@ -50,14 +51,25 @@ if (process.env.NODE_ENV === 'browserify')
  * Generate the render context on server side.
  */
 else
-    var reset = function(req) {
-        var snapshot = {};
+    var reset = function(req, semesters) {
+        var snapshot = {},
+            async = require('async');
+
+        _allSemesters = config.semesters;
+
+        _.each(_allSemesters, function(semester) {
+            var match = _.find(semesters, function(s) {
+                return s.slug == semester.slug;
+            });
+
+            semester.subjects = JSON.parse(match.subject_list);
+        });
 
         // Mount the course selection data.
         if (req.isAuthenticated())
             snapshot._data = req.user.getSelectionData();
         else
-            snapshot._data = _.mapObject(config.semesters, function(s) {
+            snapshot._data = _.mapObject(_allSemesters, function(s) {
                 return {
                     courses: {},
                     events: {}
@@ -66,11 +78,11 @@ else
 
         // Use a cookie set semester if it is set.
         if (req.cookies.semester_slug &&
-            config.semesters[req.cookies.semester_slug])
-            snapshot._semester = config.semesters[req.cookies.semester_slug];
+            _allSemesters[req.cookies.semester_slug])
+            snapshot._semester = _allSemesters[req.cookies.semester_slug];
         // Or use the semester specified in config.
         else
-            snapshot._semester = config.semesters[config.semester];
+            snapshot._semester = _allSemesters[config.semester];
 
         restore(snapshot);
     };
@@ -85,7 +97,8 @@ function snapshot() {
 
     return {
         _data: _data,
-        _semester: _semester
+        _semester: _semester,
+        _allSemesters: _allSemesters
     };
 }
 
@@ -96,6 +109,7 @@ function snapshot() {
 function restore(snapshot) {
     _data = snapshot._data;
     _semester = snapshot._semester;
+    _allSemesters = snapshot._allSemesters;
     _courses = _data[_semester.slug].courses;
     _events = _data[_semester.slug].events;
 }
@@ -146,6 +160,21 @@ function remove(key) {
         requestEvent('delete', _events[key]);
         delete _events[key];
     }
+}
+
+/**
+ * Remove a course from the schedule by the course object.
+ * @param {string} course Course object to remove.
+ */
+function removeCourse(course) {
+    var match = _.find(_.values(_courses), function(c) {
+        return course.catalogNbr === c.raw.catalogNbr &&
+            course.subject === c.raw.subject;
+    });
+
+    // Remove course if it was found in _courses.
+    if (match)
+        remove(match.selection.key);
 }
 
 /**
@@ -254,7 +283,7 @@ function changeSemester(semester) {
     if (semester === _semester.slug)
         return;
 
-    var semesterExists = _.find(_.values(config.semesters), function(s) {
+    var semesterExists = _.find(_.values(_allSemesters), function(s) {
         return s.slug === semester.slug;
     });
 
@@ -1036,6 +1065,13 @@ function clear() {
 
 var ScheduleStore = assign({}, EventEmitter.prototype, {
     /**
+     * Determines if course already has been added to the schedule.
+     * @param {object} course Course to check against the ScheduleStore.
+     * @return {boolean} true if the course exists already, false if not.
+     */
+    exists: exists,
+
+    /**
      * Get the day map that represents the possible day options in the pattern
      * attribute of all meetings options.
      */
@@ -1089,7 +1125,7 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @return {array} List of all possible semester objects.
      */
     getSemesters: function() {
-        return _.values(config.semesters);
+        return _.values(_allSemesters);
     },
 
     /**
@@ -1128,6 +1164,17 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
 
         return getSectionsOfType(key, sectionType,
             isPrimary ? [getSelectedGroup(key)] : false);
+    },
+
+    /**
+     * Get the formal name of a subject.
+     * @param {string} subject Subject to get the full name of.
+     * @param {string} Formal name of the subject.
+     */
+    getSubjectName: function(subject) {
+        return _.find(_semester.subjects, function(s) {
+            return s.value == subject;
+        }).descr;
     },
 
     /**
@@ -1303,6 +1350,11 @@ AppDispatcher.register(function(action) {
             ScheduleStore.emitChange();
             break;
 
+        case ScheduleConstants.REMOVE_COURSE:
+            removeCourse(action.course);
+            ScheduleStore.emitChange();
+            break;
+
         case ScheduleConstants.TOGGLE:
             toggle(action.key, action.active);
             ScheduleStore.emitChange();
@@ -1333,22 +1385,22 @@ AppDispatcher.register(function(action) {
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.CHANGE_EVENT_NAME:
+        case ScheduleConstants.CHANGE_EVENT_NAME:
             changeEventName(action.key, action.name);
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.CHANGE_EVENT_LOCATION:
+        case ScheduleConstants.CHANGE_EVENT_LOCATION:
             changeEventLocation(action.key, action.location);
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.CHANGE_EVENT_TIME:
+        case ScheduleConstants.CHANGE_EVENT_TIME:
             changeEventTime(action.key, action.time, action.isEndTime);
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.TOGGLE_EVENT_DAY:
+        case ScheduleConstants.TOGGLE_EVENT_DAY:
             toggleEventDay(action.key, action.daySlug, action.selected);
             ScheduleStore.emitChange();
             break;

@@ -34,17 +34,9 @@ var catalogrouter = function(app) {
             if (!s)
                 return res.send('An error occured.');
 
-            var subjects = JSON.parse(s.get('subject_list')),
-                reactOutput = React.renderToString(CACatalogSubjects({
-                    subjects: subjects
-                }));
+            var subjects = JSON.parse(s.get('subject_list'));
 
-            res.render('catalog', {
-                title: 'All Subjects',
-                reactOutput: reactOutput,
-                contextString: '',
-                script: false
-            });
+            res.send(subjects);
         });
     });
 
@@ -55,45 +47,19 @@ var catalogrouter = function(app) {
         var strm = req.params.strm,
             subject = req.params.subject.toUpperCase();
 
-        async.parallel([
-            // Retrieve all courses for the subject.
-            function(callback) {
-                new models.course().where('strm', strm)
-                    .where('subject', subject)
-                    .fetchAll({
-                        withRelated: ['groups.sections.meetings.professors']
-                    })
-                    .then(function(courses) {
-                        // Skip if no courses were found.
-                        if (!courses.length)
-                            callback('No courses were found');
+        // Retrieve all courses for the subject.
+        new models.course().where('strm', strm)
+            .where('subject', subject)
+            .fetchAll({
+                withRelated: ['groups.sections.meetings.professors']
+            })
+            .then(function(courses) {
+                // Skip if no courses were found.
+                if (!courses.length)
+                    return res.send('error');
 
-                        callback(null, courses);
-                    });
-            },
-            // Retrieve the formal name of the subject.
-            function(callback) {
-                new models.semester({ strm: strm }).fetch()
-                    .then(function(semester) {
-                    // Find the desired subject element.
-                    var formalName =
-                        _.find(
-                            JSON.parse(semester.get('subject_list')),
-                            function(s) { return s.value === subject; }
-                        ).descrformal;
-
-                    callback(null, formalName);
-                });
-            }
-        ], function(err, result) {
-            if (err)
-                return res.send('An error occured. ' + err);
-
-            var courses = result[0],
-                formalName = result[1];
-
-            catalogListResponse(req, res, courses, formalName);
-        });
+                catalogListResponse(req, res, courses);
+            });
     });
 
     // Route for the page of a single course
@@ -108,27 +74,20 @@ var catalogrouter = function(app) {
                 if (!c)
                     return res.send('An error occured.');
 
+                // Fetch the related comments.
                 c.comments().fetch({ withRelated: ['upvotes'] })
                     .then(function(comments) {
 
-                    comments = comments.toJSON();
+                    c = c.toJSON();
+                    c.comments = comments.toJSON();
 
+                    // Fetch the course's likes.
                     knex.table('likes')
-                        .where('crseId_subject', c.get('crseId') + '_' +
-                            c.get('subject'))
-                        .select()
-                        .then(function(like) {
-                            res.render('catalog', {
-                                title: '(' + subject + ' ' + number + ') ' +
-                                    c.get('titleLong'),
-                                type: 'course',
-                                course: c,
-                                context: [c.toJSON()],
-                                comments: comments,
-                                like: like,
-                                user: req.user ? req.user.id : false,
-                                _: _
-                            });
+                        .where('crseId_subject', c.crseId + '_' + c.subject)
+                        .select('userId')
+                        .then(function(likes) {
+                            c.likes = likes;
+                            res.send(c);
                         });
                 });
             });
@@ -192,9 +151,8 @@ var catalogrouter = function(app) {
      * @param {object} req Request object for the process.
      * @param {object} res Response object for the process.
      * @param {object} courses Collection of course models.
-     * @param {string} title Title of the page.
      */
-    function catalogListResponse(req, res, courses, title) {
+    function catalogListResponse(req, res, courses) {
         courses = courses.toJSON();
 
         var tagList = _.map(courses, function(course) {
@@ -204,7 +162,7 @@ var catalogrouter = function(app) {
         // Retrieve all likes associated with the courses.
         knex('likes')
             .whereIn('crseId_subject', tagList)
-            .select()
+            .select('userId', 'crseId_subject')
             .then(function(likes) {
                 // Attach likes to each course object.
                 _.each(courses, function(course) {
@@ -214,19 +172,16 @@ var catalogrouter = function(app) {
                             course.crseId + '_' + course.subject;
                     });
 
+                    // Slim the likes.
+                    likesArray = _.map(likesArray, function(like) {
+                        delete like.crseId_subject;
+                        return like;
+                    });
+
                     course.likes = likesArray;
                 });
 
-                var reactOutput = React.renderToString(CACatalogList({
-                    courses: courses
-                }));
-
-                res.render('catalog', {
-                    title: 'All Subjects',
-                    reactOutput: reactOutput,
-                    contextString: '',
-                    script: false
-                });
+                res.send(courses);
             });
     }
 };
