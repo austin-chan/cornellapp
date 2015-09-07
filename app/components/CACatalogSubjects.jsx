@@ -100,11 +100,7 @@ var CACatalogSubjects = React.createClass({
      * @param {string} formalName Full name of the subject.
      */
     _onSubjectClick: function(subject, formalName) {
-        ModalActions.catalog({
-            type: 'subject',
-            title: formalName,
-            subject: subject
-        });
+        ModalActions.catalogSubject(subject);
     }
 });
 

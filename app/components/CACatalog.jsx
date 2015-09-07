@@ -19,6 +19,7 @@ var React = require('react/addons'),
     CACatalogSubjects = require('./CACatalogSubjects'),
     CACatalogList = require('./CACatalogList'),
     CACatalogCourse = require('./CACatalogCourse'),
+    CACatalogSearch = require('./CACatalogSearch'),
     classNames = require('classnames'),
     strutil = require('../utils/strutil'),
     _ = require('underscore');
@@ -36,16 +37,20 @@ var CACatalog = React.createClass({
      * @return {object} Renderable object for the catalog content.
      */
     renderContent: function() {
-        var page = this.props.page;
+        var page = this.props.page,
+            listTypes = ['subject', 'most-liked', 'random'];
 
         if (page.type === 'subjects')
             return <CACatalogSubjects page={page} />;
 
-        else if (_.contains(['subject'], page.type))
-            return <CACatalogList page={page} />;
-
         else if (page.type == 'course')
             return <CACatalogCourse page={page} />;
+
+        else if (page.type == 'search')
+            return <CACatalogSearch page={page} />;
+
+        else if (_.contains(listTypes, page.type))
+            return <CACatalogList page={page} />;
     },
 
     render: function() {
@@ -125,7 +130,7 @@ var CACatalog = React.createClass({
      * Event handler for clicking on Most Liked button.
      */
     _onMostLiked: function() {
-        ModalActions.catalog('most-liked');
+        ModalActions.catalogMostLiked();
     },
 
     /**
@@ -139,7 +144,7 @@ var CACatalog = React.createClass({
         if (this.props.page === randomLink)
             $iframe.attr('src', $iframe.attr('src'));
         else
-            ModalActions.catalog('random');
+            ModalActions.catalogRandom();
 
     },
 
@@ -149,14 +154,14 @@ var CACatalog = React.createClass({
     _onSearchDown: function(e) {
         var value = React.findDOMNode(this.refs.search).value;
         if (e.key === 'Enter' && $.trim(value).length)
-            ModalActions.catalog('search/' + value);
+            ModalActions.catalogSearch(value);
     },
 
     /**
      * Event handler for clicking on All Subjects button.
      */
     _onAllSubjects: function() {
-        ModalActions.catalog('subjects');
+        ModalActions.catalogSubjects();
     },
 
     /**

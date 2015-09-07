@@ -58,7 +58,7 @@ var catalogrouter = function(app) {
                 if (!courses.length)
                     return res.send('error');
 
-                catalogListResponse(req, res, courses);
+                listResponse(res, courses);
             });
     });
 
@@ -70,26 +70,11 @@ var catalogrouter = function(app) {
 
         new models.course({ strm: strm, subject: subject, catalogNbr: number })
             .fetch({ withRelated: ['groups.sections.meetings.professors'] })
-            .then(function(c) {
-                if (!c)
+            .then(function(course) {
+                if (!course)
                     return res.send('An error occured.');
 
-                // Fetch the related comments.
-                c.comments().fetch({ withRelated: ['upvotes'] })
-                    .then(function(comments) {
-
-                    c = c.toJSON();
-                    c.comments = comments.toJSON();
-
-                    // Fetch the course's likes.
-                    knex.table('likes')
-                        .where('crseId_subject', c.crseId + '_' + c.subject)
-                        .select('userId')
-                        .then(function(likes) {
-                            c.likes = likes;
-                            res.send(c);
-                        });
-                });
+                singleResponse(res, course);
             });
     });
 
@@ -101,8 +86,12 @@ var catalogrouter = function(app) {
         };
 
         apiutil.searchCourses(p, 20, function(err, courses) {
-            aggregateResponse(req, res, courses, '"' + req.params.term + '"',
-                'department');
+            if (courses.size() > 1)
+                listResponse(res, courses);
+            else if (courses.size() === 1)
+                singleResponse(res, courses.at(0));
+            else
+                res.send([]);
         });
     });
 
@@ -111,8 +100,7 @@ var catalogrouter = function(app) {
         new models.course().query(function(qb) {
             qb.orderByRaw('RAND()').limit(20);
         }).fetchAll().then(function(courses) {
-            aggregateResponse(req, res, courses, 'Random Courses',
-                'department');
+            listResponse(res, courses);
         });
     });
 
@@ -138,8 +126,7 @@ var catalogrouter = function(app) {
                 courseQ.fetchAll({ withRelated:
                     ['groups.sections.meetings.professors'] })
                 .then(function(courses) {
-                    aggregateResponse(req, res, courses, 'Most Liked',
-                        'department');
+                    listResponse(res, courses);
                 });
             });
 
@@ -148,11 +135,10 @@ var catalogrouter = function(app) {
     /**
      * Retrieve all likes information for the courses and then prepare the data
      * to deliver to the client side.
-     * @param {object} req Request object for the process.
      * @param {object} res Response object for the process.
      * @param {object} courses Collection of course models.
      */
-    function catalogListResponse(req, res, courses) {
+    function listResponse(res, courses) {
         courses = courses.toJSON();
 
         var tagList = _.map(courses, function(course) {
@@ -183,6 +169,43 @@ var catalogrouter = function(app) {
 
                 res.send(courses);
             });
+    }
+
+    /**
+     * Retrieve all likes and comments information for a course and then prepare
+     * the data to deliver to the client side.
+     * @param {object} res Response object for the process.
+     * @param {object} course Course model to respond with.
+     */
+    function singleResponse(res, course) {
+        // Fetch the related comments.
+        course.comments().fetch({ withRelated: ['upvotes'] })
+            .then(function(comments) {
+
+            course = course.toJSON();
+            course.comments = sortComments(comments.toJSON());
+
+            // Fetch the course's likes.
+            knex.table('likes')
+                .where('crseId_subject', course.crseId + '_' + course.subject)
+                .select('userId')
+                .then(function(likes) {
+                    course.likes = likes;
+                    res.send(course);
+                });
+        });
+    }
+
+    /**
+     * Sort an array of comments by number of likes descending, from most likes
+     * down to fewest likes.
+     * @param {array} comments Array of comments to sort.
+     * @return {array} Sorted array of comments.
+     */
+    function sortComments(comments) {
+        return _.sortBy(comments, function(comment) {
+            return -1 * comment.upvotes.length;
+        });
     }
 };
 

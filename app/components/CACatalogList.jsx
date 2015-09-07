@@ -17,7 +17,8 @@ var React = require('react/addons'),
 
 var CACatalogList = React.createClass({
     propTypes: {
-        page: React.PropTypes.object.isRequired
+        page: React.PropTypes.object,
+        courses: React.PropTypes.array
     },
 
     getInitialState: function() {
@@ -26,25 +27,47 @@ var CACatalogList = React.createClass({
         };
     },
 
-    componentDidMount: function() {
+    // Trigger a page change if the page was changed.
+    componentDidUpdate: function(prevProps, __) {
+        // Skip if the the props did not change.
+        if (_.isEqual(prevProps, this.props))
+            return;
+
+        this.setState({ courses: false });
         this.load();
+    },
+
+    componentDidMount: function() {
+        // Load if no initial courses array was passed on initialization.
+        if (!this.props.courses)
+            this.load();
+
+        // Initialize with props courses data.
+        else
+            this.setState({ courses: this.props.courses });
     },
 
     /**
      * Load the rendering data from the backend.
      */
     load: function() {
-        if (this.props.page.type === 'subject') {
-            $.ajax({
-                url: '/catalog/' + this.props.page.strm + '/subject/' +
-                    this.props.page.subject,
-                success: _.bind(function(data) {
-                    this.setState({
-                        courses: data
-                    });
-                }, this)
-            });
-        }
+        var url = '/catalog/' + this.props.page.strm;
+
+        if (this.props.page.type === 'subject')
+            url += '/subject/' + this.props.page.subject;
+
+        else if(this.props.page.type === 'random')
+            url += '/random';
+
+        else if(this.props.page.type === 'most-liked')
+            url += '/most-liked';
+
+        $.ajax({
+            url: url,
+            success: _.bind(function(data) {
+                this.setState({ courses: data });
+            }, this)
+        });
     },
 
     /**
@@ -61,12 +84,13 @@ var CACatalogList = React.createClass({
 
     render: function() {
         var courses = this.state.courses,
-            itemList = [];
+            itemList = [],
+            emptyMessage = null;
 
-        for (var c = 0; c < courses.length; c++) {
-            var course = courses[c];
+        // Iterate through all of the courses in the list.
+        _.each(courses, function(course) {
             itemList.push(this.renderCourse(course));
-        }
+        }, this);
 
         return (
             <div className="ca-catalog-list">

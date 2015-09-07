@@ -55,7 +55,7 @@ var CACatalogGroup = React.createClass({
 
             _.each(componentsRequired, function(c) {
                 chooseLine += ' one ' + this.componentMap[c];
-            });
+            }, this);
             chooseLine += '. ';
 
             if (componentsOptional.length) {
@@ -176,12 +176,7 @@ var CACatalogGroup = React.createClass({
      * @param {number} number Catalog number of the course.
      */
     _onCourseClick: function(subject, number) {
-        ModalActions.catalog({
-            type: 'course',
-            title: subject + ' ' + number,
-            subject: subject,
-            number: number
-        });
+        ModalActions.catalogCourse(subject, number);
     }
 });
 

@@ -222,9 +222,7 @@ var CABasketCourse = React.createClass({
      */
     _onCatalogPage: function() {
         var course = this.props.course.raw;
-        ModalActions.catalog(
-            'course/' + course.subject + '/' + course.catalogNbr
-        );
+        ModalActions.catalogCourse(course.subject, course.catalogNbr);
     },
 
     /**

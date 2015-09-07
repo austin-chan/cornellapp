@@ -115,13 +115,7 @@ var CACatalogItem = React.createClass({
      * Event handler for clicking on a subject link.
      */
     _onSubjectClick: function() {
-        var course = this.props.course;
-
-        ModalActions.catalog({
-            type: 'subject',
-            title: ScheduleStore.getSubjectName(course.subject),
-            subject: course.subject
-        });
+        ModalActions.catalogSubject(this.props.course.subject);
     },
 
     /**
@@ -129,13 +123,7 @@ var CACatalogItem = React.createClass({
      */
     _onCourseClick: function() {
         var course = this.props.course;
-
-        ModalActions.catalog({
-            type: 'course',
-            title: course.subject + ' ' + course.catalogNbr,
-            subject: course.subject,
-            number: course.catalogNbr
-        });
+        ModalActions.catalogCourse(course.subject, course.catalogNbr);
     }
 });
 

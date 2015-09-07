@@ -14,6 +14,7 @@
 var React = require('react/addons'),
     ScheduleStore = require('../stores/ScheduleStore'),
     ScheduleActions = require('../actions/ScheduleActions'),
+    ModalActions = require('../actions/ModalActions'),
     CACatalogLike = require('./CACatalogLike'),
     CACatalogAdd = require('./CACatalogAdd'),
     CACatalogGroup = require('./CACatalogGroup'),
@@ -23,7 +24,8 @@ var React = require('react/addons'),
 
 var CACatalogCourse = React.createClass({
     propTypes: {
-        page: React.PropTypes.object.isRequired
+        page: React.PropTypes.object,
+        course: React.PropTypes.object
     },
 
     getInitialState: function() {
@@ -31,11 +33,17 @@ var CACatalogCourse = React.createClass({
     },
 
     componentDidMount: function() {
-        this.load();
+        // Load if no initial courses array was passed on initialization.
+        if (!this.props.course)
+            this.load();
+
+        // Initialize with props courses data.
+        else
+            this.setState({ course: this.props.course });
     },
 
     componentDidUpdate: function(prevProps, __) {
-        // Skip if the state changed, not the props.
+        // Skip if the the props did not change.
         if (_.isEqual(prevProps, this.props))
             return;
 
@@ -159,7 +167,7 @@ var CACatalogCourse = React.createClass({
             groupList.push(
                 <CACatalogGroup key={group.id} group={group} />
             );
-        });
+        }, this);
 
         return (
             <div className="enrollment course-section">
@@ -229,13 +237,7 @@ var CACatalogCourse = React.createClass({
      * Event handler for clicking on a subject link.
      */
     _onSubjectClick: function() {
-        var course = this.state.course;
-
-        ModalActions.catalog({
-            type: 'subject',
-            title: ScheduleStore.getSubjectName(course.subject),
-            subject: course.subject
-        });
+        ModalActions.catalogSubject(this.state.course.subject);
     },
 });
 
