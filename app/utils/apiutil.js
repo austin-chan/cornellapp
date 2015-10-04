@@ -214,7 +214,7 @@ module.exports = function(models) {
 		var pageres = new Pageres()
 		    .src('localhost:' +
 		    	(process.env.NODE_ENV === 'production' ? 8081 : 3000) +
-		    	'/schedule/' + scheduleId, ['1501x2350']);
+		    	'/schedule/' + scheduleId + '?screenshot=true', ['1501x2350']);
 
 		pageres.run(function (err, items) {
 			var buffer = new Buffer('');
