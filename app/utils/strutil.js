@@ -13,6 +13,29 @@
 var m = {};
 
 /**
+ * Determine if a string contains a letter.
+ * @param {string} str String to check for letters.
+ * @return {boolean} true if the string contains at least one letter or false if
+ *      the string does not.
+ */
+m.containsLetters = function(str) {
+    return str.match(/[a-z]/i);
+}
+
+/**
+ * Find the string in between the first occurrences of two string.
+ * @param {string} str String to retrieve the substring from.
+ * @param {string} first First string to retrieve in between.
+ * @param {string} second Second string to retrieve in between.
+ * @return {string} Substring in between the two strings.
+ */
+m.stringInBetween = function(str, first, second) {
+    return str.substring(
+        str.lastIndexOf(first) + first.length,
+        str.lastIndexOf(second));
+};
+
+/**
  * Format a time string to render as a label in the instance. Example:
  * "04:30PM" returns "4:30" or "4:30 AM".
  * @param {string} time Time to format.

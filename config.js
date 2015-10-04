@@ -31,7 +31,13 @@ var config = {
     },
     "aws": {
         accessKeyId: process.env.AWS_ACCESSKEYID,
-        secretAccessKey: process.env.AWS_SECRETACCESSKEY
+        secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+        s3Bucket: process.env.AWS_S3BUCKET
+    },
+    "twilio": {
+        'accountSID': process.env.TWILIO_ACCOUNTSID,
+        'authToken': process.env.TWILIO_AUTHTOKEN,
+        'number': process.env.TWILIO_PHONENUMBER
     },
     "mail": {
         fromAddress: process.env.MAIL_FROMADDRESS
@@ -41,10 +47,6 @@ var config = {
     },
     "semester": "FA15",
     "semesters": {
-        "SU15": {
-            "slug": "SU15",
-            "strm": 2594,
-        },
         "FA15": {
             "slug": "FA15",
             "strm": 2608,

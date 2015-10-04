@@ -16,12 +16,13 @@ jsx --watch react/ react-built/
 TODO
 Search for a course with slash /
 Search for chi gong
-Write comments
 Sync calendars
 Auto screenshot
-Search Redo
+Compare Friend
+Search algorithm
 Handling changed course data
-Review on top
+No Enrollment Class Numbers to Show
+Conflict Hide - Not Re-expanding
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups

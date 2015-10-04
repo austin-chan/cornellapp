@@ -20,8 +20,3 @@ require('timeago');
 
 // Initialize global render context.
 global.context = JSON.parse(document.getElementById('context').textContent);
-
-// Initialize timeago plugin.
-$(document).ready(function() {
-    $(".timeago").timeago();
-});

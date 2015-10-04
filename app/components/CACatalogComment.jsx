@@ -142,6 +142,10 @@ var CACatalogComment = React.createClass({
      * Event handler for upvoting and unvoting a comment.
      */
     _onUpvote: function() {
+        // Skip if not logged in.
+        if (!UserStore.isLoggedIn())
+            return UserStore.guestNotice('upvote a comment');
+
         var comment = this.props.comment,
             upvotes = comment.upvotes,
             userId = UserStore.getUser().id;

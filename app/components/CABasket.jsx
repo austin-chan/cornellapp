@@ -29,8 +29,7 @@ var CABasket = React.createClass({
         var entryItems = [],
             entries = this.props.entries,
             rootClass = classNames('ca-basket',
-                { empty: !_.size(this.props.entries) }),
-            review;
+                { empty: !_.size(this.props.entries) });
 
         // Loop through all entries.
         _.each(entries, function(entry) {
@@ -44,18 +43,16 @@ var CABasket = React.createClass({
                     <CABasketEvent key={entry.key}
                         event={entry} />
                 );
-
         });
-
-        if (entryItems.length)
-            review = <CABasketReview entries={this.props.entries} />;
 
         return (
             <div className={rootClass}>
-                <CABasketAdder semester={this.props.semester} />
+                <div className="basket-head">
+                    <CABasketAdder semester={this.props.semester} />
+                    <CABasketReview entries={this.props.entries} />
+                </div>
                 <p className="empty-label">No Courses Added</p>
                 {entryItems}
-                {review}
             </div>
         );
     }

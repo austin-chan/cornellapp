@@ -16,6 +16,7 @@ var m = {};
 var models = function(bookshelf) {
 	m.knex = bookshelf.knex;
 	m.user = require('./user.js')(bookshelf, m);
+	m.schedule = require('./schedule.js')(bookshelf, m);
 	m.selection = require('./selection.js')(bookshelf, m);
 	m.event = require('./event.js')(bookshelf, m);
 	m.comment = require('./comment.js')(bookshelf, m);

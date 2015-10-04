@@ -12,6 +12,7 @@
 
 var strutil = require('../utils/strutil'),
 	cornellutil = require('../utils/cornellutil'),
+	ScheduleStore = require('../stores/ScheduleStore'),
 	config = require('../../config'),
 	async = require('async'),
 	_ = require('underscore');
@@ -195,6 +196,188 @@ var apirouter = function(app, blockValidationErrors) {
 		knex('upvotes').where('userId', req.user.id)
 			.where('comment_id', commentid).del().then(function() {
 				res.send('ok');
+			});
+	});
+
+	// Route for rating a course's difficulty.
+	app.post('/api/rating/:crseid/:value', authorize, function(req, res) {
+		var crseId = req.params.crseid;
+			value = parseInt(req.params.value);
+
+		// Check if user already has rated the course.
+		knex('ratings')
+			.where('crseId', crseId)
+			.where('userId', req.user.id)
+			.limit(1)
+			.select()
+			.then(function(rating) {
+				// Rating exists and only need to update the rating.
+				if (rating.length) {
+					if (rating[0].value != value) {
+						knex('ratings')
+							.where('crseId', crseId)
+							.where('userId', req.user.id)
+							.update({
+								value: value
+							})
+							.then(function() {
+								res.send('ok');
+							});
+					} else {
+						res.send('ok');
+					}
+
+				// Or create a new rating object.
+				} else {
+					knex('ratings')
+						.insert({
+							crseId: crseId,
+							userId: req.user.id,
+							value: value
+						})
+						.then(function() {
+							res.send('ok');
+						});
+				}
+			});
+	});
+
+	// Route to generate a schedule for a semester.
+	app.post('/api/schedule/:semester', authorize, function(req, res) {
+		var semester = req.params.semester;
+
+		// Check if one exists already.
+		knex('schedules')
+			.where('semester', semester)
+			.where('userId', req.user.id)
+			.limit(1)
+			.select()
+			.then(function(schedules) {
+				if (schedules.length) {
+					// Return it if it exists already.
+					res.send(schedules[0]);
+				} else {
+					var insertObject = {
+						id: models.schedule.generateId(),
+						semester: semester,
+						userId: req.user.id
+					};
+
+					// Create a new schedule if doesn't exist already.
+					knex('schedules')
+						.insert(insertObject)
+						.returning(['id', 'semester'])
+						.then(function(schedule) {
+							res.send(insertObject);
+						});
+				}
+			});
+	});
+
+	app.post('/api/text-screenshot/:scheduleId', authorize, function(req, res) {
+		var scheduleId = req.params.scheduleId,
+			number = req.body.number;
+
+		// Require a scheduleId parameter.
+		if (!scheduleId)
+			return res.send({
+				error: 'The specified schedule could not be found.'
+			});
+
+		// Require a number parameter.
+		if (!number)
+			return res.send({
+				error: 'The phone number provided is invalid.'
+			});
+
+		// Verify that schedule exists.
+		knex('schedules')
+			.where('id', scheduleId)
+			.limit(1)
+			.select()
+			.then(function(schedules) {
+				// Verify that the schedule belongs to the user.
+				if (!schedules.length ||
+					schedules[0].userId != req.user.get('id')) {
+
+					res.send({
+						error: 'The specified schedule could not be found.'
+					});
+
+				} else {
+					var schedule = schedules[0];
+
+					apiutil.textScreenshot(scheduleId, number, req.user,
+						function(err) {
+						if (err)
+							return res.send({
+								error: err
+							});
+						res.send({});
+					});
+				}
+			});
+	});
+
+	// Route for rendering a schedule and a screenshot.
+	app.get('/schedule/:id', function(req, res) {
+		var id = req.params.id,
+			screenshotMode = !!req.query.screenshot,
+			React = require('react/addons'),
+			CASchedule =
+				React.createFactory(require('../components/CASchedule'));
+
+		// Retrieve the schedule
+		knex('schedules')
+			.where('id', id)
+			.limit(1)
+			.select()
+			.then(function(schedules) {
+				if (!schedules.length) {
+					res.send('An error occured');
+
+				} else {
+					var schedule = schedules[0];
+
+					new models.user({ id: schedule.userId }).fetch({
+						withRelated: [
+						'selections.course.groups.sections.meetings.professors',
+						'events']
+					}).then(function(user) {
+						if (!user)
+							return res.send('An error occured');
+
+						ScheduleStore.reset(user, [], schedule.semester);
+
+						var output = React.renderToString(CASchedule({
+							entries: ScheduleStore.getEntries(),
+							large: screenshotMode
+						}));
+
+						// Render the screenshot.
+						if (screenshotMode) {
+							res.render('screenshot', {
+								reactOutput: output
+							});
+
+						// Render the schedule.
+						} else {
+							knex('semesters')
+								.where('slug', schedule.semester)
+								.limit(1)
+								.select()
+								.then(function(semester) {
+									var semesterDescr = semester[0].descr;
+
+									res.render('schedule', {
+										reactOutput: output,
+										name: user.get('name'),
+										semester: semesterDescr
+									});
+								});
+						}
+					});
+				}
 			});
 	});
 

@@ -34,6 +34,23 @@ var user = function(bookshelf, models) {
             return this.hasMany(models.event, 'userId').query('where', 'strm',
                 'IN', strms);
         },
+        schedules: function() {
+            return this.hasMany(models.schedule, 'userId');
+        },
+        /**
+         * Generate a map containing all of the user's schedules, indexed by
+         * semester slug.
+         * @return {object} Map containing all of the user's schedules.
+         */
+        schedulesMap: function() {
+            var map = {};
+
+            this.related('schedules').each(function(schedule) {
+                map[schedule.get('semester')] = schedule.get('id');
+            });
+
+            return map;
+        },
 
         /**
          * Output user attributes without sensitive data as JSON.
@@ -68,7 +85,7 @@ var user = function(bookshelf, models) {
                 subject: '🍻 Please confirm your account',
                 text: this.get('name') + ',\n\nPlease verify that you ' +
                     'have signed up for an account on Cornellapp. ' +
-                    'This is the last step of completing account signup. If ' +
+                    'This is the last step of signing up for an account. If ' +
                     'you wish to continue, please follow the link below:\n\n' +
 
                     config.site.domain + '/activate-user/' +

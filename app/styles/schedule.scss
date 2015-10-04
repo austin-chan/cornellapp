@@ -1,0 +1,56 @@
+@import "reset";
+@import "bourbon/bourbon";
+@import "susy/susy";
+@import "variables";
+@import "bunt";
+@import "footer";
+
+body {
+    font-family: 'bunt';
+    background: #F3F3F4;
+
+    &.disable-scroll {
+        overflow: hidden;
+    }
+}
+
+@import "components/CAHeader";
+@import "components/CASchedule";
+@import "components/CAScheduleCourse";
+@import "components/CAScheduleEvent";
+@import "components/CAScheduleInstance";
+
+.ca-header {
+    text-align: center;
+    height: 64px;
+
+    .logo {
+        float: none;
+        font-size: 25px;
+        padding-top: 17px;
+    }
+
+    a {
+        color: white;
+        text-decoration: none;
+        @include transition(all .13s linear);
+
+        &:hover {
+            opacity: .7;
+        }
+    }
+}
+
+h3.title {
+    font-size: 20px;
+    color: #ABABAB;
+    text-align: center;
+    padding-top: 26px;
+}
+
+.ca-schedule {
+    width: 750.5px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+    @extend .cf;
+}

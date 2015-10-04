@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cornellapp</title>
+    <link href='/assets/css/schedule.css' rel="stylesheet">
+    <script src="//use.typekit.net/rfd1tkc.js"></script>
+    <script>try{Typekit.load();}catch(e){}</script>
+    <%- include('favicon') %>
+</head>
+<body>
+    <div id="cornell-app-mount">
+        <header class="ca-header">
+            <p class="logo museo-sans"><a href="/">Cornellapp</a></p>
+        </header>
+        <h3 class="title"><%= name %>'s <%= semester %> Schedule</h3>
+        <%- reactOutput %>
+    </div>
+    <%- include('footer') %>
+
+    <%- include('analytics') %>
+</body>
+</html>

@@ -64,6 +64,26 @@ var ModalActions = {
     },
 
     /**
+     * Activate the send schedule view panel.
+     */
+    sendSchedule: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.SEND_SCHEDULE
+        });
+    },
+
+    /**
+     * Change the name of the user.
+     * @param {string} name Name to change to.
+     */
+    addSchedule: function(schedule) {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.ADD_SCHEDULE,
+            schedule: schedule
+        });
+    },
+
+    /**
      * Open the course catalog.
      */
     catalog: function() {

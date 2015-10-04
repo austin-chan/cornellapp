@@ -1,0 +1,19 @@
+@import "reset";
+@import "bourbon/bourbon";
+@import "susy/susy";
+@import "variables";
+@import "bunt";
+
+body {
+    font-family: 'bunt';
+    background: #F3F3F4;
+
+    &.disable-scroll {
+        overflow: hidden;
+    }
+}
+
+@import "components/CASchedule";
+@import "components/CAScheduleCourse";
+@import "components/CAScheduleEvent";
+@import "components/CAScheduleInstance";

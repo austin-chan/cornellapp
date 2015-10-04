@@ -1,0 +1,35 @@
+.ca-modal-send-schedule {
+    min-height: 189px;
+
+    .share-link {
+        font-size: 16px;
+        color: #808080;
+        line-height: 19px;
+        margin-left: 2px;
+    }
+
+    .spin-loader.main {
+        left: 50%;
+        top: 50%;
+        position: absolute;
+        margin-left: -4px;
+        margin-top: -9px;
+    }
+
+    .button-group {
+        padding-bottom: 5px;
+    }
+
+    .error-message, .notice-message {
+        padding-top: 7px;
+        padding-bottom: 2px;
+        padding-left: 2px;
+        display: inline-block;
+        margin-left: 8px;
+    }
+
+    .notice-message {
+        color: #808080;
+        font-size: 12px;
+    }
+}

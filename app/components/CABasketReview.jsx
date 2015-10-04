@@ -17,6 +17,7 @@ var React = require('react/addons'),
     pluralize = require('pluralize'),
     strutil = require('../utils/strutil'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    UserStore = require('../stores/UserStore'),
     ScheduleActions = require('../actions/ScheduleActions'),
     ModalActions = require('../actions/ModalActions'),
     _ = require('underscore');
@@ -76,8 +77,12 @@ var CABasketReview = React.createClass({
                         Add Event
                     </button>
                     <button className="ca-simple-button"
-                        onClick={this._onEnrollement}>
+                        onClick={this._onEnrollment}>
                         Enrollment Information
+                    </button>
+                    <button className="ca-simple-button"
+                        onClick={this._onSendSchedule}>
+                        Send Schedule
                     </button>
                 </div>
             </div>
@@ -94,8 +99,19 @@ var CABasketReview = React.createClass({
     /**
      * Event handler for clicking on enrollment information button.
      */
-    _onEnrollement: function() {
+    _onEnrollment: function() {
         ModalActions.enrollment();
+    },
+
+    /**
+     * Event handler for clicking on share schedule button.
+     */
+    _onSendSchedule: function() {
+        // Skip if not logged in.
+        if (!UserStore.isLoggedIn())
+            return UserStore.guestNotice('send a schedule');
+
+        ModalActions.sendSchedule();
     }
 });
 

@@ -72,9 +72,9 @@ var CACatalogLike = React.createClass({
      * Event handler for liking and unliked the course.
      */
     _onLike: function() {
-        // Skip if the user is not logged in.
+        // Skip if not logged in.
         if (!UserStore.isLoggedIn())
-            return;
+            return UserStore.guestNotice('like a course');
 
         var course = this.props.course,
             likes = course.likes;

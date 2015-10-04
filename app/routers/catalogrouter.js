@@ -178,21 +178,43 @@ var catalogrouter = function(app) {
      * @param {object} course Course model to respond with.
      */
     function singleResponse(res, course) {
-        // Fetch the related comments.
-        course.comments().fetch({ withRelated: ['upvotes'] })
-            .then(function(comments) {
+        async.parallel([
+            function(callback) {
+                // Fetch the related comments.
+                course.comments().fetch({ withRelated: ['upvotes'] })
+                    .then(function(comments) {
+                        callback(null, comments);
+                    });
+            },
+            function(callback) {
+                // Fetch the course's likes.
+                knex.table('likes')
+                    .where('crseId_subject', course.get('crseId') + '_' +
+                        course.get('subject'))
+                    .select('userId')
+                    .then(function(likes) {
+                        callback(null, likes);
+                    });
+            },
+            function(callback) {
+                // Fetch the course's ratings.
+                knex.table('ratings')
+                    .where('crseId', course.get('crseId'))
+                    .select('userId', 'value')
+                    .then(function(ratings) {
+                        callback(null, ratings);
+                    });
+            }
+        ], function(err, result) {
+            var comments = result[0],
+                likes = result[1],
+                ratings = result[2];
 
             course = course.toJSON();
             course.comments = sortComments(comments.toJSON());
-
-            // Fetch the course's likes.
-            knex.table('likes')
-                .where('crseId_subject', course.crseId + '_' + course.subject)
-                .select('userId')
-                .then(function(likes) {
-                    course.likes = likes;
-                    res.send(course);
-                });
+            course.likes = likes;
+            course.ratings = ratings;
+            res.send(course);
         });
     }
 

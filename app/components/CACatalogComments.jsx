@@ -79,7 +79,7 @@ var CACatalogComments = React.createClass({
     _onCreate: function() {
         // Skip if not logged in.
         if (!UserStore.isLoggedIn())
-            return;
+            return UserStore.guestNotice('comment on a course');
 
         var course = this.props.course,
             comments = course.comments,

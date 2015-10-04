@@ -17,6 +17,7 @@ var React = require('react/addons'),
     CAModalActivation = require('./CAModalActivation'),
     CAModalAccount = require('./CAModalAccount'),
     CAModalEnrollment = require('./CAModalEnrollment'),
+    CAModalSendSchedule = require('./CAModalSendSchedule'),
     ModalActions = require('../actions/ModalActions'),
     classNames = require('classnames');
 
@@ -40,6 +41,9 @@ var CAModal = React.createClass({
             return <CAModalAccount name={this.props.data.name} />;
         else if (this.props.type === 'enrollment')
             return <CAModalEnrollment courses={this.props.data.courses} />;
+        else if (this.props.type === 'send-schedule')
+            return <CAModalSendSchedule
+                schedule={this.props.data.schedule} />;
     },
 
     render: function() {

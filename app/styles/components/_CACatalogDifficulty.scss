@@ -1,0 +1,170 @@
+.ca-catalog-difficulty {
+    $difficulty5: #C21200;
+    $difficulty4: #E3472D;
+    $difficulty3: #FA8025;
+    $difficulty2: #F0C342;
+    $difficulty1: #B8E845;
+    $difficulties: $difficulty1, $difficulty2, $difficulty3, $difficulty4, $difficulty5;
+    $row-height: 19px;
+    $row-width: 340px;
+    $row-gutter: 2px;
+
+    .headline {
+        font-size: 15px;
+        margin-top: 3px;
+        color: #717171;
+
+        p {
+            display: inline-block;
+        }
+
+        @for $i from 1 through length($difficulties) {
+            .main-headline.difficulty#{$i} {
+                color: nth($difficulties, $i);
+            }
+        }
+
+        .second-headline {
+            margin-left: 8px;
+            font-size: 11px;
+            color: #A4A4A4;
+        }
+    }
+
+    .graph {
+        vertical-align: top;
+        margin-top: 14px;
+        display: inline-block;
+    }
+
+    .labels {
+        vertical-align: top;
+        display: inline-block;
+        font-size: 13px;
+        width: 84px;
+        margin-bottom: 2px;
+        padding-top: 4px;
+        color: #A4A4A4;
+
+        .label {
+            height: $row-height;
+            margin-bottom: $row-gutter;
+        }
+    }
+
+    .bars {
+        vertical-align: top;
+        display: inline-block;
+
+        .bar {
+            width: 122px;
+            height: 19px;
+            height: $row-height;
+            margin-bottom: $row-gutter;
+            background: #EAEAEA;
+            border-radius: 1px;
+            overflow: hidden;
+
+            .fill {
+                height: 100%;
+            }
+
+            @for $i from 1 through length($difficulties) {
+                &.difficulty#{$i} .fill {
+                    background: nth($difficulties, $i);
+                }
+            }
+        }
+    }
+
+    .counts {
+        vertical-align: top;
+        display: inline-block;
+        padding-top: 4px;
+        font-size: 13px;
+        color: #A4A4A4;
+
+        .count {
+            height: $row-height;
+            width: 40px;
+            padding-left: 8px;
+            margin-bottom: $row-gutter;
+        }
+    }
+
+    .rate-section {
+        vertical-align: top;
+        padding-top: 14px;
+        display: inline-block;
+
+        h5 {
+            font-size: 15px;
+            color: #717171;
+        }
+
+        .slider {
+            position: relative;
+            height: 4px;
+            width: $row-width;
+            cursor: pointer;
+            background: #D6D6D6;
+            margin-top: 15px;
+            border-radius: 2px;
+
+            @for $i from 1 through length($difficulties) {
+                &.value#{$i} .handle {
+                    background: nth($difficulties, $i);
+                }
+            }
+        }
+
+        .handle {
+            height: 20px;
+            width: 20px;
+            border-radius: 20px;
+            top: -8px;
+            cursor: pointer;
+            @include transition(all .17s ease-out);
+
+            &:before {
+                content: '';
+                position: absolute;
+                background: rgba(255, 255, 255, .7);
+                height: 8px;
+                width: 8px;
+                border-radius: 8px;
+                top: 6px;
+                left: 6px;
+            }
+        }
+
+        .rating-labels {
+            color: #A4A4A4;
+            margin-top: 16px;
+            font-size: 0;
+        }
+
+        .rating-label {
+            display: inline-block;
+            width: 80px;
+            text-align: center;
+            font-size: 12px;
+
+            &:first-of-type, &:last-of-type {
+                width: 50px;
+            }
+
+            &:first-of-type {
+                text-align: left;
+            }
+
+            &:last-of-type {
+                text-align: right;
+            }
+        }
+
+        .submit {
+            margin-top: 15px;
+        }
+    }
+}

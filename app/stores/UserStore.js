@@ -13,13 +13,16 @@
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     UserConstants = require('../constants/UserConstants'),
+    config = require('../../config'),
     assign = require('object-assign'),
     moment = require('moment'),
     _ = require('underscore');
 
 var CHANGE_EVENT = 'user_change';
 
-var _user = false;
+var _user = false,
+    _schedules = {},
+    _domain = '';
 
 /**
  * Restore store data from the render context on client side.
@@ -31,14 +34,18 @@ if (process.env.NODE_ENV === 'browserify')
  * Generate the render context on server side.
  */
 else
-    var reset = function(req) {
+    var reset = function(user) {
         var snapshot = {};
 
-        if (req.isAuthenticated())
-            snapshot._user = req.user.cleanOutput();
-        else
+        if (user) {
+            snapshot._user = user.cleanOutput();
+            snapshot._schedules = user.schedulesMap();
+        } else {
             snapshot._user = false;
+            snapshot._schedules = {};
+        }
 
+        snapshot._domain = config.site.domain;
         restore(snapshot);
     };
 
@@ -48,7 +55,8 @@ else
  */
 function snapshot() {
     return {
-        _user: _user
+        _user: _user,
+        _domain: _domain,
     };
 }
 
@@ -58,6 +66,7 @@ function snapshot() {
  */
 function restore(snapshot) {
     _user = snapshot._user;
+    _domain = snapshot._domain;
 }
 
 /**
@@ -93,11 +102,38 @@ var UserStore = assign({}, EventEmitter.prototype, {
     },
 
     /**
+     * Get the domain of the site specified in the config
+     * (environment dependent).
+     * @return {string} Domain of the site as specified in the config.
+     */
+    getDomain: function() {
+        return _domain;
+    },
+
+    /**
+     * Get the state of the user to render.
+     * @return {object} State of the logged in user.
+     */
+    getUser: function() {
+        return _user;
+    },
+
+    /**
      * Determine if an user is logged in.
      * @return {boolean} If a user is logged in.
      */
     isLoggedIn: function() {
         return  _user !== false;
+    },
+
+    /**
+     * Render an alert to the user to notify them that they must be logged in
+     * to perform an action.
+     * @param {string} descrAction Description of the action that is being
+     *      performed.
+     */
+    guestNotice: function(descrAction) {
+        alert('You must be logged in to ' + descrAction + '.');
     },
 
     /**

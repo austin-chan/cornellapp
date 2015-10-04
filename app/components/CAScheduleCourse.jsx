@@ -21,6 +21,7 @@ var React = require('react/addons'),
 var CAScheduleCourse = React.createClass({
     propTypes: {
         course: React.PropTypes.object.isRequired,
+        large: React.PropTypes.bool.isRequired,
         conflictMap: React.PropTypes.array.isRequired,
         renderMap: React.PropTypes.array.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
@@ -99,6 +100,7 @@ var CAScheduleCourse = React.createClass({
             instances.push(
                 <CAScheduleInstance key={meetingIndex + day}
                     course={this.props.course}
+                    large={this.props.large}
                     section={section}
                     meeting={meeting}
                     conflicts={conflicts}

@@ -13,6 +13,7 @@
 module.exports = function(models) {
 	var async = require('async'),
 		strutil = require('./strutil'),
+		config = require('../../config'),
 		m = {};
 
 	/**
@@ -194,6 +195,80 @@ module.exports = function(models) {
 			callback(null, result);
 		});
 	};
+
+	/**
+	 * MMS a screenshot of a schedule to a US mobile phone number.
+	 * @param {string} scheduleId Id of the schedule to send a screenshot of.
+	 * @param {string} number Phone number to send the screenshot to.
+	 * @param {object} user User object to increment the number of texts for.
+	 * @param {function} callback Callback function to be called after the
+	 *		process is complete. The callback will be called with a first
+	 *		argument of a string if an error occurred.
+	 */
+	m.textScreenshot = function(scheduleId, number, user, callback) {
+		var Pageres = require('pageres'),
+			strutil = require('../utils/strutil'),
+			AWS = require('aws-sdk'),
+			request = require('request');
+
+		var pageres = new Pageres()
+		    .src('localhost:3000/schedule/' + scheduleId, ['1501x2350']);
+
+		pageres.run(function (err, items) {
+			var buffer = new Buffer('');
+
+			items[0].on('data', function(chunk) {
+				buffer = Buffer.concat([buffer, chunk]);
+			});
+
+			items[0].on('end', function() {
+
+				var s3 = new AWS.S3(config.aws);
+				s3.putObject({
+					Bucket: config.aws.s3Bucket,
+					Key: scheduleId + '.png',
+					Body: buffer,
+					ContentType: 'image/png',
+					ACL: 'public-read'
+				}, function(err, data) {
+					if (err)
+						return callback('An error occurred');
+
+					var twilioMMSUrl = 'https://' +
+						config.twilio.accountSID + ':' +
+						config.twilio.authToken +
+						'@api.twilio.com/2010-04-01/Accounts/' +
+						config.twilio.accountSID + '/Messages';
+
+					request({
+						method: 'post',
+						url: twilioMMSUrl,
+						formData: {
+							From: config.twilio.number,
+							To: '+' + number,
+							MediaUrl: 'https://s3.amazonaws.com/' +
+								config.aws.s3Bucket + '/' + scheduleId + '.png'
+						}
+					}, function (error, response, body) {
+					    if (error)
+							return callback('The text message failed to send.');
+					    // console.log(body);
+					    if (body.indexOf('RestException') !== -1)
+					    	return callback('The text message could not be ' +
+					    		'sent.');
+
+					    // Increment number of texts sent.
+					    models.knex('users')
+							.where('id', user.get('id'))
+							.increment('texts')
+							.then(function() {
+								callback();
+							});
+					});
+				});
+			});
+		});
+	}
 
 	/**
 	 * Perform a course selection creation operation for a user.

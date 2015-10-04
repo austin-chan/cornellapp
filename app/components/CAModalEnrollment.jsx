@@ -23,7 +23,8 @@ var CAModalEnrollment = React.createClass({
     },
 
     render: function() {
-        var classesInfo = [];
+        var classesInfo = [],
+            emptyMessage = null;
 
         // Loop through all selected courses.
         _.each(this.props.courses, function(course) {
@@ -58,9 +59,15 @@ var CAModalEnrollment = React.createClass({
             );
         });
 
+        if (!this.props.courses.length)
+            emptyMessage = (
+                <p className="empty-message">No Courses To Show</p>
+            );
+
         return (
             <div className="ca-modal-enrollment">
                 <h3>Enrollment Class Numbers</h3>
+                {emptyMessage}
                 {classesInfo}
             </div>
         );

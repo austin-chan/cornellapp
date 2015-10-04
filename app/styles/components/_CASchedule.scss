@@ -9,13 +9,17 @@ $rowHeight: 75px;
         padding-top: 26px;
     }
 
+    &.large > .left {
+        padding-top: 52px;
+    }
+
     > .right {
         @include span(11.25 of 12 last);
     }
 
     .day-labels {
         @extend .cf;
-        padding: 0 8px 14px;
+        padding: 0 4px 14px;
         font-weight: 300;
 
         .day-label {
@@ -28,6 +32,14 @@ $rowHeight: 75px;
         }
     }
 
+    &.large .day-labels {
+        padding: 0 8px 28px;
+
+        .day-label {
+            font-size: 32px;
+        }
+    }
+
     .hour-label {
         height: $rowHeight;
         font-size: 14px;
@@ -35,6 +47,12 @@ $rowHeight: 75px;
         font-weight: 300;
         margin-right: -2px;
         letter-spacing: .05em;
+    }
+
+    &.large .hour-label {
+        height: $rowHeight * 2 !important;
+        font-size: 28px;
+        margin-right: -4px;
     }
 
     .schedule-area {
@@ -52,11 +70,20 @@ $rowHeight: 75px;
         }
     }
 
+    &.large .schedule-area .schedule-row {
+        height: $rowHeight * 2 !important;
+    }
+
     .courses-area {
         position: absolute;
         top: 0;
         right: 4px;
         left: 4px;
         bottom: 0;
+    }
+
+    &.large .courses-area {
+        right: 8px;
+        left: 8px;
     }
 }

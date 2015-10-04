@@ -67,7 +67,6 @@ var CAHeader = React.createClass({
                 </div>
             );
 
-
         _.each(ScheduleStore.getSemesters(), function(s){
             var className = classNames('ca-fill-button', {
                 selected: s.slug === activeSemester.slug

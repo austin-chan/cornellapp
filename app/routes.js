@@ -31,16 +31,18 @@ module.exports = function(app) {
         // Get subject definitions for relevant semesters.
         knex('semesters')
             .whereIn('slug', slugs)
-            .select('slug', 'subject_list')
+            .select('slug', 'subject_list', 'descr')
             .then(function(semesters) {
-                ScheduleStore.reset(req, semesters);
-                ModalStore.reset();
-                UserStore.reset(req);
+                ScheduleStore.reset(req.user, semesters,
+                    req.cookies.semester_slug);
+                ModalStore.reset(req.user);
+                UserStore.reset(req.user);
 
                 var reactOutput = React.renderToString(CAApp()),
                     contextString = JSON.stringify({
                         UserStoreSnapshot: UserStore.snapshot(),
-                        ScheduleStoreSnapshot: ScheduleStore.snapshot()
+                        ScheduleStoreSnapshot: ScheduleStore.snapshot(),
+                        ModalStoreSnapshot: ModalStore.snapshot()
                     });
 
                 res.render('index', {

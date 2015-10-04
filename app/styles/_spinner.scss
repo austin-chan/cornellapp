@@ -104,4 +104,8 @@ $radius: 6px;
         width: 2px;
         height: 5px;
     }
+
+    &.dark > div {
+        background-color: #8f8f8f;
+    }
 }

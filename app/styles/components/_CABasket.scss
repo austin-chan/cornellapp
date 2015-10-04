@@ -7,6 +7,10 @@
         }
     }
 
+    .basket-head {
+        @include basket-item();
+    }
+
     .empty-label {
         display: none;
         margin-top: 94px;

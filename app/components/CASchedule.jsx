@@ -17,17 +17,18 @@ var React = require('react/addons'),
     CAScheduleCourse = require('./CAScheduleCourse'),
     CAScheduleEvent = require('./CAScheduleEvent'),
     CAScheduleDropTargets = require('./CAScheduleDropTargets'),
+    classNames = require('classnames'),
     _ = require('underscore');
 
 var CASchedule = React.createClass({
     propTypes: {
         entries: React.PropTypes.array.isRequired,
-        size: React.PropTypes.string
+        large: React.PropTypes.bool
     },
 
     getDefaultProps: function() {
         return {
-            size: 'normal'
+            large: false
         };
     },
 
@@ -38,7 +39,7 @@ var CASchedule = React.createClass({
     },
 
     componentWillMount: function() {
-        this.hourHeight = this.props.size === 'normal' ? 75 : 120;
+        this.hourHeight = this.props.large ? 150 : 75;
         this.dayOffsetMap = {}; // will be overriden in componentDidMount
         this.dayMap = ScheduleStore.dayMap;
     },
@@ -172,7 +173,10 @@ var CASchedule = React.createClass({
             entryItems = [],
             dropTargets,
             conflictMap = ScheduleStore.getScheduleConflictMap(),
-            renderMap = this.createRenderMap(conflictMap);
+            renderMap = this.createRenderMap(conflictMap),
+            rootClass = classNames('ca-schedule', {
+                large: this.props.large
+            });
 
         // Loop through courses and events in order.
         _.each(entries, function(entry) {
@@ -184,6 +188,7 @@ var CASchedule = React.createClass({
                     <CAScheduleCourse key={entry.selection.key}
                         pixelsBetweenTimes={this.pixelsBetweenTimes}
                         course={entry}
+                        large={this.props.large}
                         conflictMap={conflictMap}
                         renderMap={renderMap}
                         dayOffsetMap={this.dayOffsetMap}
@@ -203,6 +208,7 @@ var CASchedule = React.createClass({
                     <CAScheduleEvent key={entry.key}
                         pixelsBetweenTimes={this.pixelsBetweenTimes}
                         event={entry}
+                        large={this.props.large}
                         conflictMap={conflictMap}
                         renderMap={renderMap}
                         dayOffsetMap={this.dayOffsetMap} />
@@ -219,7 +225,7 @@ var CASchedule = React.createClass({
                     pixelsBetweenTimes={this.pixelsBetweenTimes} />;
 
         return (
-            <div className="ca-schedule">
+            <div className={rootClass}>
                 <div className="left">
                     {hourLabels}
                 </div>

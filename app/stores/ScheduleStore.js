@@ -51,39 +51,41 @@ if (process.env.NODE_ENV === 'browserify')
  * Generate the render context on server side.
  */
 else
-    var reset = function(req, semesters) {
+    var reset = function(user, semesters, initialSemester) {
         var snapshot = {},
             async = require('async');
 
-        _allSemesters = config.semesters;
+        snapshot._allSemesters = config.semesters;
 
-        _.each(_allSemesters, function(semester) {
+        _.each(snapshot._allSemesters, function(semester) {
             var match = _.find(semesters, function(s) {
                 return s.slug == semester.slug;
             });
 
-            semester.subjects = JSON.parse(match.subject_list);
+            if (match) {
+                semester.subjects = JSON.parse(match.subject_list);
+                semester.descr = match.descr;
+            }
         });
 
         // Mount the course selection data.
-        if (req.isAuthenticated())
-            snapshot._data = req.user.getSelectionData();
+        if (user)
+            snapshot._data = user.getSelectionData();
         else
-            snapshot._data = _.mapObject(_allSemesters, function(s) {
+            snapshot._data = _.mapObject(snapshot._allSemesters, function(s) {
                 return {
                     courses: {},
                     events: {}
                 };
             });
 
-        // Use a cookie set semester if it is set.
-        if (req.cookies.semester_slug &&
-            _allSemesters[req.cookies.semester_slug])
-            snapshot._semester = _allSemesters[req.cookies.semester_slug];
+        // Use an initial semester if it is set.
+        if (initialSemester && snapshot._allSemesters[initialSemester])
+            snapshot._semester = snapshot._allSemesters[initialSemester];
         // Or use the semester specified in config.
         else
-            snapshot._semester = _allSemesters[config.semester];
-
+            snapshot._semester = snapshot._allSemesters[config.semester];
+// console.log(snapshot._semester);
         restore(snapshot);
     };
 
@@ -576,7 +578,7 @@ function defaultEvent() {
     };
 
     // Drake reference, I should have put more easter eggs in this thing.
-    if (Math.random() < 0.4) {
+    if (Math.random() < 0.2) {
         event.name = "Eatin' crab out in Malibu";
         event.location = 'Nobu';
     }

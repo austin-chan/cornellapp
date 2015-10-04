@@ -226,7 +226,6 @@ var selectionrouter = function(app, blockValidationErrors) {
                                         return dataEvent;
                                 }),
                                 p;
-                            console.log(matchingExisting);
 
                             // Save new object.
                             if (!matchingExisting) {

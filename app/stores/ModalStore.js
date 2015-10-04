@@ -26,12 +26,52 @@ var _active = false,
     _modalData,
     _catalogData,
     _catalogStack,
-    _catalogStackForward;
+    _catalogStackForward,
+    _schedules = {};
 
 /**
  * Initialize the store.
  */
 catalogReset();
+
+/**
+ * Restore store data from the render context on client side.
+ */
+if (process.env.NODE_ENV === 'browserify')
+    restore(context.ModalStoreSnapshot);
+
+/**
+ * Generate the render context on server side.
+ */
+else
+    var reset = function(user) {
+        var snapshot = {};
+
+        if (user)
+            snapshot._schedules = user.schedulesMap();
+        else
+            snapshot._schedules = {};
+
+        restore(snapshot);
+    };
+
+/**
+ * Generate a snapshot that can be converted to JSON and used by another
+ * instance of the store to restore it back to an identical state.
+ */
+function snapshot() {
+    return {
+        _schedules: _schedules
+    };
+}
+
+/**
+ * Restore the state of the store from a snapshot.
+ * @param {object} snapshot Snapshot to return state to.
+ */
+function restore(snapshot) {
+    _schedules = snapshot._schedules;
+}
 
 /**
  * Activate the login modal to appear.
@@ -80,6 +120,17 @@ function enrollment() {
     _modalType = 'enrollment';
     _modalData = {
         courses: ScheduleStore.getCourses()
+    };
+}
+
+/**
+ * Activate the send schedule view panel.
+ */
+function sendSchedule() {
+    _active = 'modal';
+    _modalType = 'send-schedule';
+    _modalData = {
+        schedule: getSchedule(ScheduleStore.getSemester().slug)
     };
 }
 
@@ -154,6 +205,30 @@ function close() {
     _active = false;
 }
 
+/**
+ * Get a user's schedule information for a semester.
+ * @param {string} semester Semester slug to get the user schedule for.
+ * @return {object} Schedule object for the semester or null if the user
+ *      does not have a schedule created for that semester yet.
+ */
+function getSchedule(semester) {
+    return _schedules[semester];
+}
+
+/**
+ * Add a schedule to the user's list of schedules.
+ * @param {object} schedule Schedule information to add to the user's list of
+ *      schedules.
+ */
+function addSchedule(schedule) {
+    _schedules[schedule.semester] = schedule.id;
+
+    // Refresh the modal if it is still on the schedule screen.
+    if (_modalType === 'send-schedule') {
+        sendSchedule();
+    }
+}
+
 var ModalStore = assign({}, EventEmitter.prototype, {
     /**
      * Get the state of the modal to render.
@@ -186,6 +261,18 @@ var ModalStore = assign({}, EventEmitter.prototype, {
     reset: catalogReset,
 
     /**
+     * Generate a snapshot that can be converted to JSON and used by another
+     * instance of the store to restore it back to an identical state.
+     */
+    snapshot: snapshot,
+
+    /**
+     * Restore the state of the store from a snapshot.
+     * @param {object} snapshot Snapshot to return state to.
+     */
+    restore: restore,
+
+    /**
      * Publish a change to all listeners.
      */
     emitChange: function() {
@@ -208,6 +295,11 @@ var ModalStore = assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     }
 });
+
+// Attach the server side reset method.
+if (process.env.NODE_ENV !== 'browserify') {
+    ModalStore.reset = reset;
+}
 
 AppDispatcher.register(function(action) {
     switch(action.actionType) {
@@ -233,6 +325,16 @@ AppDispatcher.register(function(action) {
 
         case ModalConstants.ENROLLMENT:
             enrollment();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.SEND_SCHEDULE:
+            sendSchedule();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.ADD_SCHEDULE:
+            addSchedule(action.schedule);
             ModalStore.emitChange();
             break;
 

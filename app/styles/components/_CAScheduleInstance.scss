@@ -52,11 +52,19 @@
         }
     }
 
+    &.large.conflict-column-0 .schedule-instance {
+        border-radius: 6px 0 0 6px !important;
+    }
+
     &.conflict-column-1 {
 
         .schedule-instance {
             border-radius: 0 3px 3px 0 !important;
         }
+    }
+
+    &.large.conflict-column-1 .schedule-instance {
+        border-radius: 0 6px 6px 0 !important;
     }
 
     $day-map: (
@@ -142,6 +150,48 @@
         &:hover {
             border: 1px solid #f8f8f8;
             // border: 1px solid #515151;
+        }
+    }
+
+    &.large .schedule-instance {
+        left: 2px;
+        right: 2px;
+        box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.20);
+        border-radius: 6px;
+        font-size: 28px;
+
+        .instance-headline {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .instance-section-headline {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .instance-location {
+            font-size: 19px;
+            margin-top: 7px;
+            font-weight: 600;
+        }
+
+        hr {
+            height: 2px;
+            margin: 14px 38px;
+        }
+
+        .instance-professor {
+            font-size: 18.5px;
+            margin-top: 16px;
+            margin-bottom: -2px;
+            font-weight: 700;
+        }
+
+        .instance-time {
+            font-size: 17px;
+            margin-top: 6px;
+            font-weight: 600;
         }
     }
 }

@@ -27,7 +27,8 @@ var authentication = function(passport, models) {
         new models.user({ id: id }).fetch({
             withRelated: [
                 'selections.course.groups.sections.meetings.professors',
-                'events'
+                'events',
+                'schedules'
             ]
         }).then(function(user) {
             done(null, user);

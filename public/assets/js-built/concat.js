@@ -13,6 +13,7 @@
  */
 
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
+    ScheduleStore = require('../stores/ScheduleStore'),
     ModalConstants = require('../constants/ModalConstants');
 
 var ModalActions = {
@@ -64,22 +65,119 @@ var ModalActions = {
     },
 
     /**
-     * Open the course catalog and optionally load a certain page.
-     * @param {string} page Optional link to load in the catalog.
+     * Activate the send schedule view panel.
      */
-    catalog: function(page) {
+    sendSchedule: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.SEND_SCHEDULE
+        });
+    },
+
+    /**
+     * Change the name of the user.
+     * @param {string} name Name to change to.
+     */
+    addSchedule: function(schedule) {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.ADD_SCHEDULE,
+            schedule: schedule
+        });
+    },
+
+    /**
+     * Open the course catalog.
+     */
+    catalog: function() {
         AppDispatcher.dispatch({
             actionType: ModalConstants.CATALOG,
-            page: page
+            page: false
+        });
+    },
+
+    /**
+     * Open the course catalog and display all of the subjects available.
+     */
+    catalogSubjects: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG,
+            page: {
+                type: 'subjects',
+                title: 'All Subjects'
+            }
+        });
+    },
+
+    /**
+     * Open the course catalog and display all of the courses for a subject.
+     * @param {string} subject Subject string to display courses for.
+     */
+    catalogSubject: function(subject) {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG,
+            page: {
+                type: 'subject',
+                title: ScheduleStore.getSubjectName(subject),
+                subject: subject
+            }
         });
     },
 
     /**
      * Open the course catalog to a certain course's page.
-     * @param {string} course Course object to load page for.
+     * @param {string} subject Subject slug of the course.
+     * @param {number} number Catalog number of the course.
      */
-    catalogCourse: function() {
-        ModalActions.catalog('/course');
+    catalogCourse: function(subject, number) {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG,
+            page: {
+                type: 'course',
+                title: subject + ' ' + number,
+                subject: subject,
+                number: number
+            }
+        });
+    },
+
+    /**
+     * Open the course catalog to the most liked courses page.
+     */
+    catalogMostLiked: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG,
+            page: {
+                type: 'most-liked',
+                title: 'Most Liked'
+            }
+        });
+    },
+
+    /**
+     * Open the course catalog to the random courses page.
+     */
+    catalogRandom: function() {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG,
+            page: {
+                type: 'random',
+                title: 'Random Courses'
+            }
+        });
+    },
+
+    /**
+     * Open the course catalog to a search page.
+     * @param {string} term Search term to search courses with.
+     */
+    catalogSearch: function(term) {
+        AppDispatcher.dispatch({
+            actionType: ModalConstants.CATALOG,
+            page: {
+                type: 'search',
+                title: term,
+                term: term
+            }
+        });
     },
 
     /**
@@ -121,7 +219,7 @@ var ModalActions = {
 
 module.exports = ModalActions;
 
-},{"../constants/ModalConstants":25,"../dispatcher/AppDispatcher":28}],2:[function(require,module,exports){
+},{"../constants/ModalConstants":39,"../dispatcher/AppDispatcher":42,"../stores/ScheduleStore":46}],2:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -157,6 +255,17 @@ var ScheduleActions = {
         AppDispatcher.dispatch({
             actionType: ScheduleConstants.REMOVE,
             key: key
+        });
+    },
+
+    /**
+     * Remove a course from the schedule by the course object.
+     * @param {string} course Course object to remove.
+     */
+    removeCourse: function(course) {
+        AppDispatcher.dispatch({
+            actionType: ScheduleConstants.REMOVE_COURSE,
+            course: course
         });
     },
 
@@ -328,7 +437,7 @@ var ScheduleActions = {
 
 module.exports = ScheduleActions;
 
-},{"../constants/ScheduleConstants":26,"../dispatcher/AppDispatcher":28}],3:[function(require,module,exports){
+},{"../constants/ScheduleConstants":40,"../dispatcher/AppDispatcher":42}],3:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -379,7 +488,7 @@ var UserActions = {
 
 module.exports = UserActions;
 
-},{"../constants/UserConstants":27,"../dispatcher/AppDispatcher":28}],4:[function(require,module,exports){
+},{"../constants/UserConstants":41,"../dispatcher/AppDispatcher":42}],4:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -467,13 +576,6 @@ var CAApp = React.createClass({displayName: "CAApp",
                         React.createElement(CASchedule, {entries: this.state.allEntries})
                     )
                 ), 
-                React.createElement("p", {className: "footer"}, 
-                    "Copyright © 2015. Cornellapp is an ", 
-                    React.createElement("a", {href: "https://github.com/pastachan/cornellapp", 
-                        target: "_blank"}, 
-                        "open-sourced"
-                    ), " application."
-                ), 
                 React.createElement(CAModal, {active: this.state.modal.active, 
                     type: this.state.modal.type, data: this.state.modal.data}), 
                 React.createElement(CACatalog, {active: this.state.catalog.active, 
@@ -487,7 +589,7 @@ var CAApp = React.createClass({displayName: "CAApp",
 
 module.exports = CAApp;
 
-},{"../stores/ModalStore":31,"../stores/ScheduleStore":32,"../stores/UserStore":33,"./CABasket":5,"./CACatalog":10,"./CAHeader":12,"./CAModal":13,"./CASchedule":19,"react/addons":53,"underscore":226}],5:[function(require,module,exports){
+},{"../stores/ModalStore":45,"../stores/ScheduleStore":46,"../stores/UserStore":47,"./CABasket":5,"./CACatalog":10,"./CAHeader":25,"./CAModal":26,"./CASchedule":33,"react/addons":69,"underscore":243}],5:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -519,8 +621,7 @@ var CABasket = React.createClass({displayName: "CABasket",
         var entryItems = [],
             entries = this.props.entries,
             rootClass = classNames('ca-basket',
-                { empty: !_.size(this.props.entries) }),
-            review;
+                { empty: !_.size(this.props.entries) });
 
         // Loop through all entries.
         _.each(entries, function(entry) {
@@ -534,18 +635,16 @@ var CABasket = React.createClass({displayName: "CABasket",
                     React.createElement(CABasketEvent, {key: entry.key, 
                         event: entry})
                 );
-
         });
-
-        if (entryItems.length)
-            review = React.createElement(CABasketReview, {entries: this.props.entries});
 
         return (
             React.createElement("div", {className: rootClass}, 
-                React.createElement(CABasketAdder, {semester: this.props.semester}), 
+                React.createElement("div", {className: "basket-head"}, 
+                    React.createElement(CABasketAdder, {semester: this.props.semester}), 
+                    React.createElement(CABasketReview, {entries: this.props.entries})
+                ), 
                 React.createElement("p", {className: "empty-label"}, "No Courses Added"), 
-                entryItems, 
-                review
+                entryItems
             )
         );
     }
@@ -553,7 +652,7 @@ var CABasket = React.createClass({displayName: "CABasket",
 
 module.exports = CABasket;
 
-},{"./CABasketAdder":6,"./CABasketCourse":7,"./CABasketEvent":8,"./CABasketReview":9,"classnames":38,"react/addons":53,"underscore":226}],6:[function(require,module,exports){
+},{"./CABasketAdder":6,"./CABasketCourse":7,"./CABasketEvent":8,"./CABasketReview":9,"classnames":53,"react/addons":69,"underscore":243}],6:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -650,7 +749,7 @@ var CABasketAdder = React.createClass({displayName: "CABasketAdder",
 
 module.exports = CABasketAdder;
 
-},{"../actions/ScheduleActions":2,"react/addons":53}],7:[function(require,module,exports){
+},{"../actions/ScheduleActions":2,"react/addons":69}],7:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -875,9 +974,7 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
      */
     _onCatalogPage: function() {
         var course = this.props.course.raw;
-        ModalActions.catalog(
-            'course/' + course.subject + '/' + course.catalogNbr
-        );
+        ModalActions.catalogCourse(course.subject, course.catalogNbr);
     },
 
     /**
@@ -945,7 +1042,7 @@ var CABasketCourse = React.createClass({displayName: "CABasketCourse",
 
 module.exports = CABasketCourse;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"../utils/strutil":34,"./CAColorPanel":11,"./CAToggle":24,"classnames":38,"pluralize":48,"react/addons":53,"underscore":226}],8:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":46,"../utils/strutil":48,"./CAColorPanel":24,"./CAToggle":38,"classnames":53,"pluralize":63,"react/addons":69,"underscore":243}],8:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1257,7 +1354,7 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
 
 module.exports = CABasketEvent;
 
-},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"../utils/strutil":34,"./CAColorPanel":11,"./CAToggle":24,"classnames":38,"pluralize":48,"react/addons":53,"underscore":226}],9:[function(require,module,exports){
+},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":46,"../utils/strutil":48,"./CAColorPanel":24,"./CAToggle":38,"classnames":53,"pluralize":63,"react/addons":69,"underscore":243}],9:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1277,6 +1374,7 @@ var React = require('react/addons'),
     pluralize = require('pluralize'),
     strutil = require('../utils/strutil'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    UserStore = require('../stores/UserStore'),
     ScheduleActions = require('../actions/ScheduleActions'),
     ModalActions = require('../actions/ModalActions'),
     _ = require('underscore');
@@ -1336,8 +1434,12 @@ var CABasketReview = React.createClass({displayName: "CABasketReview",
                         "Add Event"
                     ), 
                     React.createElement("button", {className: "ca-simple-button", 
-                        onClick: this._onEnrollement}, 
+                        onClick: this._onEnrollment}, 
                         "Enrollment Information"
+                    ), 
+                    React.createElement("button", {className: "ca-simple-button", 
+                        onClick: this._onSendSchedule}, 
+                        "Send Schedule"
                     )
                 )
             )
@@ -1354,14 +1456,25 @@ var CABasketReview = React.createClass({displayName: "CABasketReview",
     /**
      * Event handler for clicking on enrollment information button.
      */
-    _onEnrollement: function() {
+    _onEnrollment: function() {
         ModalActions.enrollment();
+    },
+
+    /**
+     * Event handler for clicking on share schedule button.
+     */
+    _onSendSchedule: function() {
+        // Skip if not logged in.
+        if (!UserStore.isLoggedIn())
+            return UserStore.guestNotice('send a schedule');
+
+        ModalActions.sendSchedule();
     }
 });
 
 module.exports = CABasketReview;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"../utils/strutil":34,"classnames":38,"pluralize":48,"react/addons":53,"underscore":226}],10:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":46,"../stores/UserStore":47,"../utils/strutil":48,"classnames":53,"pluralize":63,"react/addons":69,"underscore":243}],10:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1378,46 +1491,43 @@ module.exports = CABasketReview;
 var React = require('react/addons'),
     ModalActions = require('../actions/ModalActions'),
     ScheduleActions = require('../actions/ScheduleActions'),
-    classNames = require('classnames'),
+    UserStore = require('../stores/UserStore'),
     ScheduleStore = require('../stores/ScheduleStore'),
+    CACatalogSubjects = require('./CACatalogSubjects'),
+    CACatalogList = require('./CACatalogList'),
+    CACatalogCourse = require('./CACatalogCourse'),
+    CACatalogSearch = require('./CACatalogSearch'),
+    classNames = require('classnames'),
     strutil = require('../utils/strutil'),
     _ = require('underscore');
 
 var CACatalog = React.createClass({displayName: "CACatalog",
     propTypes: {
         active: React.PropTypes.bool.isRequired,
-        page: React.PropTypes.string.isRequired,
+        page: React.PropTypes.object.isRequired,
         hasBack: React.PropTypes.bool.isRequired,
         hasForward: React.PropTypes.bool.isRequired
     },
 
-    getInitialState: function() {
-        return {
-            iframeTitle: ''
-        };
-    },
-
     /**
-     * Automatically update the title of the catalog when the page changes and
-     * listen for link clicking in the iframe.
+     * Render page content for the catalog.
+     * @return {object} Renderable object for the catalog content.
      */
-    componentDidMount: function() {
-        var self = this;
-        $(React.findDOMNode(this.refs.iframe)).on('load', function() {
-            var iframeTitle = strutil.shorten(this.contentDocument.title, 48);
+    renderContent: function() {
+        var page = this.props.page,
+            listTypes = ['subject', 'most-liked', 'random'];
 
-            self.setState({
-                iframeTitle: iframeTitle
-            });
-        });
+        if (page.type === 'subjects')
+            return React.createElement(CACatalogSubjects, {page: page});
 
-        window.receiveLink = function(link) {
-            ModalActions.catalog(link);
-        };
+        else if (page.type == 'course')
+            return React.createElement(CACatalogCourse, {page: page});
 
-        window.addCourse = function(course) {
-            ScheduleActions.add(course);
-        };
+        else if (page.type == 'search')
+            return React.createElement(CACatalogSearch, {page: page});
+
+        else if (_.contains(listTypes, page.type))
+            return React.createElement(CACatalogList, {page: page});
     },
 
     render: function() {
@@ -1429,7 +1539,8 @@ var CACatalog = React.createClass({displayName: "CACatalog",
             }),
             forwardClass = classNames('forward-button', {
                 disabled: !this.props.hasForward
-            });
+            }),
+            content = this.renderContent();
 
         return (
             React.createElement("div", {className: rootClass}, 
@@ -1448,39 +1559,44 @@ var CACatalog = React.createClass({displayName: "CACatalog",
                             React.createElement("div", {className: "label"}, "Close")
                         )
                     ), 
-                    React.createElement("div", {className: "navigation-bar"}, 
-                        React.createElement("div", {className: "upper"}, 
-                            React.createElement("div", {className: "navigation-buttons"}, 
-                                React.createElement("button", {className: backClass, 
-                                    onClick: this._onBack}, 
-                                    React.createElement("i", {className: "icon-keyboard_arrow_left"}
+                    React.createElement("div", {className: "scroll-area"}, 
+                        React.createElement("div", {className: "navigation-bar"}, 
+                            React.createElement("div", {className: "upper"}, 
+                                React.createElement("div", {className: "navigation-buttons"}, 
+                                    React.createElement("button", {className: backClass, 
+                                        onClick: this._onBack}, 
+                                        React.createElement("i", {className: "icon-keyboard_arrow_left"}
+                                        )
+                                    ), 
+                                    React.createElement("button", {className: forwardClass, 
+                                        onClick: this._onForward}, 
+                                        React.createElement("i", {className: 
+"icon-keyboard_arrow_right"}
+                                        )
                                     )
                                 ), 
-                                React.createElement("button", {className: forwardClass, 
-                                    onClick: this._onForward}, 
-                                    React.createElement("i", {className: "icon-keyboard_arrow_right"}
-                                    )
+                                React.createElement("p", {className: "title"}, 
+                                    this.props.page.title
                                 )
                             ), 
-                            React.createElement("p", {className: "title"}, this.state.iframeTitle)
-                        ), 
-                        React.createElement("div", {className: "navigation-tabs"}, 
-                            React.createElement("button", {className: "ca-simple-button", 
-                                onClick: this._onAllDepartments}, 
-                                "All Departments"
-                            ), 
-                            React.createElement("button", {className: "ca-simple-button", 
-                                onClick: this._onRandomCourses}, 
-                                "Random Courses"
-                            ), 
-                            React.createElement("button", {className: "ca-simple-button", 
-                                onClick: this._onMostLiked}, 
-                                "Most Liked"
+                            React.createElement("div", {className: "navigation-tabs"}, 
+                                React.createElement("button", {className: "ca-simple-button", 
+                                    onClick: this._onAllSubjects}, 
+                                    "All Subjects"
+                                ), 
+                                React.createElement("button", {className: "ca-simple-button", 
+                                    onClick: this._onRandomCourses}, 
+                                    "Random Courses"
+                                ), 
+                                React.createElement("button", {className: "ca-simple-button", 
+                                    onClick: this._onMostLiked}, 
+                                    "Most Liked"
+                                )
                             )
+                        ), 
+                        React.createElement("div", {className: "content-wrap"}, 
+                            content
                         )
-                    ), 
-                    React.createElement("div", {className: "iframe-wrap"}, 
-                        React.createElement("iframe", {ref: "iframe", src: this.props.page})
                     )
                 )
             )
@@ -1491,7 +1607,7 @@ var CACatalog = React.createClass({displayName: "CACatalog",
      * Event handler for clicking on Most Liked button.
      */
     _onMostLiked: function() {
-        ModalActions.catalog('most-liked');
+        ModalActions.catalogMostLiked();
     },
 
     /**
@@ -1505,7 +1621,7 @@ var CACatalog = React.createClass({displayName: "CACatalog",
         if (this.props.page === randomLink)
             $iframe.attr('src', $iframe.attr('src'));
         else
-            ModalActions.catalog('random');
+            ModalActions.catalogRandom();
 
     },
 
@@ -1515,14 +1631,14 @@ var CACatalog = React.createClass({displayName: "CACatalog",
     _onSearchDown: function(e) {
         var value = React.findDOMNode(this.refs.search).value;
         if (e.key === 'Enter' && $.trim(value).length)
-            ModalActions.catalog('search/' + value);
+            ModalActions.catalogSearch(value);
     },
 
     /**
-     * Event handler for clicking on All Departments button.
+     * Event handler for clicking on All Subjects button.
      */
-    _onAllDepartments: function() {
-        ModalActions.catalog('departments');
+    _onAllSubjects: function() {
+        ModalActions.catalogSubjects();
     },
 
     /**
@@ -1549,7 +1665,1980 @@ var CACatalog = React.createClass({displayName: "CACatalog",
 
 module.exports = CACatalog;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"../utils/strutil":34,"classnames":38,"react/addons":53,"underscore":226}],11:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":46,"../stores/UserStore":47,"../utils/strutil":48,"./CACatalogCourse":14,"./CACatalogList":19,"./CACatalogSearch":21,"./CACatalogSubjects":23,"classnames":53,"react/addons":69,"underscore":243}],11:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogAdd is the component that renders an add course to schedule button
+ * in the catalog. Component styles are located in _CACatalogAdd.scss.
+ */
+
+var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    ScheduleActions = require('../actions/ScheduleActions'),
+    classNames = require('classnames');
+
+var CACatalogAdd = React.createClass({displayName: "CACatalogAdd",
+    propTypes: {
+        course: React.PropTypes.object.isRequired
+    },
+
+    /**
+     * Determine whether the course is already in the schedule.
+     * @return {boolean} True if the course is in the schedule, false if not.
+     */
+    courseIfInSchedule: function() {
+        return ScheduleStore.exists(this.props.course);
+    },
+
+    render: function() {
+        var addedToCourses = this.courseIfInSchedule(),
+            textLabel = addedToCourses ? 'Added to Schedule' :
+                'Add to Schedule',
+            rootClass = classNames('ca-catalog-button', 'button',
+                { red: !addedToCourses },
+                { added: addedToCourses });
+
+        return (
+            React.createElement("div", {className: rootClass, onClick: this._onAddCourse}, 
+                textLabel
+            )
+        );
+    },
+
+    /**
+     * Event handler for adding a course.
+     */
+    _onAddCourse: function() {
+        // Add if the course is not in the schedule.
+        if (!this.courseIfInSchedule())
+            ScheduleActions.add(this.props.course);
+
+        // Or remove it if is in the schedule.
+        else
+            ScheduleActions.removeCourse(this.props.course);
+    }
+});
+
+module.exports = CACatalogAdd;
+
+},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":46,"classnames":53,"react/addons":69}],12:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogComment is the component that renders a single comments in the
+ * course page of a catalog. Component styles are located in
+ * _CACatalogComment.scss.
+ */
+
+var React = require('react/addons'),
+    UserStore = require('../stores/UserStore'),
+    classNames = require('classnames'),
+    _ = require('underscore');
+
+var CACatalogComment = React.createClass({displayName: "CACatalogComment",
+    propTypes: {
+        comment: React.PropTypes.object.isRequired,
+        onDelete: React.PropTypes.func.isRequired
+    },
+
+    /**
+     * Render the timestamp with timeago.
+     */
+    componentDidMount: function() {
+        setTimeout(_.bind(function() {
+            $(React.findDOMNode(this.refs.timeago)).timeago();
+        }, this), 0);
+    },
+
+    /**
+     * Sanitize and filter a message to safely render and replace newlines with
+     * breaking elements.
+     * @param {string} message The message to filter.
+     * @return {string} The filtered message.
+     */
+    sanitizeMessage: function(message) {
+        return message
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br />');
+    },
+
+    /**
+     * Determine if the comment is upvoted by the user.
+     * @return {boolean} True if the comment is upvoted by the user, false if
+     *      not.
+     */
+    isUpvoted: function() {
+        var comment = this.props.comment;
+
+        // Only logged in users might have upvoted the comment.
+        if (UserStore.isLoggedIn()) {
+            var userId = UserStore.getUser().id;
+
+            // Find if any of the upvotes belongs to the user.
+            return _.some(comment.upvotes, function(upvote) {
+                return upvote.userId == userId;
+            });
+        }
+
+        return false;
+    },
+
+    /**
+     * Render the upvote button and upvote count for the comment.
+     * @return {object} Renderable object for the upvote button.
+     */
+    renderUpvoteButton: function() {
+        var comment = this.props.comment,
+            upvoteClass = classNames('ca-catalog-button', 'upvote',
+                'bottom-item');
+
+            // Only logged in users might have upvoted the comment.
+            if (this.isUpvoted())
+                upvoteClass += ' selected';
+
+        return (
+            React.createElement("div", {className: upvoteClass, onClick: this._onUpvote}, 
+                React.createElement("i", {className: "icon-keyboard_arrow_up"}), 
+                React.createElement("span", {className: "label"}, comment.upvotes.length)
+            )
+        );
+    },
+
+    /**
+     * Render the timestamp for the comment.
+     * @return {object} Renderable object for the timestamp of the comment.
+     */
+    renderTimestamp: function() {
+        var created = this.props.comment.created;
+
+        // Turn into a date object if it is a string.
+        if (typeof created == 'string')
+            created = new Date(created);
+
+        var timestamp = created.toISOString();
+
+        return (
+            React.createElement("div", {className: "created bottom-item timeago", ref: "timeago", 
+                title: timestamp})
+        );
+    },
+
+    render: function() {
+        var comment = this.props.comment,
+            message = this.sanitizeMessage(comment.message),
+            upvote = this.renderUpvoteButton(),
+            timestamp = this.renderTimestamp(),
+            deleteButton = null;
+
+        // Render delete button if comment belongs to the user.
+        if (UserStore.isLoggedIn() && UserStore.getUser().id == comment.id) {
+            deleteButton = (
+                React.createElement("div", {className: "ca-simple-button delete bottom-item", 
+                    onClick: this._onDelete}, 
+                    "Delete Comment"
+                )
+            );
+        }
+
+        return (
+            React.createElement("div", {className: "ca-catalog-comment"}, 
+                React.createElement("p", {className: "message freight-sans-pro"}, 
+                    message
+                ), 
+                React.createElement("div", {className: "bottom"}, 
+                    upvote, 
+                    timestamp, 
+                    deleteButton
+                )
+            )
+        );
+    },
+
+    /**
+     * Event handler for upvoting and unvoting a comment.
+     */
+    _onUpvote: function() {
+        // Skip if not logged in.
+        if (!UserStore.isLoggedIn())
+            return UserStore.guestNotice('upvote a comment');
+
+        var comment = this.props.comment,
+            upvotes = comment.upvotes,
+            userId = UserStore.getUser().id;
+
+        // Upvoting if comment has not been upvoted yet.
+        if(!this.isUpvoted()) {
+            upvotes.push({
+                userId: userId
+            });
+
+        // Unvoting if the comment is already upvoted.
+        } else {
+            var index = _.findIndex(upvotes, function(upvote) {
+                return upvote.userId == userId;
+            });
+
+            // Remove the upvote from upvotes.
+            upvotes.splice(index, 1);
+        }
+
+        this.forceUpdate();
+
+        // Persist the upvote operation in the backend.
+        $.ajax({
+            type: this.isUpvoted() ? 'post' : 'delete',
+            url: '/api/upvote/' + comment.id
+        });
+    },
+
+    /**
+     * Event handler for deleting the comment.
+     */
+    _onDelete: function() {
+        this.onDelete(this.props.comment.id);
+    }
+});
+
+module.exports = CACatalogComment;
+
+},{"../stores/UserStore":47,"classnames":53,"react/addons":69,"underscore":243}],13:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogComments is the component that renders the comments section for a
+ * course in the catalog. Component styles are located in
+ * _CACatalogComments.scss.
+ */
+
+var React = require('react/addons'),
+    CACatalogComment = require('./CACatalogComment'),
+    UserStore = require('../stores/UserStore'),
+    _ = require('underscore');
+
+var CACatalogComments = React.createClass({displayName: "CACatalogComments",
+    propTypes: {
+        course: React.PropTypes.object.isRequired
+    },
+
+    /**
+     * Render all the comments for the comments section.
+     * @return {array} Array of renderables for the comments.
+     */
+    renderComments: function() {
+        var comments = this.props.course.comments,
+            commentList = [];
+
+        // Iterate through each comment.
+        _.each(comments, function(comment) {
+            commentList.push(
+                React.createElement(CACatalogComment, {key: comment.id, comment: comment, 
+                    onDelete: this._onDelete})
+            );
+        }, this);
+
+        return commentList;
+    },
+
+    render: function() {
+        var course = this.props.course,
+            placeholder = 'Share advice and commentary on ' + course.subject +
+                course.catalogNbr + '...',
+            comments = this.renderComments(),
+            emptyMessage = null;
+
+        // Display an empty message if there are no comments.
+        if (!comments.length) {
+            emptyMessage = (
+                React.createElement("p", {className: "empty-message"}, "No Comments Yet")
+            );
+        }
+
+        return (
+            React.createElement("div", {className: "ca-catalog-comments course-section"}, 
+                React.createElement("h3", null, "Comments"), 
+                React.createElement("textarea", {className: "comment-box", placeholder: placeholder, 
+                    ref: "textarea"}
+                ), 
+                React.createElement("div", {className: "ca-catalog-button red add-comment", 
+                    onClick: this._onCreate}, 
+                    "Add Comment"
+                ), 
+                React.createElement("div", {className: "comments"}, 
+                    comments, 
+                    emptyMessage
+                )
+            )
+        );
+    },
+
+    /**
+     * Event handler for creating a new comment.
+     */
+    _onCreate: function() {
+        // Skip if not logged in.
+        if (!UserStore.isLoggedIn())
+            return UserStore.guestNotice('comment on a course');
+
+        var course = this.props.course,
+            comments = course.comments,
+            $textarea = $(React.findDOMNode(this.refs.textarea)),
+            value = $textarea.val(),
+            id = (Math.floor(Math.random() * 100000000000)).toString(36);
+
+        // Skip if the comment is empty.
+        if (!value.trim().length)
+            return;
+
+        // Empty the textarea
+        $textarea.val('');
+
+        // Create a new comment object and append it to the comments array.
+        comments.unshift({
+            id: id,
+            crseId: course.crseId,
+            created: new Date(),
+            userId: UserStore.getUser().id,
+            message: value,
+            upvotes: []
+        });
+
+        // Push the change to render.
+        this.forceUpdate();
+
+        // Persist the comment creation operation in the backend.
+        $.ajax({
+            type: 'post',
+            url: '/api/comment/' + course.crseId,
+            data: {
+                id: id,
+                message: value
+            }
+        });
+    },
+
+    /**
+     * Event handler for deleting a comment.
+     * @param {string} key Id of the comment to delete.
+     */
+    _onDelete: function(key) {
+        var comments = this.props.course.comments,
+            index = _.findIndex(comments, function(comment) {
+                return comment.id == id;
+            });
+
+        // Remove the comment from comments.
+        comments.splice(index, 1);
+
+        // Push the change to render.
+        this.forceUpdate();
+
+        // Persist the comment deletion operation in the backend.
+        $.ajax({
+            type: 'delete',
+            url: '/api/comment/' + key
+        });
+    }
+});
+
+module.exports = CACatalogComments;
+
+},{"../stores/UserStore":47,"./CACatalogComment":12,"react/addons":69,"underscore":243}],14:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogCourse is the component that renders the catalog page for a single
+ * course. Component styles are located in _CACatalogCourse.scss.
+ */
+
+var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    ScheduleActions = require('../actions/ScheduleActions'),
+    ModalActions = require('../actions/ModalActions'),
+    CACatalogLike = require('./CACatalogLike'),
+    CACatalogAdd = require('./CACatalogAdd'),
+    CACatalogGroup = require('./CACatalogGroup'),
+    CACatalogComments = require('./CACatalogComments'),
+    CACatalogDifficulty = require('./CACatalogDifficulty'),
+    classNames = require('classnames'),
+    _ = require('underscore');
+
+var CACatalogCourse = React.createClass({displayName: "CACatalogCourse",
+    propTypes: {
+        page: React.PropTypes.object,
+        course: React.PropTypes.object
+    },
+
+    getInitialState: function() {
+        return { course: false };
+    },
+
+    componentDidMount: function() {
+        // Load if no initial courses array was passed on initialization.
+        if (!this.props.course)
+            this.load();
+
+        // Initialize with props courses data.
+        else
+            this.setState({ course: this.props.course });
+    },
+
+    componentDidUpdate: function(prevProps, __) {
+        // Skip if the the props did not change.
+        if (_.isEqual(prevProps, this.props))
+            return;
+
+        this.setState({ course: false });
+        this.load();
+    },
+
+    /**
+     * Load the rendering data from the backend.
+     */
+    load: function() {
+        $.ajax({
+            url: '/catalog/' + this.props.page.strm + '/course/' +
+                this.props.page.subject + '/' + this.props.page.number,
+            success: _.bind(function(data) {
+                this.setState({
+                    course: data
+                });
+            }, this)
+        });
+    },
+
+    /**
+     * Render extra info for the course if there is any to display.
+     * @return {array} Array of renderable objects to display extra info.
+     */
+    renderExtraInfo: function() {
+        var course = this.state.course,
+            infoList = [],
+            infos = [
+                ['Fees', 'catalogFee'],
+                ['Permission Note', 'catalogPermission'],
+                ['Course Attribute', 'catalogAttribute'],
+                ['Prerequisites/Corequisites', 'catalogPrereqCoreq'],
+                ['Forbidden Overlaps', 'catalogForbiddenOverlaps'],
+                ['Satisfies Requirement', 'catalogSatisfiesReq'],
+                ['Breadth Requirement', 'catalogBreadth'],
+                ['Distribution Category', 'catalogDistr'],
+                ['Language Requirement', 'catalogLang'],
+                ['Course Subfield', 'catalogCourseSubfield'],
+                ['Comments', 'catalogComments'],
+            ];
+
+        _.each(infos, function(info) {
+            var infoName = info[0],
+                infoAttribute = info[1];
+
+            if (course[infoAttribute])
+                infoList.push(
+                    React.createElement("p", {key: infoName, className: "info"}, 
+                        React.createElement("strong", null, infoName, ":"), " ", 
+                        course[infoAttribute]
+                    )
+                );
+        }, this);
+
+        // Include course outcomes.
+        infoList = infoList.concat(this.renderOutcomes());
+
+        return infoList;
+    },
+
+    /**
+     * Render the outcomes of the course.
+     * @return {array} Array of renderable object for the outcomes.
+     */
+    renderOutcomes: function() {
+        var course = this.state.course,
+            outcomes = JSON.parse(course.catalogOutcomes);
+
+        if (outcomes.length) {
+            var outcomeList = [];
+
+            // Iterate through all outcomes.
+            _.each(outcomes, function(outcome) {
+                outcomeList.push(
+                    React.createElement("li", {key: outcome}, outcome)
+                );
+            }, this);
+
+            return [
+                React.createElement("p", {key: "p", className: "info"}, React.createElement("strong", null, "Outcomes:")),
+                React.createElement("ul", {key: "ul", className: "outcomes"}, 
+                    outcomeList
+                )
+            ];
+        }
+
+        return [];
+    },
+
+    /**
+     * Render the like button for the item.
+     * @return {object} Renderable object for the like button.
+     */
+    renderLikeButton: function() {
+        return (
+            React.createElement(CACatalogLike, {course: this.state.course})
+        );
+    },
+
+    /**
+     * Render the add course to schedule button.
+     * @return {object} Renderable object for the add button.
+     */
+    renderAddButton: function() {
+        return (
+            React.createElement(CACatalogAdd, {course: this.state.course})
+        );
+    },
+
+    /**
+     * Render the enrollment information for the course.
+     * @return {object} Renderable object for the enrollment information.
+     */
+    renderEnrollment: function() {
+        var course = this.state.course,
+            groupList = [];
+
+        _.each(course.groups, function(group) {
+            groupList.push(
+                React.createElement(CACatalogGroup, {key: group.id, group: group})
+            );
+        }, this);
+
+        return (
+            React.createElement("div", {className: "enrollment course-section"}, 
+                React.createElement("h3", null, "Enrollment Options"), 
+                groupList
+            )
+        );
+    },
+
+    /**
+     * Render the difficulty ratings for a course.
+     * @return {object} Renderable object for the difficulty ratings.
+     */
+    renderDifficulty: function() {
+        return (
+            React.createElement(CACatalogDifficulty, {course: this.state.course})
+        );
+    },
+
+    /**
+     * Render the comments for a course.
+     * @return {object} Renderable object for the comments section.
+     */
+    renderComments: function() {
+        return (
+            React.createElement(CACatalogComments, {course: this.state.course})
+        );
+    },
+
+    render: function() {
+        // Not loaded yet.
+        if (!this.state.course)
+            return (React.createElement("div", null));
+
+        var course = this.state.course,
+            description = course.description || 'No description available.',
+            extraInfo = this.renderExtraInfo(),
+            likeButton = this.renderLikeButton(),
+            addButton = this.renderAddButton(),
+            enrollment = this.renderEnrollment(),
+            comments = this.renderComments(),
+            difficulty = this.renderDifficulty();
+
+        return (
+            React.createElement("div", {className: "ca-catalog-course ca-catalog-item"}, 
+                React.createElement("div", {className: "upper"}, 
+                    React.createElement("span", {className: "tag"}, 
+                        React.createElement("a", {className: "subject", 
+                            onClick: this._onSubjectClick}, 
+                            course.subject
+                        ), " ", 
+                        course.catalogNbr
+                    ), 
+                    React.createElement("span", {className: "when"}, course.catalogWhenOffered), 
+                    React.createElement("p", {className: "title"}, 
+                        course.titleLong
+                    )
+                ), 
+                React.createElement("div", {className: "lower"}, 
+                    React.createElement("p", {className: "description freight-sans-pro"}, 
+                        description
+                    ), 
+                    React.createElement("div", {className: "action-buttons"}, 
+                        likeButton, 
+                        addButton
+                    ), 
+                    React.createElement("div", {className: "extra-info freight-sans-pro"}, 
+                        extraInfo
+                    )
+                ), 
+                enrollment, 
+                difficulty, 
+                comments
+            )
+        );
+    },
+
+    /**
+     * Event handler for clicking on a subject link.
+     */
+    _onSubjectClick: function() {
+        ModalActions.catalogSubject(this.state.course.subject);
+    },
+});
+
+module.exports = CACatalogCourse;
+
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../stores/ScheduleStore":46,"./CACatalogAdd":11,"./CACatalogComments":13,"./CACatalogDifficulty":15,"./CACatalogGroup":16,"./CACatalogLike":18,"classnames":53,"react/addons":69,"underscore":243}],15:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogComments is the component that renders the difficulty ratings
+ * section in a single course catalog page. Component styles are located in
+ * _CACatalogDifficulty.scss.
+ */
+
+var React = require('react/addons'),
+    UserStore = require('../stores/UserStore'),
+    ReactSlider = require('react-slider'),
+    _ = require('underscore');
+
+var CACatalogDifficulty = React.createClass({displayName: "CACatalogDifficulty",
+    propTypes: {
+        course: React.PropTypes.object.isRequired
+    },
+
+    getInitialState: function() {
+        return {
+            activeValue: 1
+        };
+    },
+
+    componentWillMount: function() {
+        this.allRatings = [
+            null,
+            'Easy',
+            'Moderate',
+            'Tough',
+            'Very Difficult',
+            'Holy Shit'
+        ];
+    },
+
+    /**
+     * Calculate the sum of the values of all the ratings.
+     * @return {number} Sum of all of the ratings together.
+     */
+    calculateRatingSum: function() {
+        return _.reduce(this.props.course.ratings, function(sum, rating) {
+            return sum + parseInt(rating.value);
+        }, 0);
+    },
+
+    /**
+     * Calculate the number of ratings there are of a certain value.
+     * @param {number} value Value to filter ratings for.
+     * @return {number} Number of ratings there are of the value.
+     */
+    ratingCountForValue: function(value) {
+        return _.filter(this.props.course.ratings, function(rating) {
+            return rating.value == value;
+        }).length;
+    },
+
+    /**
+     * Determine if the user has already rated the course.
+     * @return {boolean} True if the user has submitted a rating, false if not.
+     */
+    userHasRated: function() {
+        // Non logged-in users can't have rated the course.
+        if (!UserStore.isLoggedIn())
+            return false;
+
+        return _.some(this.props.course.ratings, function(rating) {
+            return rating.userId == UserStore.getUser().id;
+        });
+    },
+
+    /**
+     * Render the labels for the difficulty ratings.
+     * @return {object} Renderable object that contains all of the labels.
+     */
+    renderLabels: function() {
+        var labelList = [],
+            allRatings = Array.prototype.slice.call(this.allRatings).reverse();
+
+        // Create a label for all the possible ratings.
+        _.each(allRatings, function(rating, i) {
+            // Skip if this is the last null label.
+            if (!rating)
+                return;
+
+            var difficulty = 5 - i;
+
+            labelList.push(
+                React.createElement("p", {key: i, className: "label"}, 
+                    rating
+                )
+            );
+        }, this);
+
+        return (
+            React.createElement("div", {className: "labels"}, 
+                labelList
+            )
+        );
+    },
+
+    /**
+     * Render the percentage bar for the difficulty ratings.
+     * @return {object} Renderable object that contains all of the ratings
+     *      percentage bars.
+     */
+    renderBars: function() {
+        var barList = [],
+            allRatings = Array.prototype.slice.call(this.allRatings).reverse();
+
+        // Create a bar for all the possible ratings.
+        _.each(allRatings, function(rating, i) {
+            // Skip if this is the last null label.
+            if (!rating)
+                return;
+
+            var difficulty = 5 - i,
+                count = this.ratingCountForValue(difficulty),
+                barClass = 'bar difficulty' + difficulty,
+                width = count ? 100 * count / this.props.course.ratings.length :
+                    0;
+                barStyle = {
+                    width: width + '%'
+                };
+
+            barList.push(
+                React.createElement("div", {key: i, className: barClass}, 
+                    React.createElement("div", {className: "fill", style: barStyle})
+                )
+            );
+        }, this);
+
+        return (
+            React.createElement("div", {className: "bars"}, 
+                barList
+            )
+        );
+    },
+
+    /**
+     * Render the ratings counts for the difficulty ratings.
+     * @return {object} Renderable object that contains all of the ratings
+     *      counts.
+     */
+    renderCounts: function() {
+        var countList = [],
+            allRatings = Array.prototype.slice.call(this.allRatings).reverse();
+
+        // Create a count label for all the possible ratings.
+        _.each(allRatings, function(rating, i) {
+            // Skip if this is the last null label.
+            if (!rating)
+                return;
+
+            var difficulty = 5 - i,
+                count = this.ratingCountForValue(difficulty);
+
+            countList.push(
+                React.createElement("p", {key: i, className: "count"}, 
+                    count
+                )
+            );
+        }, this);
+
+        return (
+            React.createElement("div", {className: "counts"}, 
+                countList
+            )
+        );
+    },
+
+    /**
+     * Render the headline information for the difficulty rating.
+     * @return {object} Renderable object for the headline.
+     */
+    renderHeadline: function() {
+        var ratings = this.props.course.ratings;
+
+        // No ratings for the course.
+        if (!ratings.length) {
+            return (
+                React.createElement("div", {className: "headline"}, 
+                    React.createElement("p", {className: "main-headline"}, 
+                        "No Ratings"
+                    )
+                )
+            );
+        } else {
+            var average = this.calculateRatingSum() / ratings.length,
+                averageRounded = Math.round(average),
+                averageLabel = this.allRatings[averageRounded],
+                mainHeadlineClass = 'main-headline difficulty' + averageRounded;
+
+            return (
+                React.createElement("div", {className: "headline"}, 
+                    React.createElement("p", {className: mainHeadlineClass}, 
+                        averageLabel, " (", average.toFixed(1), ")"
+                    ), 
+                    React.createElement("p", {className: "second-headline"}, 
+                        "from ", ratings.length, " ratings"
+                    )
+                )
+            );
+        }
+    },
+
+    /**
+     * Render the area to add a rating for the course.
+     * @return {object} Renderable object to rate the course with.
+     */
+    renderRateSection: function() {
+        var activeValue = this.state.activeValue,
+            ratingLabels = [],
+            rangeClass = 'slider value' + activeValue,
+            allRatings = Array.prototype.slice.call(this.allRatings);
+
+        // Create a rating label for all the possible ratings.
+        _.each(allRatings, function(rating, i) {
+            // Skip if this is the last null label.
+            if (!rating)
+                return;
+
+            var difficulty = 5 - i;
+
+            ratingLabels.push(
+                React.createElement("p", {key: i, className: "rating-label"}, 
+                    rating
+                )
+            );
+        }, this);
+
+        return (
+            React.createElement("div", {className: "rate-section"}, 
+                React.createElement("h5", null, "Add a Difficulty Rating"), 
+                React.createElement(ReactSlider, {ref: "range", defaultValue: activeValue, min: 1, 
+                    max: 5, step: 1, className: rangeClass, 
+                    onChange: this._onRangeChange}), 
+                React.createElement("div", {className: "rating-labels"}, 
+                    ratingLabels
+                ), 
+                React.createElement("div", {className: "ca-catalog-button red submit", 
+                    onClick: this._onRatingClick}, 
+                    "Submit Rating"
+                )
+            )
+        );
+    },
+
+    render: function() {
+        var headline = this.renderHeadline(),
+            labels = this.renderLabels(),
+            bars = this.renderBars(),
+            counts = this.renderCounts(),
+            rateSection = this.renderRateSection();
+
+        return  (
+            React.createElement("div", {className: "ca-catalog-difficulty course-section"}, 
+                React.createElement("h3", null, "Difficulty Rating"), 
+                headline, 
+                React.createElement("div", {className: "graph"}, 
+                    labels, 
+                    bars, 
+                    counts
+                ), 
+                rateSection
+            )
+        );
+    },
+
+    /**
+     * Event handler for submitting a rating for the course.
+     */
+    _onRatingClick: function() {
+        // Skip if not logged in.
+        if (!UserStore.isLoggedIn())
+            return UserStore.guestNotice('rate a course');
+
+        var range = this.refs.range,
+            course = this.props.course,
+            ratings = course.ratings,
+            value = range.getValue();
+
+        // Add a rating to the ratings list.
+        if (!this.userHasRated())
+            ratings.push({
+                userId: UserStore.getUser().id,
+                value: value
+            });
+
+        // Update the user's rating.
+        else
+            _.find(ratings, function(rating) {
+                return rating.userId == UserStore.getUser().id;
+            }).value = value;
+
+        // Push the changes to render.
+        this.forceUpdate();
+
+        // Persist the rating operation in the backend.
+        $.ajax({
+            type: 'post',
+            url: '/api/rating/' + course.crseId + '/' + value
+        });
+    },
+
+    /**
+     * Event handler for changing the value of the range slider.
+     */
+    _onRangeChange: function(v) {
+        this.setState({
+            activeValue: v
+        });
+    }
+});
+
+module.exports = CACatalogDifficulty;
+
+},{"../stores/UserStore":47,"react-slider":68,"react/addons":69,"underscore":243}],16:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogGroup is the component that renders a course group for the catalog.
+ * Component styles are located in _CACatalogGroup.scss.
+ */
+
+var React = require('react/addons'),
+    CACatalogSection = require('./CACatalogSection'),
+    ModalActions = require('../actions/ModalActions'),
+    strutil = require('../utils/strutil'),
+    pluralize = require('pluralize'),
+    _ = require('underscore');
+
+var CACatalogGroup = React.createClass({displayName: "CACatalogGroup",
+    propTypes: {
+        group: React.PropTypes.object.isRequired
+    },
+
+    componentWillMount: function() {
+        this.componentMap = {
+            LAB: 'laboratory',
+            DIS: 'discussion',
+            LEC: 'lecture',
+            SEM: 'seminar',
+            RSC: 'research',
+            FLD: 'field studies',
+            CLN: 'clinical',
+            STU: 'studio',
+            TA: 'tutor group',
+            IND: 'independent study',
+        };
+    },
+
+    /**
+     * Render the informational line that display which components to choose and
+     * the course combination.
+     * @return {array} Array of renderable object for the byline.
+     */
+    renderByline: function() {
+        var group = this.props.group,
+            componentsRequired = JSON.parse(group.componentsRequired),
+            componentsOptional = JSON.parse(group.componentsOptional),
+            byline = [];
+
+        // Render the choose components line if necessary.
+        if (componentsRequired.length + componentsOptional.length > 1) {
+            chooseLine = 'Choose';
+
+            _.each(componentsRequired, function(c) {
+                chooseLine += ' one ' + this.componentMap[c];
+            }, this);
+            chooseLine += '. ';
+
+            if (componentsOptional.length) {
+                var comp = componentsOptional[0];
+                comp = strutil.capitalize(comp);
+
+                chooseLine += ' ' + comp + ' optional. ';
+            }
+
+            byline.push(
+                React.createElement("span", {key: "choose"}, 
+                    chooseLine
+                )
+            );
+        }
+
+        // Render course combinations if necessary.
+        var combinations = JSON.parse(group.simpleCombinations);
+        if (combinations.length) {
+            byline.push(
+                React.createElement("span", {key: "combination"}, 
+                    "Combined with: "
+                )
+            );
+
+            // Iterate through each combination.
+            _.each(combinations, function(combination, i) {
+                byline.push(
+                    React.createElement("span", {key: i, className: "combination-link", 
+                        onClick: this._onCourseClick.bind(this,
+                        combination.subject, combination.catalogNbr)}, 
+                        combination.subject + combination.catalogNbr
+                    )
+                );
+
+                if (i !== combinations.length - 1)
+                    byline.push(
+                        React.createElement("span", {key: 'comma' + i}, 
+                            ", "
+                        )
+                    );
+            }, this);
+        }
+
+        return (
+            React.createElement("p", {className: "byline"}, 
+                byline
+            )
+        );
+    },
+
+    /**
+     * Render the sections for the group.
+     * @return {array} Array of renderable objects for the group.
+     */
+    renderSections: function() {
+        var sections = this.props.group.sections,
+            sectionList = [];
+
+        // Iterate through each section.
+        _.each(sections, function(section) {
+            sectionList.push(
+                React.createElement(CACatalogSection, {key: section.id, section: section, 
+                    group: this.props.group})
+            );
+        }, this);
+
+        return (
+            React.createElement("div", {className: "sections"}, 
+                sectionList
+            )
+        );
+    },
+
+    /**
+     * Render the credits information for the group.
+     * @return {}
+     */
+    renderCredits: function() {
+        var group = this.props.group,
+            creditsLine;
+
+        // Render only one option for credit amount.
+        if (group.unitsMaximum == group.unitsMinimum) {
+            var credits = group.unitsMaximum;
+            creditsLine = credits + ' ' + pluralize('credit', credits);
+        } else {
+            creditsLine = group.unitsMinimum + '-' + group.unitsMaximum +
+                ' credits';
+        }
+
+        return (
+            React.createElement("div", {className: "credits"}, 
+                React.createElement("p", {className: "primary"}, creditsLine), 
+                React.createElement("p", {className: "secondary"}, group.gradingBasisLong)
+            )
+        );
+    },
+
+    render: function() {
+        var byline = this.renderByline(),
+            sections = this.renderSections(),
+            credits = this.renderCredits();
+
+        return (
+            React.createElement("div", {className: "ca-catalog-group"}, 
+                byline, 
+                sections, 
+                credits, 
+                React.createElement("hr", null)
+            )
+        );
+    },
+
+    /**
+     * Event handler for clicking on a course link.
+     * @param {string} subject Subject of the course.
+     * @param {number} number Catalog number of the course.
+     */
+    _onCourseClick: function(subject, number) {
+        ModalActions.catalogCourse(subject, number);
+    }
+});
+
+module.exports = CACatalogGroup;
+
+},{"../actions/ModalActions":1,"../utils/strutil":48,"./CACatalogSection":22,"pluralize":63,"react/addons":69,"underscore":243}],17:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogItem is the component that renders a preview item for a course.
+ * Component styles are located in _CACatalogItem.scss.
+ */
+
+var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    ModalActions = require('../actions/ModalActions'),
+    CACatalogLike = require('./CACatalogLike'),
+    CACatalogAdd = require('./CACatalogAdd'),
+    _ = require('underscore');
+
+var CACatalogItem = React.createClass({displayName: "CACatalogItem",
+    propTypes: {
+        course: React.PropTypes.object.isRequired
+    },
+
+    /**
+     * Render extra info for the course if there is any to display.
+     * @return {array} Array of renderable objects to display extra info.
+     */
+    renderExtraInfo: function() {
+        var course = this.props.course,
+            infoList = [],
+            infos = [
+                ['Satisfies Requirement', 'catalogSatisfiesReq'],
+                ['Breadth Requirement', 'catalogBreadth'],
+                ['Distribution Category', 'catalogDistr'],
+            ];
+
+        _.each(infos, function(info) {
+            if (course[info[1]])
+                infoList.push(
+                    React.createElement("p", {key: info[1], className: "info"}, 
+                        React.createElement("strong", null, info[0], ":"), " ", 
+                        info[0]
+                    )
+                );
+        }, this);
+
+        return infoList;
+    },
+
+    /**
+     * Render the like button for the item.
+     * @return {object} Renderable object for the like button.
+     */
+    renderLikeButton: function() {
+        return (
+            React.createElement(CACatalogLike, {course: this.props.course})
+        );
+    },
+
+    /**
+     * Render the add course to schedule button.
+     * @return {object} Renderable object for the add button.
+     */
+    renderAddButton: function() {
+        return (
+            React.createElement(CACatalogAdd, {course: this.props.course})
+        );
+    },
+
+    render: function() {
+        var course = this.props.course,
+            description = course.description || 'No description available.',
+            extraInfo = this.renderExtraInfo(),
+            likeButton = this.renderLikeButton(),
+            addButton = this.renderAddButton();
+
+        return (
+            React.createElement("div", {className: "ca-catalog-item"}, 
+                React.createElement("div", {className: "upper"}, 
+                    React.createElement("span", {className: "tag"}, 
+                        React.createElement("a", {className: "subject", 
+                            onClick: this._onSubjectClick}, 
+                            course.subject
+                        ), " ", 
+                        course.catalogNbr
+                    ), 
+                    React.createElement("span", {className: "when"}, course.catalogWhenOffered), 
+                    React.createElement("p", {className: "title", onClick: this._onCourseClick}, 
+                        course.titleLong
+                    )
+                ), 
+                React.createElement("div", {className: "lower"}, 
+                    React.createElement("p", {className: "description freight-sans-pro"}, 
+                        description
+                    ), 
+                    React.createElement("div", {className: "action-buttons"}, 
+                        likeButton, 
+                        addButton, 
+                        React.createElement("div", {onClick: this._onCourseClick, 
+                            className: "ca-catalog-button button"}, 
+                            "View Details"
+                        )
+                    ), 
+                    React.createElement("div", {className: "extra-info freight-sans-pro"}, 
+                        extraInfo
+                    )
+                )
+            )
+        );
+    },
+
+    /**
+     * Event handler for clicking on a subject link.
+     */
+    _onSubjectClick: function() {
+        ModalActions.catalogSubject(this.props.course.subject);
+    },
+
+    /**
+     * Event handler for clicking on a course link.
+     */
+    _onCourseClick: function() {
+        var course = this.props.course;
+        ModalActions.catalogCourse(course.subject, course.catalogNbr);
+    }
+});
+
+module.exports = CACatalogItem;
+
+},{"../actions/ModalActions":1,"../stores/ScheduleStore":46,"./CACatalogAdd":11,"./CACatalogLike":18,"react/addons":69,"underscore":243}],18:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogLike is the component that renders a button to like a course in the
+ * catalog. Component styles are located in _CACatalogLike.scss.
+ */
+
+var React = require('react/addons'),
+    UserStore = require('../stores/UserStore'),
+    classNames = require('classnames'),
+    _ = require('underscore');
+
+var CACatalogLike = React.createClass({displayName: "CACatalogLike",
+    propTypes: {
+        course: React.PropTypes.object.isRequired
+    },
+
+    /**
+     * Determine whether the course has already been liked.
+     * @return {boolean} True if the course has been liked, false if not.
+     */
+    courseIsLiked: function() {
+        var likes = this.props.course.likes;
+
+        return UserStore.isLoggedIn() && _.some(likes, function(l) {
+                return l.userId == UserStore.getUser().id;
+            });
+    },
+
+    /**
+     * Send a request to the backend to persist a like operation and update the
+     * component view.
+     * @param {boolean} shouldLike Whether to like or dislike the course.
+     */
+    processOperation: function(shouldLike) {
+        var course = this.props.course;
+
+        this.forceUpdate();
+
+        $.ajax({
+            type: 'post',
+            url: '/api/like/' + course.crseId + '/' + course.subject,
+            data: { shouldLike: shouldLike }
+        });
+    },
+
+    render: function() {
+        var likes = this.props.course.likes,
+            likeCount = likes.length,
+            isLiked = this.courseIsLiked(),
+            hasLikes = likeCount ? 'has-likes' : '',
+            rootClass = classNames('ca-catalog-button', 'button', 'like', {
+                'liked': isLiked,
+                'has-likes': hasLikes
+            });
+
+        return (
+            React.createElement("div", {className: rootClass, onClick: this._onLike}, 
+                React.createElement("i", {className: "icon-favorite"}), 
+                React.createElement("span", {className: "label"}, likeCount)
+            )
+        );
+    },
+
+    /**
+     * Event handler for liking and unliked the course.
+     */
+    _onLike: function() {
+        // Skip if not logged in.
+        if (!UserStore.isLoggedIn())
+            return UserStore.guestNotice('like a course');
+
+        var course = this.props.course,
+            likes = course.likes;
+
+        if (this.courseIsLiked()) {
+            var indexOf = _.findIndex(likes, function(like) {
+                return like.userId == UserStore.getUser().id;
+            });
+
+            // Found the like object to remove.
+            if (indexOf !== -1) {
+                likes.splice(indexOf, 1);
+                this.processOperation(false);
+            }
+
+        } else {
+            // Create a new like object.
+            likes.push({ userId: UserStore.getUser().id });
+
+            this.processOperation(true);
+        }
+    }
+});
+
+module.exports = CACatalogLike;
+
+},{"../stores/UserStore":47,"classnames":53,"react/addons":69,"underscore":243}],19:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogList is the component that displays an aggregate of courses.
+ * Component styles are located in _CACatalogList.scss.
+ */
+
+var React = require('react/addons'),
+    CACatalogItem = require('./CACatalogItem'),
+    _ = require('underscore');
+
+var CACatalogList = React.createClass({displayName: "CACatalogList",
+    propTypes: {
+        page: React.PropTypes.object,
+        courses: React.PropTypes.array
+    },
+
+    getInitialState: function() {
+        return {
+            courses: []
+        };
+    },
+
+    // Trigger a page change if the page was changed.
+    componentDidUpdate: function(prevProps, __) {
+        // Skip if the the props did not change.
+        if (_.isEqual(prevProps, this.props))
+            return;
+
+        this.setState({ courses: false });
+        this.load();
+    },
+
+    componentDidMount: function() {
+        // Load if no initial courses array was passed on initialization.
+        if (!this.props.courses)
+            this.load();
+
+        // Initialize with props courses data.
+        else
+            this.setState({ courses: this.props.courses });
+    },
+
+    /**
+     * Load the rendering data from the backend.
+     */
+    load: function() {
+        var url = '/catalog/' + this.props.page.strm;
+
+        if (this.props.page.type === 'subject')
+            url += '/subject/' + this.props.page.subject;
+
+        else if(this.props.page.type === 'random')
+            url += '/random';
+
+        else if(this.props.page.type === 'most-liked')
+            url += '/most-liked';
+
+        $.ajax({
+            url: url,
+            success: _.bind(function(data) {
+                this.setState({ courses: data });
+            }, this)
+        });
+    },
+
+    /**
+     * Render a course item preview.
+     * @param {object} course Course object to render a preview for.
+     * @return {object} Renderable object to display the course information
+     *      preview.
+     */
+    renderCourse: function(course) {
+        return (
+            React.createElement(CACatalogItem, {key: course.id, course: course})
+        );
+    },
+
+    render: function() {
+        var courses = this.state.courses,
+            itemList = [],
+            emptyMessage = null;
+
+        // Iterate through all of the courses in the list.
+        _.each(courses, function(course) {
+            itemList.push(this.renderCourse(course));
+        }, this);
+
+        return (
+            React.createElement("div", {className: "ca-catalog-list"}, 
+                itemList
+            )
+        );
+    }
+});
+
+module.exports = CACatalogList;
+
+},{"./CACatalogItem":17,"react/addons":69,"underscore":243}],20:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogMeeting is the component that renders a course meeting for the
+ * catalog. Component styles are located in _CACatalogMeeting.scss.
+ */
+
+var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    _ = require('underscore');
+
+var CACatalogMeeting = React.createClass({displayName: "CACatalogMeeting",
+    propTypes: {
+        group: React.PropTypes.object.isRequired,
+        meeting: React.PropTypes.object.isRequired
+    },
+
+    componentWillMount: function() {
+        this.dayMap = {
+            M: 'Mon',
+            T: 'Tue',
+            W: 'Wed',
+            R: 'Thur',
+            F: 'Fri',
+            S: 'Sat',
+            Su: 'Sun'
+        };
+    },
+
+    /**
+     * Format the time string for the meeting for the catalog view. Example:
+     * 04:25PM to 4:25pm.
+     * @param {string} time Time string of the meeting.
+     */
+    formatTime: function(time) {
+        time = time.toLowerCase();
+        // Skip if the time is empty.
+        if (!time)
+            return '';
+
+        // Remove a leading zero.
+        if (time[0] === '0')
+            return time.substring(1);
+
+        return time;
+    },
+
+    /**
+     * Render the days that the meeting meets.
+     * @return {object} Renderable object for the days of the meeting.
+     */
+    renderDays: function() {
+        var meeting = this.props.meeting,
+            days = ScheduleStore.daysFromPattern(meeting.pattern);
+
+        // Translate the day slugs to the abbreviations.
+        days = _.map(days, function(day) {
+            return this.dayMap[day];
+        }, this);
+
+        // Output TBA if no pattern exists.
+        days = days.length ? days.join(', ') : 'TBA';
+
+        return (
+            React.createElement("div", {className: "days"}, 
+                days
+            )
+        );
+    },
+
+    /**
+     * Render the times that the meeting meets.
+     * @return {object} Renderable object for the times of the meeting.
+     */
+    renderTime: function() {
+        var meeting = this.props.meeting,
+            group = this.props.group,
+            time = null,
+            dates = null;
+
+        // Render the time of the meeting.
+        if (meeting.timeStart) {
+            time = this.formatTime(meeting.timeStart) + ' - ' +
+                this.formatTime(meeting.timeEnd);
+        }
+
+        // If the group is a special session, render the dates.
+        if (group.sessionCode != '1') {
+            dates = (
+                React.createElement("span", {className: "dates"}, 
+                    group.sessionBeginDt, " - ", group.sessionEndDt
+                )
+            );
+        }
+
+        return (
+            React.createElement("p", {className: "time"}, 
+                time, 
+                dates
+            )
+        );
+    },
+
+    /**
+     * Render the location where the meeting meets or "To Be Assigned".
+     * @return {object} Renderable object for the location of the meeting.
+     */
+    renderLocation: function() {
+        var location = this.props.meeting.facilityDescr || 'To Be Assigned';
+
+        return (
+            React.createElement("p", {className: "location"}, 
+                location
+            )
+        );
+    },
+
+    /**
+     * Render the professors for the meeting.
+     * @return {object} Renderable object for the professors of the meeting.
+     */
+    renderProfessors: function() {
+        var meeting = this.props.meeting,
+            professors = meeting.professors;
+
+        // Translate each professor name.
+        professors = _.map(professors, function(p) {
+            return p.firstName + ' ' +
+                (p.middleName.length ? p.middleName + ' ' : '') +
+                p.lastName;
+        });
+
+        return (
+            React.createElement("p", {className: "professors"}, 
+                professors
+            )
+        );
+    },
+
+    render: function() {
+        var days = this.renderDays(),
+            time = this.renderTime(),
+            location = this.renderLocation(),
+            professors = this.renderProfessors();
+
+        return (
+            React.createElement("div", {className: "ca-catalog-meeting"}, 
+                React.createElement("div", {className: "second-column"}, 
+                    days
+                ), 
+                React.createElement("div", {className: "third-column"}, 
+                    time, 
+                    location
+                ), 
+                React.createElement("div", {className: "fourth-column"}, 
+                    professors
+                )
+            )
+        );
+    }
+});
+
+module.exports = CACatalogMeeting;
+
+},{"../stores/ScheduleStore":46,"react/addons":69,"underscore":243}],21:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogSearch is the component that renders search results in the catalog.
+ * Component styles are located in _CACatalogSearch.scss.
+ */
+
+var React = require('react/addons'),
+    CACatalogList = require('./CACatalogList'),
+    CACatalogCourse = require('./CACatalogCourse'),
+    classNames = require('classnames'),
+    _ = require('underscore');
+
+var CACatalogSearch = React.createClass({displayName: "CACatalogSearch",
+    propTypes: {
+        page: React.PropTypes.object.isRequired
+    },
+
+    getInitialState: function() {
+        return {
+            data: [],
+            loading: true
+        };
+    },
+
+    // Trigger a page change if the page was changed.
+    componentDidUpdate: function(prevProps, __) {
+        // Skip if the the props did not change.
+        if (_.isEqual(prevProps, this.props))
+            return;
+
+        this.setState({ courses: false, loading: true });
+        this.load();
+
+    },
+
+    componentDidMount: function() {
+        this.load();
+    },
+
+    /**
+     * Load the rendering data from the backend.
+     */
+    load: function() {
+        $.ajax({
+            url: '/catalog/' + this.props.page.strm + '/search/' +
+                this.props.page.term,
+            success: _.bind(function(data) {
+                this.setState({ data: data, loading: false });
+            }, this)
+        });
+    },
+
+    render: function() {
+        var data = this.state.data,
+            element = null,
+            emptyMessage = null;
+
+        // Empty data.
+        if (_.isArray(data) && !data.length) {
+            // Finished loading.
+            if (!this.state.loading)
+                emptyMessage = (
+                    React.createElement("p", {className: "empty-message"}, 
+                        "No Courses Found"
+                    )
+                );
+
+        // Render a list of courses.
+        } else if (_.isArray(data)) {
+            element = (
+                React.createElement(CACatalogList, {courses: data})
+            );
+
+        // Render a single course.
+        } else {
+            element = (
+                React.createElement(CACatalogCourse, {course: data})
+            );
+        }
+
+        return (
+            React.createElement("div", {className: "ca-catalog-search"}, 
+                element, 
+                emptyMessage
+            )
+        );
+    }
+});
+
+module.exports = CACatalogSearch;
+
+},{"./CACatalogCourse":14,"./CACatalogList":19,"classnames":53,"react/addons":69,"underscore":243}],22:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogGroup is the component that renders a course section for the
+ * catalog. Component styles are located in _CACatalogSection.scss.
+ */
+
+var React = require('react/addons'),
+    CACatalogMeeting = require('./CACatalogMeeting'),
+    _ = require('underscore');
+
+var CACatalogSection = React.createClass({displayName: "CACatalogSection",
+    propTypes: {
+        group: React.PropTypes.object.isRequired,
+        section: React.PropTypes.object.isRequired
+    },
+
+    /**
+     * Render the meetings for the section.
+     * @return {object} Renderable object for the sections.
+     */
+    renderMeetings: function() {
+        var section = this.props.section,
+            meetingList = [];
+
+        // Iterate through all of the meetings.
+        _.each(section.meetings, function(meeting) {
+            meetingList.push(
+                React.createElement(CACatalogMeeting, {key: meeting.id, meeting: meeting, 
+                    group: this.props.group})
+            );
+        }, this);
+
+        return (
+            React.createElement("div", {className: "meetings"}, 
+                meetingList
+            )
+        );
+    },
+
+    /**
+     * Render notes for the section.
+     * @return {object} Renderable object for the notes of the section.
+     */
+    renderNotes: function() {
+        var section = this.props.section,
+            notes = JSON.parse(section.notes);
+
+        if (notes.length) {
+            return (
+                React.createElement("div", {className: "notes"}, 
+                    notes.join('; ')
+                )
+            );
+        }
+
+        return null;
+    },
+
+    render: function() {
+        var section = this.props.section,
+            meetings = this.renderMeetings(),
+            notes = this.renderNotes();
+
+        return (
+            React.createElement("div", {className: "ca-catalog-section"}, 
+                React.createElement("div", {className: "first-column"}, 
+                    React.createElement("div", {className: "tag"}, 
+                        section.ssrComponent, " ", section.section
+                    ), 
+                    React.createElement("div", {className: "classId"}, "(", section.classNbr, ")")
+                ), 
+                meetings, 
+                notes
+            )
+        );
+    }
+});
+
+module.exports = CACatalogSection;
+
+},{"./CACatalogMeeting":20,"react/addons":69,"underscore":243}],23:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CACatalogSubjects is the component that displays all of the subjects
+ * that offer classes during a semester. Component styles are located in
+ * _CACatalogSubjects.scss.
+ */
+
+var React = require('react/addons'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    ModalActions = require('../actions/ModalActions'),
+    _ = require('underscore');
+
+var CACatalogSubjects = React.createClass({displayName: "CACatalogSubjects",
+    propTypes: {
+        page: React.PropTypes.object.isRequired
+    },
+
+    getInitialState: function() {
+        return {
+            subjects: []
+        };
+    },
+
+    componentDidMount: function() {
+        this.load();
+    },
+
+    /**
+     * Load the rendering data from the backend.
+     */
+    load: function() {
+        $.ajax({
+            url: '/catalog/' + this.props.page.strm + '/subjects',
+            success: _.bind(function(data) {
+                this.setState({
+                    subjects: data
+                });
+            }, this)
+        });
+    },
+
+    /**
+     * Render an individual subject item.
+     * @param {object} subject Subject object to render.
+     * @return {object} Renderable object for the subject item.
+     */
+    renderSubjectItem: function(subject) {
+        return (
+            React.createElement("div", {className: "subject-item", key: subject.value, 
+                onClick: this._onSubjectClick.bind(this, subject.value,
+                    subject.descrformal)}, 
+                React.createElement("span", {className: "abbreviation"}, subject.value), 
+                React.createElement("span", {className: "description"}, subject.descrformal)
+            )
+        );
+    },
+
+    render: function() {
+        var subjects = this.state.subjects,
+            leftColumnSubjects = [],
+            rightColumnSubjects = [];
+
+        // Iterate through all of the subject items to be displayed on the left.
+        for (var s = 0; s < Math.floor(subjects.length / 2); s++) {
+            leftColumnSubjects.push(
+                this.renderSubjectItem(subjects[s])
+            );
+        }
+
+        // Iterate through all of the subject items to be displayed on the
+        // right.
+        for (s = Math.floor(subjects.length / 2); s < subjects.length; s++) {
+            rightColumnSubjects.push(
+                this.renderSubjectItem(subjects[s])
+            );
+        }
+
+        return (
+            React.createElement("div", {className: "ca-catalog-subjects"}, 
+                React.createElement("div", {className: "left"}, 
+                    leftColumnSubjects
+                ), 
+                React.createElement("div", {className: "right"}, 
+                    rightColumnSubjects
+                )
+            )
+        );
+    },
+
+    /**
+     * Event handler for selecting a subject and changing the catalog page.
+     * @param {string} subject Subject abbreviation to change the catalog to.
+     * @param {string} formalName Full name of the subject.
+     */
+    _onSubjectClick: function(subject, formalName) {
+        ModalActions.catalogSubject(subject);
+    }
+});
+
+module.exports = CACatalogSubjects;
+
+},{"../actions/ModalActions":1,"../stores/ScheduleStore":46,"react/addons":69,"underscore":243}],24:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1632,7 +3721,7 @@ var React = require('react/addons'),
 
  module.exports = CAColorPanel;
 
-},{"../stores/ScheduleStore":32,"classnames":38,"react/addons":53}],12:[function(require,module,exports){
+},{"../stores/ScheduleStore":46,"classnames":53,"react/addons":69}],25:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1680,7 +3769,7 @@ var CAHeader = React.createClass({displayName: "CAHeader",
                     ), 
                     React.createElement("button", {className: "ca-outline-button", 
                         onClick: this._onCatalog}, 
-                        "Open Catalog"
+                        "Course Catalog"
                     )
                 )
             );
@@ -1701,7 +3790,6 @@ var CAHeader = React.createClass({displayName: "CAHeader",
                     )
                 )
             );
-
 
         _.each(ScheduleStore.getSemesters(), function(s){
             var className = classNames('ca-fill-button', {
@@ -1785,7 +3873,7 @@ var CAHeader = React.createClass({displayName: "CAHeader",
 
 module.exports = CAHeader;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../actions/UserActions":3,"../stores/ScheduleStore":32,"classnames":38,"react/addons":53,"underscore":226}],13:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../actions/UserActions":3,"../stores/ScheduleStore":46,"classnames":53,"react/addons":69,"underscore":243}],26:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -1805,6 +3893,7 @@ var React = require('react/addons'),
     CAModalActivation = require('./CAModalActivation'),
     CAModalAccount = require('./CAModalAccount'),
     CAModalEnrollment = require('./CAModalEnrollment'),
+    CAModalSendSchedule = require('./CAModalSendSchedule'),
     ModalActions = require('../actions/ModalActions'),
     classNames = require('classnames');
 
@@ -1828,6 +3917,9 @@ var CAModal = React.createClass({displayName: "CAModal",
             return React.createElement(CAModalAccount, {name: this.props.data.name});
         else if (this.props.type === 'enrollment')
             return React.createElement(CAModalEnrollment, {courses: this.props.data.courses});
+        else if (this.props.type === 'send-schedule')
+            return React.createElement(CAModalSendSchedule, {
+                schedule: this.props.data.schedule});
     },
 
     render: function() {
@@ -1861,7 +3953,7 @@ var CAModal = React.createClass({displayName: "CAModal",
 
 module.exports = CAModal;
 
-},{"../actions/ModalActions":1,"./CAModalAccount":14,"./CAModalActivation":15,"./CAModalEnrollment":16,"./CAModalLogin":17,"./CAModalSignup":18,"classnames":38,"react/addons":53}],14:[function(require,module,exports){
+},{"../actions/ModalActions":1,"./CAModalAccount":27,"./CAModalActivation":28,"./CAModalEnrollment":29,"./CAModalLogin":30,"./CAModalSendSchedule":31,"./CAModalSignup":32,"classnames":53,"react/addons":69}],27:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2032,7 +4124,7 @@ var CAModalAccount = React.createClass({displayName: "CAModalAccount",
 
 module.exports = CAModalAccount;
 
-},{"../actions/ModalActions":1,"../actions/UserActions":3,"classnames":38,"react/addons":53}],15:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/UserActions":3,"classnames":53,"react/addons":69}],28:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2103,7 +4195,7 @@ var CAModalActivation = React.createClass({displayName: "CAModalActivation",
 
 module.exports = CAModalActivation;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../actions/UserActions":3,"classnames":38,"react/addons":53,"underscore":226}],16:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../actions/UserActions":3,"classnames":53,"react/addons":69,"underscore":243}],29:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2129,7 +4221,8 @@ var CAModalEnrollment = React.createClass({displayName: "CAModalEnrollment",
     },
 
     render: function() {
-        var classesInfo = [];
+        var classesInfo = [],
+            emptyMessage = null;
 
         // Loop through all selected courses.
         _.each(this.props.courses, function(course) {
@@ -2164,9 +4257,15 @@ var CAModalEnrollment = React.createClass({displayName: "CAModalEnrollment",
             );
         });
 
+        if (!this.props.courses.length)
+            emptyMessage = (
+                React.createElement("p", {className: "empty-message"}, "No Courses To Show")
+            );
+
         return (
             React.createElement("div", {className: "ca-modal-enrollment"}, 
                 React.createElement("h3", null, "Enrollment Class Numbers"), 
+                emptyMessage, 
                 classesInfo
             )
         );
@@ -2175,7 +4274,7 @@ var CAModalEnrollment = React.createClass({displayName: "CAModalEnrollment",
 
 module.exports = CAModalEnrollment;
 
-},{"../stores/ScheduleStore":32,"classnames":38,"react/addons":53,"underscore":226}],17:[function(require,module,exports){
+},{"../stores/ScheduleStore":46,"classnames":53,"react/addons":69,"underscore":243}],30:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2348,7 +4447,231 @@ var CAModalLogin = React.createClass({displayName: "CAModalLogin",
 
 module.exports = CAModalLogin;
 
-},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../actions/UserActions":3,"classnames":38,"react/addons":53}],18:[function(require,module,exports){
+},{"../actions/ModalActions":1,"../actions/ScheduleActions":2,"../actions/UserActions":3,"classnames":53,"react/addons":69}],31:[function(require,module,exports){
+/**
+ * Copyright (c) 2015, Cornellapp.
+ * All rights reserved.
+ *
+ * This source code is licensed under the GNU General Public License v3.0
+ * license found in the LICENSE file in the root directory of this source
+ * tree.
+ *
+ *
+ * CAModalSendSchedule renders a reusable modal to present a shareable link and
+ * a screenshot texter input. Component styles are located in
+ * _CAModalSendSchedule.scss.
+ */
+
+var React = require('react/addons'),
+    ModalActions = require('../actions/ModalActions'),
+    UserStore = require('../stores/UserStore'),
+    ScheduleStore = require('../stores/ScheduleStore'),
+    strutil = require('../utils/strutil'),
+    classNames = require('classnames');
+
+var CAModalSendSchedule = React.createClass({displayName: "CAModalSendSchedule",
+    propTypes: function() {
+        return {
+            schedule: React.PropTypes.string
+        };
+    },
+
+    getInitialState: function() {
+        return {
+            errorMessage: '',
+            texting: false
+        };
+    },
+
+    componentDidMount: function() {
+        // Load a new schedule object for the semester if the user does not
+        // have a schedule object yet.
+        if (!this.props.schedule) {
+            this.load();
+        }
+    },
+
+    /**
+     * Abort any pending requests.
+     */
+    componentWillUnmount: function() {
+        if (this.jqXHR && this.jqXHR.readyState !== 4)
+            this.jqXHR.abort();
+    },
+
+    /**
+     * Load a new schedule object for the semester for the user.
+     */
+    load: function() {
+        $.ajax({
+            type: 'POST',
+            url: '/api/schedule/' + ScheduleStore.getSemester().slug,
+            success: function(data) {
+                ModalActions.addSchedule(data);
+            }
+        });
+    },
+
+    /**
+     * Receive and parse the response from an attempt to text a screenshot.
+     * @param {object} data Response data for the text message attempt.
+     */
+    receiveTextResponse: function(data) {
+        this.setState({
+            texting: false
+        });
+
+        if (data.error)
+            return this.displayErrorMessage(data.error);
+    },
+
+    /**
+     * Render an error message.
+     * @param {string} error Error message to display.
+     */
+    displayErrorMessage: function(errorMessage) {
+        this.setState({
+            errorMessage: errorMessage
+        });
+    },
+
+    /**
+     * Render an empty modal except for the loading spinner.
+     * @return {object} Renderable object to represent the modal.
+     */
+    renderLoading: function() {
+        return (
+            React.createElement("div", {className: "ca-modal-send-schedule loading"}, 
+                React.createElement("div", {className: "spin-loader dark main"}, 
+                    React.createElement("div", null), 
+                    React.createElement("div", null), 
+                    React.createElement("div", null), 
+                    React.createElement("div", null), 
+                    React.createElement("div", null), 
+                    React.createElement("div", null), 
+                    React.createElement("div", null), 
+                    React.createElement("div", null)
+                )
+            )
+        );
+    },
+
+    render: function() {
+        if (!this.props.schedule)
+            return this.renderLoading();
+
+        var scheduleUrl = UserStore.getDomain() + '/schedule/' +
+                this.props.schedule,
+            textButtonClass = classNames('ca-red-button', {
+                loading: this.state.texting
+            }),
+            message = null;
+
+        if (this.state.errorMessage)
+            message = (
+                React.createElement("p", {className: "error-message"}, 
+                    this.state.errorMessage
+                )
+            );
+        else if (this.state.texting)
+            message = (
+                React.createElement("p", {className: "notice-message"}, 
+                    "You should receive a text in about 20-25 seconds."
+                )
+            );
+
+
+        return (
+            React.createElement("div", {className: "ca-modal-send-schedule"}, 
+                React.createElement("h3", null, "Send Schedule"), 
+                React.createElement("p", {className: "input-label"}, "Schedule Link"), 
+                React.createElement("p", {className: "share-link"}, scheduleUrl), 
+                React.createElement("p", {className: "input-label"}, "Text Screenshot to Mobile"), 
+                React.createElement("input", {className: "ca-clear-input phone", 
+                    type: "tel", name: "phone", ref: "number", 
+                    placeholder: "Phone Number", 
+                    onKeyDown: this._onKeyDown, required: true}), 
+                React.createElement("div", {className: "button-group"}, 
+                    React.createElement("button", {className: textButtonClass, 
+                        onClick: this._onText, 
+                        ref: "text"}, 
+                        React.createElement("span", {className: "label"}, "Text Screenshot"), 
+                        React.createElement("div", {className: "spin-loader"}, 
+                            React.createElement("div", null), 
+                            React.createElement("div", null), 
+                            React.createElement("div", null), 
+                            React.createElement("div", null), 
+                            React.createElement("div", null), 
+                            React.createElement("div", null), 
+                            React.createElement("div", null), 
+                            React.createElement("div", null)
+                        )
+                    ), 
+                    message
+                )
+            )
+        );
+    },
+
+    /**
+     * Event handler for texting the screenshot.
+     */
+    _onText: function(e) {
+        e.preventDefault();
+
+        // Prevent double submitting.
+        if (this.state.texting)
+            return;
+
+        var number = React.findDOMNode(this.refs.number).value + '';
+
+        // Verify that the schedule exists.
+        if (!this.props.schedule)
+            return this.displayErrorMessage(
+                'An error occurred. Please reload the page.');
+
+        // Display an error message if the number contains letters.
+        if (strutil.containsLetters(number))
+            return this.displayErrorMessage(
+                'Please enter a valid US phone number.');
+
+        number = number.replace(/\D/g,'');
+
+        // Quick and dirty check for the validity of the phone number
+        if (number.length !== 10 && (number.length !== 11 || number[0] != '1'))
+            return this.displayErrorMessage(
+                'Please enter a valid US phone number.');
+
+        if (number.length === 10)
+            number = '1' + number;
+
+        this.jqXHR = $.ajax({
+            type: 'post',
+            url: '/api/text-screenshot/' + this.props.schedule,
+            data: {
+                number: number
+            },
+            success: this.receiveTextResponse
+        });
+
+        this.setState({
+            texting: true,
+            errorMessage: ''
+        });
+    },
+
+    /**
+     * Event handler for pressing down a key.
+     */
+    _onKeyDown: function(e) {
+        if (e.key === 'Enter')
+            React.findDOMNode(this.refs.text).click();
+    }
+});
+
+module.exports = CAModalSendSchedule;
+
+},{"../actions/ModalActions":1,"../stores/ScheduleStore":46,"../stores/UserStore":47,"../utils/strutil":48,"classnames":53,"react/addons":69}],32:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2556,7 +4879,7 @@ var CAModalSignup = React.createClass({displayName: "CAModalSignup",
 
 module.exports = CAModalSignup;
 
-},{"../actions/ModalActions":1,"classnames":38,"react/addons":53}],19:[function(require,module,exports){
+},{"../actions/ModalActions":1,"classnames":53,"react/addons":69}],33:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2576,17 +4899,18 @@ var React = require('react/addons'),
     CAScheduleCourse = require('./CAScheduleCourse'),
     CAScheduleEvent = require('./CAScheduleEvent'),
     CAScheduleDropTargets = require('./CAScheduleDropTargets'),
+    classNames = require('classnames'),
     _ = require('underscore');
 
 var CASchedule = React.createClass({displayName: "CASchedule",
     propTypes: {
         entries: React.PropTypes.array.isRequired,
-        size: React.PropTypes.string
+        large: React.PropTypes.bool
     },
 
     getDefaultProps: function() {
         return {
-            size: 'normal'
+            large: false
         };
     },
 
@@ -2597,7 +4921,7 @@ var CASchedule = React.createClass({displayName: "CASchedule",
     },
 
     componentWillMount: function() {
-        this.hourHeight = this.props.size === 'normal' ? 75 : 120;
+        this.hourHeight = this.props.large ? 150 : 75;
         this.dayOffsetMap = {}; // will be overriden in componentDidMount
         this.dayMap = ScheduleStore.dayMap;
     },
@@ -2731,7 +5055,10 @@ var CASchedule = React.createClass({displayName: "CASchedule",
             entryItems = [],
             dropTargets,
             conflictMap = ScheduleStore.getScheduleConflictMap(),
-            renderMap = this.createRenderMap(conflictMap);
+            renderMap = this.createRenderMap(conflictMap),
+            rootClass = classNames('ca-schedule', {
+                large: this.props.large
+            });
 
         // Loop through courses and events in order.
         _.each(entries, function(entry) {
@@ -2743,6 +5070,7 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                     React.createElement(CAScheduleCourse, {key: entry.selection.key, 
                         pixelsBetweenTimes: this.pixelsBetweenTimes, 
                         course: entry, 
+                        large: this.props.large, 
                         conflictMap: conflictMap, 
                         renderMap: renderMap, 
                         dayOffsetMap: this.dayOffsetMap, 
@@ -2762,6 +5090,7 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                     React.createElement(CAScheduleEvent, {key: entry.key, 
                         pixelsBetweenTimes: this.pixelsBetweenTimes, 
                         event: entry, 
+                        large: this.props.large, 
                         conflictMap: conflictMap, 
                         renderMap: renderMap, 
                         dayOffsetMap: this.dayOffsetMap})
@@ -2778,7 +5107,7 @@ var CASchedule = React.createClass({displayName: "CASchedule",
                     pixelsBetweenTimes: this.pixelsBetweenTimes});
 
         return (
-            React.createElement("div", {className: "ca-schedule"}, 
+            React.createElement("div", {className: rootClass}, 
                 React.createElement("div", {className: "left"}, 
                     hourLabels
                 ), 
@@ -2862,7 +5191,7 @@ var CASchedule = React.createClass({displayName: "CASchedule",
 
 module.exports = CASchedule;
 
-},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":32,"./CAScheduleCourse":20,"./CAScheduleDropTargets":21,"./CAScheduleEvent":22,"react/addons":53,"underscore":226}],20:[function(require,module,exports){
+},{"../actions/ScheduleActions":2,"../stores/ScheduleStore":46,"./CAScheduleCourse":34,"./CAScheduleDropTargets":35,"./CAScheduleEvent":36,"classnames":53,"react/addons":69,"underscore":243}],34:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -2886,6 +5215,7 @@ var React = require('react/addons'),
 var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
     propTypes: {
         course: React.PropTypes.object.isRequired,
+        large: React.PropTypes.bool.isRequired,
         conflictMap: React.PropTypes.array.isRequired,
         renderMap: React.PropTypes.array.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
@@ -2964,6 +5294,7 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
             instances.push(
                 React.createElement(CAScheduleInstance, {key: meetingIndex + day, 
                     course: this.props.course, 
+                    large: this.props.large, 
                     section: section, 
                     meeting: meeting, 
                     conflicts: conflicts, 
@@ -3041,7 +5372,7 @@ var CAScheduleCourse = React.createClass({displayName: "CAScheduleCourse",
 
 module.exports = CAScheduleCourse;
 
-},{"../stores/ScheduleStore":32,"./CAScheduleInstance":23,"classnames":38,"react-draggable":49,"react/addons":53,"underscore":226}],21:[function(require,module,exports){
+},{"../stores/ScheduleStore":46,"./CAScheduleInstance":37,"classnames":53,"react-draggable":64,"react/addons":69,"underscore":243}],35:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3162,7 +5493,7 @@ var CAScheduleDropTargets = React.createClass({displayName: "CAScheduleDropTarge
 
 module.exports = CAScheduleDropTargets;
 
-},{"../stores/ScheduleStore":32,"./CAScheduleInstance":23,"classnames":38,"react/addons":53,"underscore":226}],22:[function(require,module,exports){
+},{"../stores/ScheduleStore":46,"./CAScheduleInstance":37,"classnames":53,"react/addons":69,"underscore":243}],36:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3185,6 +5516,7 @@ var React = require('react/addons'),
 var CAScheduleEvent = React.createClass({displayName: "CAScheduleEvent",
     propTypes: {
         event: React.PropTypes.object.isRequired,
+        large: React.PropTypes.bool.isRequired,
         conflictMap: React.PropTypes.array.isRequired,
         renderMap: React.PropTypes.array.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
@@ -3213,7 +5545,8 @@ var CAScheduleEvent = React.createClass({displayName: "CAScheduleEvent",
                 ScheduleStore.startTime),
             instanceClass = classNames('ca-schedule-instance',
                 ScheduleStore.dayMap[day], {
-                'conflict-of-2': conflicts
+                'conflict-of-2': conflicts,
+                large: this.props.large
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',
@@ -3250,7 +5583,9 @@ var CAScheduleEvent = React.createClass({displayName: "CAScheduleEvent",
         var event = this.props.event,
             selectedDays = ScheduleStore.daysFromPattern(event.pattern),
             eventInstances = [],
-            rootClass = 'ca-schedule-event ' + event.color;
+            rootClass = classNames('ca-schedule-event', event.color, {
+                large: this.props.large
+            });
 
         // Iterate through each selected day.
         _.each(selectedDays, function(day) {
@@ -3267,7 +5602,7 @@ var CAScheduleEvent = React.createClass({displayName: "CAScheduleEvent",
 
 module.exports = CAScheduleEvent;
 
-},{"../stores/ScheduleStore":32,"../utils/strutil":34,"classnames":38,"react/addons":53,"underscore":226}],23:[function(require,module,exports){
+},{"../stores/ScheduleStore":46,"../utils/strutil":48,"classnames":53,"react/addons":69,"underscore":243}],37:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3291,6 +5626,7 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
     propTypes: function() {
         return {
             course: React.PropTypes.object.isRequired,
+            large: React.PropTypes.bool.isRequired,
             section: React.PropTypes.object.isRequired,
             meeting: React.PropTypes.object.isRequired,
             conflicts: React.PropTypes.bool.isRequired,
@@ -3312,7 +5648,8 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
                 // If instance is less than 1 hour long.
                 compact: ScheduleStore.timeDifference(meeting.timeEnd,
                     meeting.timeStart) < 1,
-                'conflict-of-2': this.props.conflicts
+                'conflict-of-2': this.props.conflicts,
+                large: this.props.large
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',
@@ -3382,7 +5719,7 @@ var CAScheduleInstance = React.createClass({displayName: "CAScheduleInstance",
 
 module.exports = CAScheduleInstance;
 
-},{"../stores/ScheduleStore":32,"../utils/strutil":34,"classnames":38,"react/addons":53}],24:[function(require,module,exports){
+},{"../stores/ScheduleStore":46,"../utils/strutil":48,"classnames":53,"react/addons":69}],38:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3429,7 +5766,7 @@ var CAToggle = React.createClass({displayName: "CAToggle",
 
 module.exports = CAToggle;
 
-},{"classnames":38,"react/addons":53}],25:[function(require,module,exports){
+},{"classnames":53,"react/addons":69}],39:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3448,6 +5785,8 @@ module.exports = {
     ACTIVATION: 'MODAL_ACTIVATION',
     ACCOUNT: 'MODAL_ACCOUNT',
     ENROLLMENT: 'MODAL_ENROLLMENT',
+    SEND_SCHEDULE: 'MODAL_SEND_SCHEDULE',
+    ADD_SCHEDULE: 'MODAL_ADD_SCHEDULE',
     CLOSE: 'MODAL_CLOSE',
     CATALOG: 'MODAL_CATALOG',
     CATALOG_BACK: 'MODAL_CATALOG_BACK',
@@ -3455,7 +5794,7 @@ module.exports = {
     CATALOG_RESET: 'MODAL_CATALOG_RESET',
 };
 
-},{}],26:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3471,6 +5810,7 @@ module.exports = {
 module.exports = {
     ADD: 'SCHEDULE_ADD',
     REMOVE: 'SCHEDULE_REMOVE',
+    REMOVE_COURSE: 'SCHEDULE_REMOVE_COURSE',
     TOGGLE: 'SCHEDULE_TOGGLE',
     SET_COLOR: 'SCHEDULE_SET_COLOR',
     SELECT_SECTION: 'SCHEDULE_SELECT_SECTION',
@@ -3486,7 +5826,7 @@ module.exports = {
     MERGE: 'SCHEDULE_MERGE'
 };
 
-},{}],27:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3502,10 +5842,10 @@ module.exports = {
 module.exports = {
     LOGIN: 'USER_LOGIN',
     LOGOUT: 'USER_LOGOUT',
-    CHANGE_NAME: 'CHANGE_NAME'
+    CHANGE_NAME: 'USER_CHANGE_NAME'
 };
 
-},{}],28:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 /*
  * Copyright (c) 2014-2015, Facebook, Inc.
  * All rights reserved.
@@ -3523,7 +5863,7 @@ var Dispatcher = require('flux').Dispatcher;
 
 module.exports = new Dispatcher();
 
-},{"flux":40}],29:[function(require,module,exports){
+},{"flux":55}],43:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3545,7 +5885,7 @@ var React = require('react/addons'),
 
 React.render(React.createElement(CAApp, null), mountNode);
 
-},{"../components/CAApp":4,"./preparation":30,"react/addons":53}],30:[function(require,module,exports){
+},{"../components/CAApp":4,"./preparation":44,"react/addons":69}],44:[function(require,module,exports){
 (function (global){
 /**
  * Copyright (c) 2015, Cornellapp.
@@ -3565,11 +5905,13 @@ require('devbridge-autocomplete');
 require('velocity-animate');
 require('form-serializer');
 require('jquery.cookie');
+require('timeago');
 
+// Initialize global render context.
 global.context = JSON.parse(document.getElementById('context').textContent);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"devbridge-autocomplete":39,"form-serializer":43,"jquery":45,"jquery.cookie":44,"velocity-animate":227}],31:[function(require,module,exports){
+},{"devbridge-autocomplete":54,"form-serializer":58,"jquery":60,"jquery.cookie":59,"timeago":242,"velocity-animate":244}],45:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3598,12 +5940,52 @@ var _active = false,
     _modalData,
     _catalogData,
     _catalogStack,
-    _catalogStackForward;
+    _catalogStackForward,
+    _schedules = {};
 
 /**
  * Initialize the store.
  */
 catalogReset();
+
+/**
+ * Restore store data from the render context on client side.
+ */
+if ("browserify" === 'browserify')
+    restore(context.ModalStoreSnapshot);
+
+/**
+ * Generate the render context on server side.
+ */
+else
+    var reset = function(user) {
+        var snapshot = {};
+
+        if (user)
+            snapshot._schedules = user.schedulesMap();
+        else
+            snapshot._schedules = {};
+
+        restore(snapshot);
+    };
+
+/**
+ * Generate a snapshot that can be converted to JSON and used by another
+ * instance of the store to restore it back to an identical state.
+ */
+function snapshot() {
+    return {
+        _schedules: _schedules
+    };
+}
+
+/**
+ * Restore the state of the store from a snapshot.
+ * @param {object} snapshot Snapshot to return state to.
+ */
+function restore(snapshot) {
+    _schedules = snapshot._schedules;
+}
 
 /**
  * Activate the login modal to appear.
@@ -3656,6 +6038,17 @@ function enrollment() {
 }
 
 /**
+ * Activate the send schedule view panel.
+ */
+function sendSchedule() {
+    _active = 'modal';
+    _modalType = 'send-schedule';
+    _modalData = {
+        schedule: getSchedule(ScheduleStore.getSemester().slug)
+    };
+}
+
+/**
  * Activate the catalog view.
  * @param {}
  */
@@ -3697,23 +6090,26 @@ function catalogForward() {
 function catalogReset() {
     _catalogStack = [];
     _catalogStackForward = [];
-    setCatalogPage('departments');
+    setCatalogPage({
+        type: 'subjects',
+        title: 'All Subjects'
+    });
 }
 
 /**
  * Set the catalog's page.
  */
-function setCatalogPage(link) {
+function setCatalogPage(page) {
     var currentPage = _.last(_catalogStack);
 
-    link = '/catalog/' + ScheduleStore.getSemester().strm + '/' + link;
+    page.strm = ScheduleStore.getSemester().strm;
 
-    // Skip if link is already selected.
-    if (currentPage === link)
+    // Skip if page is already in view.
+    if (_.isEqual(currentPage, page))
         return;
 
     _catalogStackForward = [];
-    _catalogStack.push(link);
+    _catalogStack.push(page);
 }
 
 /**
@@ -3721,6 +6117,30 @@ function setCatalogPage(link) {
  */
 function close() {
     _active = false;
+}
+
+/**
+ * Get a user's schedule information for a semester.
+ * @param {string} semester Semester slug to get the user schedule for.
+ * @return {object} Schedule object for the semester or null if the user
+ *      does not have a schedule created for that semester yet.
+ */
+function getSchedule(semester) {
+    return _schedules[semester];
+}
+
+/**
+ * Add a schedule to the user's list of schedules.
+ * @param {object} schedule Schedule information to add to the user's list of
+ *      schedules.
+ */
+function addSchedule(schedule) {
+    _schedules[schedule.semester] = schedule.id;
+
+    // Refresh the modal if it is still on the schedule screen.
+    if (_modalType === 'send-schedule') {
+        sendSchedule();
+    }
 }
 
 var ModalStore = assign({}, EventEmitter.prototype, {
@@ -3755,6 +6175,18 @@ var ModalStore = assign({}, EventEmitter.prototype, {
     reset: catalogReset,
 
     /**
+     * Generate a snapshot that can be converted to JSON and used by another
+     * instance of the store to restore it back to an identical state.
+     */
+    snapshot: snapshot,
+
+    /**
+     * Restore the state of the store from a snapshot.
+     * @param {object} snapshot Snapshot to return state to.
+     */
+    restore: restore,
+
+    /**
      * Publish a change to all listeners.
      */
     emitChange: function() {
@@ -3777,6 +6209,11 @@ var ModalStore = assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     }
 });
+
+// Attach the server side reset method.
+if ("browserify" !== 'browserify') {
+    ModalStore.reset = reset;
+}
 
 AppDispatcher.register(function(action) {
     switch(action.actionType) {
@@ -3802,6 +6239,16 @@ AppDispatcher.register(function(action) {
 
         case ModalConstants.ENROLLMENT:
             enrollment();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.SEND_SCHEDULE:
+            sendSchedule();
+            ModalStore.emitChange();
+            break;
+
+        case ModalConstants.ADD_SCHEDULE:
+            addSchedule(action.schedule);
             ModalStore.emitChange();
             break;
 
@@ -3836,7 +6283,7 @@ AppDispatcher.register(function(action) {
 
 module.exports = ModalStore;
 
-},{"../constants/ModalConstants":25,"../dispatcher/AppDispatcher":28,"./ScheduleStore":32,"./UserStore":33,"events":36,"moment":46,"object-assign":47,"underscore":226}],32:[function(require,module,exports){
+},{"../constants/ModalConstants":39,"../dispatcher/AppDispatcher":42,"./ScheduleStore":46,"./UserStore":47,"events":51,"moment":61,"object-assign":62,"underscore":243}],46:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -3864,6 +6311,7 @@ var _courses = {},
     _events = {},
     _semester = {},
     _data = {},
+    _allSemesters = {},
     _colors = ['blue', 'purple', 'light-blue', 'red', 'green', 'yellow',
         'pink'],
     _dayMap = {
@@ -3889,28 +6337,41 @@ if ("browserify" === 'browserify')
  * Generate the render context on server side.
  */
 else
-    var reset = function(req) {
-        var snapshot = {};
+    var reset = function(user, semesters, initialSemester) {
+        var snapshot = {},
+            async = require('async');
+
+        snapshot._allSemesters = config.semesters;
+
+        _.each(snapshot._allSemesters, function(semester) {
+            var match = _.find(semesters, function(s) {
+                return s.slug == semester.slug;
+            });
+
+            if (match) {
+                semester.subjects = JSON.parse(match.subject_list);
+                semester.descr = match.descr;
+            }
+        });
 
         // Mount the course selection data.
-        if (req.isAuthenticated())
-            snapshot._data = req.user.getSelectionData();
+        if (user)
+            snapshot._data = user.getSelectionData();
         else
-            snapshot._data = _.mapObject(config.semesters, function(s) {
+            snapshot._data = _.mapObject(snapshot._allSemesters, function(s) {
                 return {
                     courses: {},
                     events: {}
                 };
             });
 
-        // Use a cookie set semester if it is set.
-        if (req.cookies.semester_slug &&
-            config.semesters[req.cookies.semester_slug])
-            snapshot._semester = config.semesters[req.cookies.semester_slug];
+        // Use an initial semester if it is set.
+        if (initialSemester && snapshot._allSemesters[initialSemester])
+            snapshot._semester = snapshot._allSemesters[initialSemester];
         // Or use the semester specified in config.
         else
-            snapshot._semester = config.semesters[config.semester];
-
+            snapshot._semester = snapshot._allSemesters[config.semester];
+// console.log(snapshot._semester);
         restore(snapshot);
     };
 
@@ -3924,7 +6385,8 @@ function snapshot() {
 
     return {
         _data: _data,
-        _semester: _semester
+        _semester: _semester,
+        _allSemesters: _allSemesters
     };
 }
 
@@ -3935,6 +6397,7 @@ function snapshot() {
 function restore(snapshot) {
     _data = snapshot._data;
     _semester = snapshot._semester;
+    _allSemesters = snapshot._allSemesters;
     _courses = _data[_semester.slug].courses;
     _events = _data[_semester.slug].events;
 }
@@ -3985,6 +6448,21 @@ function remove(key) {
         requestEvent('delete', _events[key]);
         delete _events[key];
     }
+}
+
+/**
+ * Remove a course from the schedule by the course object.
+ * @param {string} course Course object to remove.
+ */
+function removeCourse(course) {
+    var match = _.find(_.values(_courses), function(c) {
+        return course.catalogNbr === c.raw.catalogNbr &&
+            course.subject === c.raw.subject;
+    });
+
+    // Remove course if it was found in _courses.
+    if (match)
+        remove(match.selection.key);
 }
 
 /**
@@ -4093,7 +6571,7 @@ function changeSemester(semester) {
     if (semester === _semester.slug)
         return;
 
-    var semesterExists = _.find(_.values(config.semesters), function(s) {
+    var semesterExists = _.find(_.values(_allSemesters), function(s) {
         return s.slug === semester.slug;
     });
 
@@ -4386,7 +6864,7 @@ function defaultEvent() {
     };
 
     // Drake reference, I should have put more easter eggs in this thing.
-    if (Math.random() < 0.4) {
+    if (Math.random() < 0.2) {
         event.name = "Eatin' crab out in Malibu";
         event.location = 'Nobu';
     }
@@ -4875,6 +7353,13 @@ function clear() {
 
 var ScheduleStore = assign({}, EventEmitter.prototype, {
     /**
+     * Determines if course already has been added to the schedule.
+     * @param {object} course Course to check against the ScheduleStore.
+     * @return {boolean} true if the course exists already, false if not.
+     */
+    exists: exists,
+
+    /**
      * Get the day map that represents the possible day options in the pattern
      * attribute of all meetings options.
      */
@@ -4928,7 +7413,7 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      * @return {array} List of all possible semester objects.
      */
     getSemesters: function() {
-        return _.values(config.semesters);
+        return _.values(_allSemesters);
     },
 
     /**
@@ -4967,6 +7452,17 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
 
         return getSectionsOfType(key, sectionType,
             isPrimary ? [getSelectedGroup(key)] : false);
+    },
+
+    /**
+     * Get the formal name of a subject.
+     * @param {string} subject Subject to get the full name of.
+     * @param {string} Formal name of the subject.
+     */
+    getSubjectName: function(subject) {
+        return _.find(_semester.subjects, function(s) {
+            return s.value == subject;
+        }).descr;
     },
 
     /**
@@ -5142,6 +7638,11 @@ AppDispatcher.register(function(action) {
             ScheduleStore.emitChange();
             break;
 
+        case ScheduleConstants.REMOVE_COURSE:
+            removeCourse(action.course);
+            ScheduleStore.emitChange();
+            break;
+
         case ScheduleConstants.TOGGLE:
             toggle(action.key, action.active);
             ScheduleStore.emitChange();
@@ -5172,22 +7673,22 @@ AppDispatcher.register(function(action) {
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.CHANGE_EVENT_NAME:
+        case ScheduleConstants.CHANGE_EVENT_NAME:
             changeEventName(action.key, action.name);
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.CHANGE_EVENT_LOCATION:
+        case ScheduleConstants.CHANGE_EVENT_LOCATION:
             changeEventLocation(action.key, action.location);
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.CHANGE_EVENT_TIME:
+        case ScheduleConstants.CHANGE_EVENT_TIME:
             changeEventTime(action.key, action.time, action.isEndTime);
             ScheduleStore.emitChange();
             break;
 
-       case ScheduleConstants.TOGGLE_EVENT_DAY:
+        case ScheduleConstants.TOGGLE_EVENT_DAY:
             toggleEventDay(action.key, action.daySlug, action.selected);
             ScheduleStore.emitChange();
             break;
@@ -5213,7 +7714,7 @@ AppDispatcher.register(function(action) {
 
 module.exports = ScheduleStore;
 
-},{"../../config":35,"../constants/ScheduleConstants":26,"../dispatcher/AppDispatcher":28,"./UserStore":33,"events":36,"moment":46,"object-assign":47,"underscore":226}],33:[function(require,module,exports){
+},{"../../config":49,"../constants/ScheduleConstants":40,"../dispatcher/AppDispatcher":42,"./UserStore":47,"async":50,"events":51,"moment":61,"object-assign":62,"underscore":243}],47:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -5229,13 +7730,16 @@ module.exports = ScheduleStore;
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     UserConstants = require('../constants/UserConstants'),
+    config = require('../../config'),
     assign = require('object-assign'),
     moment = require('moment'),
     _ = require('underscore');
 
 var CHANGE_EVENT = 'user_change';
 
-var _user = false;
+var _user = false,
+    _schedules = {},
+    _domain = '';
 
 /**
  * Restore store data from the render context on client side.
@@ -5247,14 +7751,18 @@ if ("browserify" === 'browserify')
  * Generate the render context on server side.
  */
 else
-    var reset = function(req) {
+    var reset = function(user) {
         var snapshot = {};
 
-        if (req.isAuthenticated())
-            snapshot._user = req.user.cleanOutput();
-        else
+        if (user) {
+            snapshot._user = user.cleanOutput();
+            snapshot._schedules = user.schedulesMap();
+        } else {
             snapshot._user = false;
+            snapshot._schedules = {};
+        }
 
+        snapshot._domain = config.site.domain;
         restore(snapshot);
     };
 
@@ -5264,7 +7772,8 @@ else
  */
 function snapshot() {
     return {
-        _user: _user
+        _user: _user,
+        _domain: _domain,
     };
 }
 
@@ -5274,6 +7783,7 @@ function snapshot() {
  */
 function restore(snapshot) {
     _user = snapshot._user;
+    _domain = snapshot._domain;
 }
 
 /**
@@ -5309,11 +7819,38 @@ var UserStore = assign({}, EventEmitter.prototype, {
     },
 
     /**
+     * Get the domain of the site specified in the config
+     * (environment dependent).
+     * @return {string} Domain of the site as specified in the config.
+     */
+    getDomain: function() {
+        return _domain;
+    },
+
+    /**
+     * Get the state of the user to render.
+     * @return {object} State of the logged in user.
+     */
+    getUser: function() {
+        return _user;
+    },
+
+    /**
      * Determine if an user is logged in.
      * @return {boolean} If a user is logged in.
      */
     isLoggedIn: function() {
         return  _user !== false;
+    },
+
+    /**
+     * Render an alert to the user to notify them that they must be logged in
+     * to perform an action.
+     * @param {string} descrAction Description of the action that is being
+     *      performed.
+     */
+    guestNotice: function(descrAction) {
+        alert('You must be logged in to ' + descrAction + '.');
     },
 
     /**
@@ -5380,7 +7917,7 @@ AppDispatcher.register(function(action) {
 
 module.exports = UserStore;
 
-},{"../constants/UserConstants":27,"../dispatcher/AppDispatcher":28,"events":36,"moment":46,"object-assign":47,"underscore":226}],34:[function(require,module,exports){
+},{"../../config":49,"../constants/UserConstants":41,"../dispatcher/AppDispatcher":42,"events":51,"moment":61,"object-assign":62,"underscore":243}],48:[function(require,module,exports){
 /**
  * Copyright (c) 2015, Cornellapp.
  * All rights reserved.
@@ -5394,6 +7931,29 @@ module.exports = UserStore;
  */
 
 var m = {};
+
+/**
+ * Determine if a string contains a letter.
+ * @param {string} str String to check for letters.
+ * @return {boolean} true if the string contains at least one letter or false if
+ *      the string does not.
+ */
+m.containsLetters = function(str) {
+    return str.match(/[a-z]/i);
+}
+
+/**
+ * Find the string in between the first occurrences of two string.
+ * @param {string} str String to retrieve the substring from.
+ * @param {string} first First string to retrieve in between.
+ * @param {string} second Second string to retrieve in between.
+ * @return {string} Substring in between the two strings.
+ */
+m.stringInBetween = function(str, first, second) {
+    return str.substring(
+        str.lastIndexOf(first) + first.length,
+        str.lastIndexOf(second));
+};
 
 /**
  * Format a time string to render as a label in the instance. Example:
@@ -5499,7 +8059,7 @@ m.firstNumericSubstring = function(str) {
 
 module.exports = m;
 
-},{}],35:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function (process){
 /**
  * Copyright (c) 2015, Cornellapp.
@@ -5534,7 +8094,13 @@ var config = {
     },
     "aws": {
         accessKeyId: process.env.AWS_ACCESSKEYID,
-        secretAccessKey: process.env.AWS_SECRETACCESSKEY
+        secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+        s3Bucket: process.env.AWS_S3BUCKET
+    },
+    "twilio": {
+        'accountSID': process.env.TWILIO_ACCOUNTSID,
+        'authToken': process.env.TWILIO_AUTHTOKEN,
+        'number': process.env.TWILIO_PHONENUMBER
     },
     "mail": {
         fromAddress: process.env.MAIL_FROMADDRESS
@@ -5544,15 +8110,9 @@ var config = {
     },
     "semester": "FA15",
     "semesters": {
-        "SU15": {
-            "slug": "SU15",
-            "strm": 2594,
-            "descr": "Summer 2015"
-        },
         "FA15": {
             "slug": "FA15",
             "strm": 2608,
-            "descr": "Fall 2015"
         }
     },
     "admins": [
@@ -5571,7 +8131,1233 @@ if (typeof "browserify" === 'undefined' && !process.env.DB_HOST) {
 module.exports = config;
 
 }).call(this,require('_process'))
-},{"_process":37}],36:[function(require,module,exports){
+},{"_process":52}],50:[function(require,module,exports){
+(function (process,global){
+/*!
+ * async
+ * https://github.com/caolan/async
+ *
+ * Copyright 2010-2014 Caolan McMahon
+ * Released under the MIT license
+ */
+(function () {
+
+    var async = {};
+    function noop() {}
+    function identity(v) {
+        return v;
+    }
+    function toBool(v) {
+        return !!v;
+    }
+    function notId(v) {
+        return !v;
+    }
+
+    // global on the server, window in the browser
+    var previous_async;
+
+    // Establish the root object, `window` (`self`) in the browser, `global`
+    // on the server, or `this` in some virtual machines. We use `self`
+    // instead of `window` for `WebWorker` support.
+    var root = typeof self === 'object' && self.self === self && self ||
+            typeof global === 'object' && global.global === global && global ||
+            this;
+
+    if (root != null) {
+        previous_async = root.async;
+    }
+
+    async.noConflict = function () {
+        root.async = previous_async;
+        return async;
+    };
+
+    function only_once(fn) {
+        return function() {
+            if (fn === null) throw new Error("Callback was already called.");
+            fn.apply(this, arguments);
+            fn = null;
+        };
+    }
+
+    function _once(fn) {
+        return function() {
+            if (fn === null) return;
+            fn.apply(this, arguments);
+            fn = null;
+        };
+    }
+
+    //// cross-browser compatiblity functions ////
+
+    var _toString = Object.prototype.toString;
+
+    var _isArray = Array.isArray || function (obj) {
+        return _toString.call(obj) === '[object Array]';
+    };
+
+    // Ported from underscore.js isObject
+    var _isObject = function(obj) {
+        var type = typeof obj;
+        return type === 'function' || type === 'object' && !!obj;
+    };
+
+    function _isArrayLike(arr) {
+        return _isArray(arr) || (
+            // has a positive integer length property
+            typeof arr.length === "number" &&
+            arr.length >= 0 &&
+            arr.length % 1 === 0
+        );
+    }
+
+    function _each(coll, iterator) {
+        return _isArrayLike(coll) ?
+            _arrayEach(coll, iterator) :
+            _forEachOf(coll, iterator);
+    }
+
+    function _arrayEach(arr, iterator) {
+        var index = -1,
+            length = arr.length;
+
+        while (++index < length) {
+            iterator(arr[index], index, arr);
+        }
+    }
+
+    function _map(arr, iterator) {
+        var index = -1,
+            length = arr.length,
+            result = Array(length);
+
+        while (++index < length) {
+            result[index] = iterator(arr[index], index, arr);
+        }
+        return result;
+    }
+
+    function _range(count) {
+        return _map(Array(count), function (v, i) { return i; });
+    }
+
+    function _reduce(arr, iterator, memo) {
+        _arrayEach(arr, function (x, i, a) {
+            memo = iterator(memo, x, i, a);
+        });
+        return memo;
+    }
+
+    function _forEachOf(object, iterator) {
+        _arrayEach(_keys(object), function (key) {
+            iterator(object[key], key);
+        });
+    }
+
+    function _indexOf(arr, item) {
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] === item) return i;
+        }
+        return -1;
+    }
+
+    var _keys = Object.keys || function (obj) {
+        var keys = [];
+        for (var k in obj) {
+            if (obj.hasOwnProperty(k)) {
+                keys.push(k);
+            }
+        }
+        return keys;
+    };
+
+    function _keyIterator(coll) {
+        var i = -1;
+        var len;
+        var keys;
+        if (_isArrayLike(coll)) {
+            len = coll.length;
+            return function next() {
+                i++;
+                return i < len ? i : null;
+            };
+        } else {
+            keys = _keys(coll);
+            len = keys.length;
+            return function next() {
+                i++;
+                return i < len ? keys[i] : null;
+            };
+        }
+    }
+
+    // Similar to ES6's rest param (http://ariya.ofilabs.com/2013/03/es6-and-rest-parameter.html)
+    // This accumulates the arguments passed into an array, after a given index.
+    // From underscore.js (https://github.com/jashkenas/underscore/pull/2140).
+    function _restParam(func, startIndex) {
+        startIndex = startIndex == null ? func.length - 1 : +startIndex;
+        return function() {
+            var length = Math.max(arguments.length - startIndex, 0);
+            var rest = Array(length);
+            for (var index = 0; index < length; index++) {
+                rest[index] = arguments[index + startIndex];
+            }
+            switch (startIndex) {
+                case 0: return func.call(this, rest);
+                case 1: return func.call(this, arguments[0], rest);
+            }
+            // Currently unused but handle cases outside of the switch statement:
+            // var args = Array(startIndex + 1);
+            // for (index = 0; index < startIndex; index++) {
+            //     args[index] = arguments[index];
+            // }
+            // args[startIndex] = rest;
+            // return func.apply(this, args);
+        };
+    }
+
+    function _withoutIndex(iterator) {
+        return function (value, index, callback) {
+            return iterator(value, callback);
+        };
+    }
+
+    //// exported async module functions ////
+
+    //// nextTick implementation with browser-compatible fallback ////
+
+    // capture the global reference to guard against fakeTimer mocks
+    var _setImmediate = typeof setImmediate === 'function' && setImmediate;
+
+    var _delay = _setImmediate ? function(fn) {
+        // not a direct alias for IE10 compatibility
+        _setImmediate(fn);
+    } : function(fn) {
+        setTimeout(fn, 0);
+    };
+
+    if (typeof process === 'object' && typeof process.nextTick === 'function') {
+        async.nextTick = process.nextTick;
+    } else {
+        async.nextTick = _delay;
+    }
+    async.setImmediate = _setImmediate ? _delay : async.nextTick;
+
+
+    async.forEach =
+    async.each = function (arr, iterator, callback) {
+        return async.eachOf(arr, _withoutIndex(iterator), callback);
+    };
+
+    async.forEachSeries =
+    async.eachSeries = function (arr, iterator, callback) {
+        return async.eachOfSeries(arr, _withoutIndex(iterator), callback);
+    };
+
+
+    async.forEachLimit =
+    async.eachLimit = function (arr, limit, iterator, callback) {
+        return _eachOfLimit(limit)(arr, _withoutIndex(iterator), callback);
+    };
+
+    async.forEachOf =
+    async.eachOf = function (object, iterator, callback) {
+        callback = _once(callback || noop);
+        object = object || [];
+        var size = _isArrayLike(object) ? object.length : _keys(object).length;
+        var completed = 0;
+        if (!size) {
+            return callback(null);
+        }
+        _each(object, function (value, key) {
+            iterator(object[key], key, only_once(done));
+        });
+        function done(err) {
+            if (err) {
+                callback(err);
+            }
+            else {
+                completed += 1;
+                if (completed >= size) {
+                    callback(null);
+                }
+            }
+        }
+    };
+
+    async.forEachOfSeries =
+    async.eachOfSeries = function (obj, iterator, callback) {
+        callback = _once(callback || noop);
+        obj = obj || [];
+        var nextKey = _keyIterator(obj);
+        var key = nextKey();
+        function iterate() {
+            var sync = true;
+            if (key === null) {
+                return callback(null);
+            }
+            iterator(obj[key], key, only_once(function (err) {
+                if (err) {
+                    callback(err);
+                }
+                else {
+                    key = nextKey();
+                    if (key === null) {
+                        return callback(null);
+                    } else {
+                        if (sync) {
+                            async.nextTick(iterate);
+                        } else {
+                            iterate();
+                        }
+                    }
+                }
+            }));
+            sync = false;
+        }
+        iterate();
+    };
+
+
+
+    async.forEachOfLimit =
+    async.eachOfLimit = function (obj, limit, iterator, callback) {
+        _eachOfLimit(limit)(obj, iterator, callback);
+    };
+
+    function _eachOfLimit(limit) {
+
+        return function (obj, iterator, callback) {
+            callback = _once(callback || noop);
+            obj = obj || [];
+            var nextKey = _keyIterator(obj);
+            if (limit <= 0) {
+                return callback(null);
+            }
+            var done = false;
+            var running = 0;
+            var errored = false;
+
+            (function replenish () {
+                if (done && running <= 0) {
+                    return callback(null);
+                }
+
+                while (running < limit && !errored) {
+                    var key = nextKey();
+                    if (key === null) {
+                        done = true;
+                        if (running <= 0) {
+                            callback(null);
+                        }
+                        return;
+                    }
+                    running += 1;
+                    iterator(obj[key], key, only_once(function (err) {
+                        running -= 1;
+                        if (err) {
+                            callback(err);
+                            errored = true;
+                        }
+                        else {
+                            replenish();
+                        }
+                    }));
+                }
+            })();
+        };
+    }
+
+
+    function doParallel(fn) {
+        return function (obj, iterator, callback) {
+            return fn(async.eachOf, obj, iterator, callback);
+        };
+    }
+    function doParallelLimit(fn) {
+        return function (obj, limit, iterator, callback) {
+            return fn(_eachOfLimit(limit), obj, iterator, callback);
+        };
+    }
+    function doSeries(fn) {
+        return function (obj, iterator, callback) {
+            return fn(async.eachOfSeries, obj, iterator, callback);
+        };
+    }
+
+    function _asyncMap(eachfn, arr, iterator, callback) {
+        callback = _once(callback || noop);
+        var results = [];
+        eachfn(arr, function (value, index, callback) {
+            iterator(value, function (err, v) {
+                results[index] = v;
+                callback(err);
+            });
+        }, function (err) {
+            callback(err, results);
+        });
+    }
+
+    async.map = doParallel(_asyncMap);
+    async.mapSeries = doSeries(_asyncMap);
+    async.mapLimit = doParallelLimit(_asyncMap);
+
+    // reduce only has a series version, as doing reduce in parallel won't
+    // work in many situations.
+    async.inject =
+    async.foldl =
+    async.reduce = function (arr, memo, iterator, callback) {
+        async.eachOfSeries(arr, function (x, i, callback) {
+            iterator(memo, x, function (err, v) {
+                memo = v;
+                callback(err);
+            });
+        }, function (err) {
+            callback(err || null, memo);
+        });
+    };
+
+    async.foldr =
+    async.reduceRight = function (arr, memo, iterator, callback) {
+        var reversed = _map(arr, identity).reverse();
+        async.reduce(reversed, memo, iterator, callback);
+    };
+
+    function _filter(eachfn, arr, iterator, callback) {
+        var results = [];
+        eachfn(arr, function (x, index, callback) {
+            iterator(x, function (v) {
+                if (v) {
+                    results.push({index: index, value: x});
+                }
+                callback();
+            });
+        }, function () {
+            callback(_map(results.sort(function (a, b) {
+                return a.index - b.index;
+            }), function (x) {
+                return x.value;
+            }));
+        });
+    }
+
+    async.select =
+    async.filter = doParallel(_filter);
+
+    async.selectLimit =
+    async.filterLimit = doParallelLimit(_filter);
+
+    async.selectSeries =
+    async.filterSeries = doSeries(_filter);
+
+    function _reject(eachfn, arr, iterator, callback) {
+        _filter(eachfn, arr, function(value, cb) {
+            iterator(value, function(v) {
+                cb(!v);
+            });
+        }, callback);
+    }
+    async.reject = doParallel(_reject);
+    async.rejectLimit = doParallelLimit(_reject);
+    async.rejectSeries = doSeries(_reject);
+
+    function _createTester(eachfn, check, getResult) {
+        return function(arr, limit, iterator, cb) {
+            function done() {
+                if (cb) cb(getResult(false, void 0));
+            }
+            function iteratee(x, _, callback) {
+                if (!cb) return callback();
+                iterator(x, function (v) {
+                    if (cb && check(v)) {
+                        cb(getResult(true, x));
+                        cb = iterator = false;
+                    }
+                    callback();
+                });
+            }
+            if (arguments.length > 3) {
+                eachfn(arr, limit, iteratee, done);
+            } else {
+                cb = iterator;
+                iterator = limit;
+                eachfn(arr, iteratee, done);
+            }
+        };
+    }
+
+    async.any =
+    async.some = _createTester(async.eachOf, toBool, identity);
+
+    async.someLimit = _createTester(async.eachOfLimit, toBool, identity);
+
+    async.all =
+    async.every = _createTester(async.eachOf, notId, notId);
+
+    async.everyLimit = _createTester(async.eachOfLimit, notId, notId);
+
+    function _findGetResult(v, x) {
+        return x;
+    }
+    async.detect = _createTester(async.eachOf, identity, _findGetResult);
+    async.detectSeries = _createTester(async.eachOfSeries, identity, _findGetResult);
+    async.detectLimit = _createTester(async.eachOfLimit, identity, _findGetResult);
+
+    async.sortBy = function (arr, iterator, callback) {
+        async.map(arr, function (x, callback) {
+            iterator(x, function (err, criteria) {
+                if (err) {
+                    callback(err);
+                }
+                else {
+                    callback(null, {value: x, criteria: criteria});
+                }
+            });
+        }, function (err, results) {
+            if (err) {
+                return callback(err);
+            }
+            else {
+                callback(null, _map(results.sort(comparator), function (x) {
+                    return x.value;
+                }));
+            }
+
+        });
+
+        function comparator(left, right) {
+            var a = left.criteria, b = right.criteria;
+            return a < b ? -1 : a > b ? 1 : 0;
+        }
+    };
+
+    async.auto = function (tasks, callback) {
+        callback = _once(callback || noop);
+        var keys = _keys(tasks);
+        var remainingTasks = keys.length;
+        if (!remainingTasks) {
+            return callback(null);
+        }
+
+        var results = {};
+
+        var listeners = [];
+        function addListener(fn) {
+            listeners.unshift(fn);
+        }
+        function removeListener(fn) {
+            var idx = _indexOf(listeners, fn);
+            if (idx >= 0) listeners.splice(idx, 1);
+        }
+        function taskComplete() {
+            remainingTasks--;
+            _arrayEach(listeners.slice(0), function (fn) {
+                fn();
+            });
+        }
+
+        addListener(function () {
+            if (!remainingTasks) {
+                callback(null, results);
+            }
+        });
+
+        _arrayEach(keys, function (k) {
+            var task = _isArray(tasks[k]) ? tasks[k]: [tasks[k]];
+            var taskCallback = _restParam(function(err, args) {
+                if (args.length <= 1) {
+                    args = args[0];
+                }
+                if (err) {
+                    var safeResults = {};
+                    _forEachOf(results, function(val, rkey) {
+                        safeResults[rkey] = val;
+                    });
+                    safeResults[k] = args;
+                    callback(err, safeResults);
+                }
+                else {
+                    results[k] = args;
+                    async.setImmediate(taskComplete);
+                }
+            });
+            var requires = task.slice(0, task.length - 1);
+            // prevent dead-locks
+            var len = requires.length;
+            var dep;
+            while (len--) {
+                if (!(dep = tasks[requires[len]])) {
+                    throw new Error('Has inexistant dependency');
+                }
+                if (_isArray(dep) && _indexOf(dep, k) >= 0) {
+                    throw new Error('Has cyclic dependencies');
+                }
+            }
+            function ready() {
+                return _reduce(requires, function (a, x) {
+                    return (a && results.hasOwnProperty(x));
+                }, true) && !results.hasOwnProperty(k);
+            }
+            if (ready()) {
+                task[task.length - 1](taskCallback, results);
+            }
+            else {
+                addListener(listener);
+            }
+            function listener() {
+                if (ready()) {
+                    removeListener(listener);
+                    task[task.length - 1](taskCallback, results);
+                }
+            }
+        });
+    };
+
+
+
+    async.retry = function(times, task, callback) {
+        var DEFAULT_TIMES = 5;
+        var DEFAULT_INTERVAL = 0;
+
+        var attempts = [];
+
+        var opts = {
+            times: DEFAULT_TIMES,
+            interval: DEFAULT_INTERVAL
+        };
+
+        function parseTimes(acc, t){
+            if(typeof t === 'number'){
+                acc.times = parseInt(t, 10) || DEFAULT_TIMES;
+            } else if(typeof t === 'object'){
+                acc.times = parseInt(t.times, 10) || DEFAULT_TIMES;
+                acc.interval = parseInt(t.interval, 10) || DEFAULT_INTERVAL;
+            } else {
+                throw new Error('Unsupported argument type for \'times\': ' + typeof t);
+            }
+        }
+
+        var length = arguments.length;
+        if (length < 1 || length > 3) {
+            throw new Error('Invalid arguments - must be either (task), (task, callback), (times, task) or (times, task, callback)');
+        } else if (length <= 2 && typeof times === 'function') {
+            callback = task;
+            task = times;
+        }
+        if (typeof times !== 'function') {
+            parseTimes(opts, times);
+        }
+        opts.callback = callback;
+        opts.task = task;
+
+        function wrappedTask(wrappedCallback, wrappedResults) {
+            function retryAttempt(task, finalAttempt) {
+                return function(seriesCallback) {
+                    task(function(err, result){
+                        seriesCallback(!err || finalAttempt, {err: err, result: result});
+                    }, wrappedResults);
+                };
+            }
+
+            function retryInterval(interval){
+                return function(seriesCallback){
+                    setTimeout(function(){
+                        seriesCallback(null);
+                    }, interval);
+                };
+            }
+
+            while (opts.times) {
+
+                var finalAttempt = !(opts.times-=1);
+                attempts.push(retryAttempt(opts.task, finalAttempt));
+                if(!finalAttempt && opts.interval > 0){
+                    attempts.push(retryInterval(opts.interval));
+                }
+            }
+
+            async.series(attempts, function(done, data){
+                data = data[data.length - 1];
+                (wrappedCallback || opts.callback)(data.err, data.result);
+            });
+        }
+
+        // If a callback is passed, run this as a controll flow
+        return opts.callback ? wrappedTask() : wrappedTask;
+    };
+
+    async.waterfall = function (tasks, callback) {
+        callback = _once(callback || noop);
+        if (!_isArray(tasks)) {
+            var err = new Error('First argument to waterfall must be an array of functions');
+            return callback(err);
+        }
+        if (!tasks.length) {
+            return callback();
+        }
+        function wrapIterator(iterator) {
+            return _restParam(function (err, args) {
+                if (err) {
+                    callback.apply(null, [err].concat(args));
+                }
+                else {
+                    var next = iterator.next();
+                    if (next) {
+                        args.push(wrapIterator(next));
+                    }
+                    else {
+                        args.push(callback);
+                    }
+                    ensureAsync(iterator).apply(null, args);
+                }
+            });
+        }
+        wrapIterator(async.iterator(tasks))();
+    };
+
+    function _parallel(eachfn, tasks, callback) {
+        callback = callback || noop;
+        var results = _isArrayLike(tasks) ? [] : {};
+
+        eachfn(tasks, function (task, key, callback) {
+            task(_restParam(function (err, args) {
+                if (args.length <= 1) {
+                    args = args[0];
+                }
+                results[key] = args;
+                callback(err);
+            }));
+        }, function (err) {
+            callback(err, results);
+        });
+    }
+
+    async.parallel = function (tasks, callback) {
+        _parallel(async.eachOf, tasks, callback);
+    };
+
+    async.parallelLimit = function(tasks, limit, callback) {
+        _parallel(_eachOfLimit(limit), tasks, callback);
+    };
+
+    async.series = function(tasks, callback) {
+        _parallel(async.eachOfSeries, tasks, callback);
+    };
+
+    async.iterator = function (tasks) {
+        function makeCallback(index) {
+            function fn() {
+                if (tasks.length) {
+                    tasks[index].apply(null, arguments);
+                }
+                return fn.next();
+            }
+            fn.next = function () {
+                return (index < tasks.length - 1) ? makeCallback(index + 1): null;
+            };
+            return fn;
+        }
+        return makeCallback(0);
+    };
+
+    async.apply = _restParam(function (fn, args) {
+        return _restParam(function (callArgs) {
+            return fn.apply(
+                null, args.concat(callArgs)
+            );
+        });
+    });
+
+    function _concat(eachfn, arr, fn, callback) {
+        var result = [];
+        eachfn(arr, function (x, index, cb) {
+            fn(x, function (err, y) {
+                result = result.concat(y || []);
+                cb(err);
+            });
+        }, function (err) {
+            callback(err, result);
+        });
+    }
+    async.concat = doParallel(_concat);
+    async.concatSeries = doSeries(_concat);
+
+    async.whilst = function (test, iterator, callback) {
+        callback = callback || noop;
+        if (test()) {
+            var next = _restParam(function(err, args) {
+                if (err) {
+                    callback(err);
+                } else if (test.apply(this, args)) {
+                    iterator(next);
+                } else {
+                    callback(null);
+                }
+            });
+            iterator(next);
+        } else {
+            callback(null);
+        }
+    };
+
+    async.doWhilst = function (iterator, test, callback) {
+        var calls = 0;
+        return async.whilst(function() {
+            return ++calls <= 1 || test.apply(this, arguments);
+        }, iterator, callback);
+    };
+
+    async.until = function (test, iterator, callback) {
+        return async.whilst(function() {
+            return !test.apply(this, arguments);
+        }, iterator, callback);
+    };
+
+    async.doUntil = function (iterator, test, callback) {
+        return async.doWhilst(iterator, function() {
+            return !test.apply(this, arguments);
+        }, callback);
+    };
+
+    async.during = function (test, iterator, callback) {
+        callback = callback || noop;
+
+        var next = _restParam(function(err, args) {
+            if (err) {
+                callback(err);
+            } else {
+                args.push(check);
+                test.apply(this, args);
+            }
+        });
+
+        var check = function(err, truth) {
+            if (err) {
+                callback(err);
+            } else if (truth) {
+                iterator(next);
+            } else {
+                callback(null);
+            }
+        };
+
+        test(check);
+    };
+
+    async.doDuring = function (iterator, test, callback) {
+        var calls = 0;
+        async.during(function(next) {
+            if (calls++ < 1) {
+                next(null, true);
+            } else {
+                test.apply(this, arguments);
+            }
+        }, iterator, callback);
+    };
+
+    function _queue(worker, concurrency, payload) {
+        if (concurrency == null) {
+            concurrency = 1;
+        }
+        else if(concurrency === 0) {
+            throw new Error('Concurrency must not be zero');
+        }
+        function _insert(q, data, pos, callback) {
+            if (callback != null && typeof callback !== "function") {
+                throw new Error("task callback must be a function");
+            }
+            q.started = true;
+            if (!_isArray(data)) {
+                data = [data];
+            }
+            if(data.length === 0 && q.idle()) {
+                // call drain immediately if there are no tasks
+                return async.setImmediate(function() {
+                    q.drain();
+                });
+            }
+            _arrayEach(data, function(task) {
+                var item = {
+                    data: task,
+                    callback: callback || noop
+                };
+
+                if (pos) {
+                    q.tasks.unshift(item);
+                } else {
+                    q.tasks.push(item);
+                }
+
+                if (q.tasks.length === q.concurrency) {
+                    q.saturated();
+                }
+            });
+            async.setImmediate(q.process);
+        }
+        function _next(q, tasks) {
+            return function(){
+                workers -= 1;
+                var args = arguments;
+                _arrayEach(tasks, function (task) {
+                    task.callback.apply(task, args);
+                });
+                if (q.tasks.length + workers === 0) {
+                    q.drain();
+                }
+                q.process();
+            };
+        }
+
+        var workers = 0;
+        var q = {
+            tasks: [],
+            concurrency: concurrency,
+            payload: payload,
+            saturated: noop,
+            empty: noop,
+            drain: noop,
+            started: false,
+            paused: false,
+            push: function (data, callback) {
+                _insert(q, data, false, callback);
+            },
+            kill: function () {
+                q.drain = noop;
+                q.tasks = [];
+            },
+            unshift: function (data, callback) {
+                _insert(q, data, true, callback);
+            },
+            process: function () {
+                if (!q.paused && workers < q.concurrency && q.tasks.length) {
+                    while(workers < q.concurrency && q.tasks.length){
+                        var tasks = q.payload ?
+                            q.tasks.splice(0, q.payload) :
+                            q.tasks.splice(0, q.tasks.length);
+
+                        var data = _map(tasks, function (task) {
+                            return task.data;
+                        });
+
+                        if (q.tasks.length === 0) {
+                            q.empty();
+                        }
+                        workers += 1;
+                        var cb = only_once(_next(q, tasks));
+                        worker(data, cb);
+                    }
+                }
+            },
+            length: function () {
+                return q.tasks.length;
+            },
+            running: function () {
+                return workers;
+            },
+            idle: function() {
+                return q.tasks.length + workers === 0;
+            },
+            pause: function () {
+                q.paused = true;
+            },
+            resume: function () {
+                if (q.paused === false) { return; }
+                q.paused = false;
+                var resumeCount = Math.min(q.concurrency, q.tasks.length);
+                // Need to call q.process once per concurrent
+                // worker to preserve full concurrency after pause
+                for (var w = 1; w <= resumeCount; w++) {
+                    async.setImmediate(q.process);
+                }
+            }
+        };
+        return q;
+    }
+
+    async.queue = function (worker, concurrency) {
+        var q = _queue(function (items, cb) {
+            worker(items[0], cb);
+        }, concurrency, 1);
+
+        return q;
+    };
+
+    async.priorityQueue = function (worker, concurrency) {
+
+        function _compareTasks(a, b){
+            return a.priority - b.priority;
+        }
+
+        function _binarySearch(sequence, item, compare) {
+            var beg = -1,
+                end = sequence.length - 1;
+            while (beg < end) {
+                var mid = beg + ((end - beg + 1) >>> 1);
+                if (compare(item, sequence[mid]) >= 0) {
+                    beg = mid;
+                } else {
+                    end = mid - 1;
+                }
+            }
+            return beg;
+        }
+
+        function _insert(q, data, priority, callback) {
+            if (callback != null && typeof callback !== "function") {
+                throw new Error("task callback must be a function");
+            }
+            q.started = true;
+            if (!_isArray(data)) {
+                data = [data];
+            }
+            if(data.length === 0) {
+                // call drain immediately if there are no tasks
+                return async.setImmediate(function() {
+                    q.drain();
+                });
+            }
+            _arrayEach(data, function(task) {
+                var item = {
+                    data: task,
+                    priority: priority,
+                    callback: typeof callback === 'function' ? callback : noop
+                };
+
+                q.tasks.splice(_binarySearch(q.tasks, item, _compareTasks) + 1, 0, item);
+
+                if (q.tasks.length === q.concurrency) {
+                    q.saturated();
+                }
+                async.setImmediate(q.process);
+            });
+        }
+
+        // Start with a normal queue
+        var q = async.queue(worker, concurrency);
+
+        // Override push to accept second parameter representing priority
+        q.push = function (data, priority, callback) {
+            _insert(q, data, priority, callback);
+        };
+
+        // Remove unshift function
+        delete q.unshift;
+
+        return q;
+    };
+
+    async.cargo = function (worker, payload) {
+        return _queue(worker, 1, payload);
+    };
+
+    function _console_fn(name) {
+        return _restParam(function (fn, args) {
+            fn.apply(null, args.concat([_restParam(function (err, args) {
+                if (typeof console === 'object') {
+                    if (err) {
+                        if (console.error) {
+                            console.error(err);
+                        }
+                    }
+                    else if (console[name]) {
+                        _arrayEach(args, function (x) {
+                            console[name](x);
+                        });
+                    }
+                }
+            })]));
+        });
+    }
+    async.log = _console_fn('log');
+    async.dir = _console_fn('dir');
+    /*async.info = _console_fn('info');
+    async.warn = _console_fn('warn');
+    async.error = _console_fn('error');*/
+
+    async.memoize = function (fn, hasher) {
+        var memo = {};
+        var queues = {};
+        hasher = hasher || identity;
+        var memoized = _restParam(function memoized(args) {
+            var callback = args.pop();
+            var key = hasher.apply(null, args);
+            if (key in memo) {
+                async.nextTick(function () {
+                    callback.apply(null, memo[key]);
+                });
+            }
+            else if (key in queues) {
+                queues[key].push(callback);
+            }
+            else {
+                queues[key] = [callback];
+                fn.apply(null, args.concat([_restParam(function (args) {
+                    memo[key] = args;
+                    var q = queues[key];
+                    delete queues[key];
+                    for (var i = 0, l = q.length; i < l; i++) {
+                        q[i].apply(null, args);
+                    }
+                })]));
+            }
+        });
+        memoized.memo = memo;
+        memoized.unmemoized = fn;
+        return memoized;
+    };
+
+    async.unmemoize = function (fn) {
+        return function () {
+            return (fn.unmemoized || fn).apply(null, arguments);
+        };
+    };
+
+    function _times(mapper) {
+        return function (count, iterator, callback) {
+            mapper(_range(count), iterator, callback);
+        };
+    }
+
+    async.times = _times(async.map);
+    async.timesSeries = _times(async.mapSeries);
+    async.timesLimit = function (count, limit, iterator, callback) {
+        return async.mapLimit(_range(count), limit, iterator, callback);
+    };
+
+    async.seq = function (/* functions... */) {
+        var fns = arguments;
+        return _restParam(function (args) {
+            var that = this;
+
+            var callback = args[args.length - 1];
+            if (typeof callback == 'function') {
+                args.pop();
+            } else {
+                callback = noop;
+            }
+
+            async.reduce(fns, args, function (newargs, fn, cb) {
+                fn.apply(that, newargs.concat([_restParam(function (err, nextargs) {
+                    cb(err, nextargs);
+                })]));
+            },
+            function (err, results) {
+                callback.apply(that, [err].concat(results));
+            });
+        });
+    };
+
+    async.compose = function (/* functions... */) {
+        return async.seq.apply(null, Array.prototype.reverse.call(arguments));
+    };
+
+
+    function _applyEach(eachfn) {
+        return _restParam(function(fns, args) {
+            var go = _restParam(function(args) {
+                var that = this;
+                var callback = args.pop();
+                return eachfn(fns, function (fn, _, cb) {
+                    fn.apply(that, args.concat([cb]));
+                },
+                callback);
+            });
+            if (args.length) {
+                return go.apply(this, args);
+            }
+            else {
+                return go;
+            }
+        });
+    }
+
+    async.applyEach = _applyEach(async.eachOf);
+    async.applyEachSeries = _applyEach(async.eachOfSeries);
+
+
+    async.forever = function (fn, callback) {
+        var done = only_once(callback || noop);
+        var task = ensureAsync(fn);
+        function next(err) {
+            if (err) {
+                return done(err);
+            }
+            task(next);
+        }
+        next();
+    };
+
+    function ensureAsync(fn) {
+        return _restParam(function (args) {
+            var callback = args.pop();
+            args.push(function () {
+                var innerArgs = arguments;
+                if (sync) {
+                    async.setImmediate(function () {
+                        callback.apply(null, innerArgs);
+                    });
+                } else {
+                    callback.apply(null, innerArgs);
+                }
+            });
+            var sync = true;
+            fn.apply(this, args);
+            sync = false;
+        });
+    }
+
+    async.ensureAsync = ensureAsync;
+
+    async.constant = _restParam(function(values) {
+        var args = [null].concat(values);
+        return function (callback) {
+            return callback.apply(this, args);
+        };
+    });
+
+    async.wrapSync =
+    async.asyncify = function asyncify(func) {
+        return _restParam(function (args) {
+            var callback = args.pop();
+            var result;
+            try {
+                result = func.apply(this, args);
+            } catch (e) {
+                return callback(e);
+            }
+            // if result is Promise object
+            if (_isObject(result) && typeof result.then === "function") {
+                result.then(function(value) {
+                    callback(null, value);
+                })["catch"](function(err) {
+                    callback(err.message ? err : new Error(err));
+                });
+            } else {
+                callback(null, result);
+            }
+        });
+    };
+
+    // Node.js
+    if (typeof module === 'object' && module.exports) {
+        module.exports = async;
+    }
+    // AMD / RequireJS
+    else if (typeof define === 'function' && define.amd) {
+        define([], function () {
+            return async;
+        });
+    }
+    // included directly via <script> tag
+    else {
+        root.async = async;
+    }
+
+}());
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"_process":52}],51:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -5874,7 +9660,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],37:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5966,7 +9752,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],38:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 /*!
   Copyright (c) 2015 Jed Watson.
   Licensed under the MIT License (MIT), see
@@ -6017,7 +9803,7 @@ process.umask = function() { return 0; };
 
 }());
 
-},{}],39:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 /**
 *  Ajax Autocomplete for jQuery, version 1.2.21
 *  (c) 2015 Tomas Kirda
@@ -6994,7 +10780,7 @@ process.umask = function() { return 0; };
     };
 }));
 
-},{"jquery":45}],40:[function(require,module,exports){
+},{"jquery":60}],55:[function(require,module,exports){
 /**
  * Copyright (c) 2014-2015, Facebook, Inc.
  * All rights reserved.
@@ -7006,7 +10792,7 @@ process.umask = function() { return 0; };
 
 module.exports.Dispatcher = require('./lib/Dispatcher')
 
-},{"./lib/Dispatcher":41}],41:[function(require,module,exports){
+},{"./lib/Dispatcher":56}],56:[function(require,module,exports){
 /*
  * Copyright (c) 2014, Facebook, Inc.
  * All rights reserved.
@@ -7258,7 +11044,7 @@ var _prefix = 'ID_';
 
 module.exports = Dispatcher;
 
-},{"./invariant":42}],42:[function(require,module,exports){
+},{"./invariant":57}],57:[function(require,module,exports){
 /**
  * Copyright (c) 2014, Facebook, Inc.
  * All rights reserved.
@@ -7313,7 +11099,7 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 
 module.exports = invariant;
 
-},{}],43:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 /**
  * jQuery serializeObject
  * @copyright 2014, macek <paulmacek@gmail.com>
@@ -7461,7 +11247,7 @@ module.exports = invariant;
   return FormSerializer;
 }));
 
-},{"jquery":45}],44:[function(require,module,exports){
+},{"jquery":60}],59:[function(require,module,exports){
 /*!
  * jQuery Cookie Plugin v1.4.1
  * https://github.com/carhartl/jquery-cookie
@@ -7580,7 +11366,7 @@ module.exports = invariant;
 
 }));
 
-},{"jquery":45}],45:[function(require,module,exports){
+},{"jquery":60}],60:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.4
  * http://jquery.com/
@@ -16792,7 +20578,7 @@ return jQuery;
 
 }));
 
-},{}],46:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 //! moment.js
 //! version : 2.10.6
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -19988,7 +23774,7 @@ return jQuery;
     return _moment;
 
 }));
-},{}],47:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
@@ -20029,7 +23815,7 @@ module.exports = Object.assign || function (target, source) {
 	return to;
 };
 
-},{}],48:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 /* global define */
 
 (function (root, pluralize) {
@@ -20462,10 +24248,10 @@ module.exports = Object.assign || function (target, source) {
   return pluralize
 })
 
-},{}],49:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 module.exports = require('./lib/draggable');
 
-},{"./lib/draggable":50}],50:[function(require,module,exports){
+},{"./lib/draggable":65}],65:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -21143,7 +24929,7 @@ module.exports = React.createClass({
   }
 });
 
-},{"classnames":51,"object-assign":52,"react":225}],51:[function(require,module,exports){
+},{"classnames":66,"object-assign":67,"react":241}],66:[function(require,module,exports){
 /*!
   Copyright (c) 2015 Jed Watson.
   Licensed under the MIT License (MIT), see
@@ -21188,7 +24974,7 @@ if (typeof define !== 'undefined' && define.amd) {
 	});
 }
 
-},{}],52:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 'use strict';
 
 function ToObject(val) {
@@ -21216,10 +25002,786 @@ module.exports = Object.assign || function (target, source) {
 	return to;
 };
 
-},{}],53:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define(['react'], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory(require('react'));
+  } else {
+    root.ReactSlider = factory(root.React);
+  }
+}(this, function (React) {
+
+  /**
+   * To prevent text selection while dragging.
+   * http://stackoverflow.com/questions/5429827/how-can-i-prevent-text-element-selection-with-cursor-drag
+   */
+  function pauseEvent(e) {
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
+    e.cancelBubble = true;
+    e.returnValue = false;
+    return false;
+  }
+
+  function stopPropagation(e) {
+    if (e.stopPropagation) e.stopPropagation();
+    e.cancelBubble = true;
+  }
+
+  /**
+   * Spreads `count` values equally between `min` and `max`.
+   */
+  function linspace(min, max, count) {
+    var range = (max - min) / (count - 1);
+    var res = [];
+    for (var i = 0; i < count; i++) {
+      res.push(min + range * i);
+    }
+    return res;
+  }
+
+  function ensureArray(x) {
+    return x == null ? [] : Array.isArray(x) ? x : [x];
+  }
+
+  function undoEnsureArray(x) {
+    return x != null && x.length === 1 ? x[0] : x;
+  }
+
+  // undoEnsureArray(ensureArray(x)) === x
+
+  var ReactSlider = React.createClass({
+    displayName: 'ReactSlider',
+
+    propTypes: {
+
+      /**
+       * The minimum value of the slider.
+       */
+      min: React.PropTypes.number,
+
+      /**
+       * The maximum value of the slider.
+       */
+      max: React.PropTypes.number,
+
+      /**
+       * Value to be added or subtracted on each step the slider makes.
+       * Must be greater than zero.
+       * `max - min` should be evenly divisible by the step value.
+       */
+      step: React.PropTypes.number,
+
+      /**
+       * The minimal distance between any pair of handles.
+       * Must be positive, but zero means they can sit on top of each other.
+       */
+      minDistance: React.PropTypes.number,
+
+      /**
+       * Determines the initial positions of the handles and the number of handles if the component has no children.
+       *
+       * If a number is passed a slider with one handle will be rendered.
+       * If an array is passed each value will determine the position of one handle.
+       * The values in the array must be sorted.
+       * If the component has children, the length of the array must match the number of children.
+       */
+      defaultValue: React.PropTypes.oneOfType([
+        React.PropTypes.number,
+        React.PropTypes.arrayOf(React.PropTypes.number)
+      ]),
+
+      /**
+       * Like `defaultValue` but for [controlled components](http://facebook.github.io/react/docs/forms.html#controlled-components).
+       */
+      value: React.PropTypes.oneOfType([
+        React.PropTypes.number,
+        React.PropTypes.arrayOf(React.PropTypes.number)
+      ]),
+
+      /**
+       * Determines whether the slider moves horizontally (from left to right) or vertically (from top to bottom).
+       */
+      orientation: React.PropTypes.oneOf(['horizontal', 'vertical']),
+
+      /**
+       * The css class set on the slider node.
+       */
+      className: React.PropTypes.string,
+
+      /**
+       * The css class set on each handle node.
+       *
+       * In addition each handle will receive a numbered css class of the form `${handleClassName}-${i}`,
+       * e.g. `handle-0`, `handle-1`, ...
+       */
+      handleClassName: React.PropTypes.string,
+
+      /**
+       * The css class set on the handle that is currently being moved.
+       */
+      handleActiveClassName: React.PropTypes.string,
+
+      /**
+       * If `true` bars between the handles will be rendered.
+       */
+      withBars: React.PropTypes.bool,
+
+      /**
+       * The css class set on the bars between the handles.
+       * In addition bar fragment will receive a numbered css class of the form `${barClassName}-${i}`,
+       * e.g. `bar-0`, `bar-1`, ...
+       */
+      barClassName: React.PropTypes.string,
+
+      /**
+       * If `true` the active handle will push other handles
+       * within the constraints of `min`, `max`, `step` and `minDistance`.
+       */
+      pearling: React.PropTypes.bool,
+
+      /**
+       * If `true` the handles can't be moved.
+       */
+      disabled: React.PropTypes.bool,
+
+      /**
+       * Disables handle move when clicking the slider bar
+       */
+      snapDragDisabled: React.PropTypes.bool,
+
+      /**
+       * Inverts the slider.
+       */
+      invert: React.PropTypes.bool,
+
+      /**
+       * Callback called before starting to move a handle.
+       */
+      onBeforeChange: React.PropTypes.func,
+
+      /**
+       * Callback called on every value change.
+       */
+      onChange: React.PropTypes.func,
+
+      /**
+       * Callback called only after moving a handle has ended.
+       */
+      onAfterChange: React.PropTypes.func,
+
+      /**
+       *  Callback called when the the slider is clicked (handle or bars).
+       *  Receives the value at the clicked position as argument.
+       */
+      onSliderClick: React.PropTypes.func
+    },
+
+    getDefaultProps: function () {
+      return {
+        min: 0,
+        max: 100,
+        step: 1,
+        minDistance: 0,
+        defaultValue: 0,
+        orientation: 'horizontal',
+        className: 'slider',
+        handleClassName: 'handle',
+        handleActiveClassName: 'active',
+        barClassName: 'bar',
+        withBars: false,
+        pearling: false,
+        disabled: false,
+        snapDragDisabled: false,
+        invert: false
+      };
+    },
+
+    getInitialState: function () {
+      var value = this._or(ensureArray(this.props.value), ensureArray(this.props.defaultValue));
+
+      // reused throughout the component to store results of iterations over `value`
+      this.tempArray = value.slice();
+
+      var zIndices = [];
+      for (var i = 0; i < value.length; i++) {
+        value[i] = this._trimAlignValue(value[i], this.props);
+        zIndices.push(i);
+      }
+
+      return {
+        index: -1,
+        upperBound: 0,
+        sliderLength: 0,
+        value: value,
+        zIndices: zIndices
+      };
+    },
+
+    // Keep the internal `value` consistent with an outside `value` if present.
+    // This basically allows the slider to be a controlled component.
+    componentWillReceiveProps: function (newProps) {
+      var value = this._or(ensureArray(newProps.value), this.state.value);
+
+      // ensure the array keeps the same size as `value`
+      this.tempArray = value.slice();
+
+      for (var i = 0; i < value.length; i++) {
+        this.state.value[i] = this._trimAlignValue(value[i], newProps);
+      }
+      if (this.state.value.length > value.length)
+        this.state.value.length = value.length;
+
+      // If an upperBound has not yet been determined (due to the component being hidden
+      // during the mount event, or during the last resize), then calculate it now
+      if (this.state.upperBound === 0) {
+        this._handleResize();
+      }
+    },
+
+    // Check if the arity of `value` or `defaultValue` matches the number of children (= number of custom handles).
+    // If no custom handles are provided, just returns `value` if present and `defaultValue` otherwise.
+    // If custom handles are present but neither `value` nor `defaultValue` are applicable the handles are spread out
+    // equally.
+    // TODO: better name? better solution?
+    _or: function (value, defaultValue) {
+      var count = React.Children.count(this.props.children);
+      switch (count) {
+        case 0:
+          return value.length > 0 ? value : defaultValue;
+        case value.length:
+          return value;
+        case defaultValue.length:
+          return defaultValue;
+        default:
+          if (value.length !== count || defaultValue.length !== count) {
+            console.warn(this.constructor.displayName + ": Number of values does not match number of children.");
+          }
+          return linspace(this.props.min, this.props.max, count);
+      }
+    },
+
+    componentDidMount: function () {
+      window.addEventListener('resize', this._handleResize);
+      this._handleResize();
+    },
+
+    componentWillUnmount: function () {
+      window.removeEventListener('resize', this._handleResize);
+    },
+
+    getValue: function () {
+      return undoEnsureArray(this.state.value);
+    },
+
+    _handleResize: function () {
+      // setTimeout of 0 gives element enough time to have assumed its new size if it is being resized
+      window.setTimeout(function() {
+        var slider = this.refs.slider.getDOMNode();
+        var handle = this.refs.handle0.getDOMNode();
+        var rect = slider.getBoundingClientRect();
+
+        var size = this._sizeKey();
+
+        var sliderMax = rect[this._posMaxKey()];
+        var sliderMin = rect[this._posMinKey()];
+
+        this.setState({
+          upperBound: slider[size] - handle[size],
+          sliderLength: Math.abs(sliderMax - sliderMin),
+          handleSize: handle[size],
+          sliderStart: this.props.invert ? sliderMax : sliderMin
+        });
+      }.bind(this), 0);
+    },
+
+    // calculates the offset of a handle in pixels based on its value.
+    _calcOffset: function (value) {
+      var ratio = (value - this.props.min) / (this.props.max - this.props.min);
+      return ratio * this.state.upperBound;
+    },
+
+    // calculates the value corresponding to a given pixel offset, i.e. the inverse of `_calcOffset`.
+    _calcValue: function (offset) {
+      var ratio = offset / this.state.upperBound;
+      return ratio * (this.props.max - this.props.min) + this.props.min;
+    },
+
+    _buildHandleStyle: function (offset, i) {
+      var style = {
+        position: 'absolute',
+        willChange: this.state.index >= 0 ? this._posMinKey() : '',
+        zIndex: this.state.zIndices.indexOf(i) + 1
+      };
+      style[this._posMinKey()] = offset + 'px';
+      return style;
+    },
+
+    _buildBarStyle: function (min, max) {
+      var obj = {
+        position: 'absolute',
+        willChange: this.state.index >= 0 ? this._posMinKey() + ',' + this._posMaxKey() : ''
+      };
+      obj[this._posMinKey()] = min;
+      obj[this._posMaxKey()] = max;
+      return obj;
+    },
+
+    _getClosestIndex: function (pixelOffset) {
+      var minDist = Number.MAX_VALUE;
+      var closestIndex = -1;
+
+      var value = this.state.value;
+      var l = value.length;
+
+      for (var i = 0; i < l; i++) {
+        var offset = this._calcOffset(value[i]);
+        var dist = Math.abs(pixelOffset - offset);
+        if (dist < minDist) {
+          minDist = dist;
+          closestIndex = i;
+        }
+      }
+
+      return closestIndex;
+    },
+
+    _calcOffsetFromPosition: function (position) {
+      var pixelOffset = position - this.state.sliderStart;
+      if (this.props.invert) pixelOffset = this.state.sliderLength - pixelOffset;
+      pixelOffset -= (this.state.handleSize / 2);
+      return pixelOffset;
+    },
+
+    // Snaps the nearest handle to the value corresponding to `position` and calls `callback` with that handle's index.
+    _forceValueFromPosition: function (position, callback) {
+      var pixelOffset = this._calcOffsetFromPosition(position);
+      var closestIndex = this._getClosestIndex(pixelOffset);
+      var nextValue = this._trimAlignValue(this._calcValue(pixelOffset));
+
+      var value = this.state.value.slice(); // Clone this.state.value since we'll modify it temporarily
+      value[closestIndex] = nextValue;
+
+      // Prevents the slider from shrinking below `props.minDistance`
+      for (var i = 0; i < value.length - 1; i += 1) {
+        if (value[i + 1] - value[i] < this.props.minDistance) return;
+      }
+
+      this.setState({value: value}, callback.bind(this, closestIndex));
+    },
+
+    _getMousePosition: function (e) {
+      return [
+        e['page' + this._axisKey()],
+        e['page' + this._orthogonalAxisKey()]
+      ];
+    },
+
+    _getTouchPosition: function (e) {
+      var touch = e.touches[0];
+      return [
+        touch['page' + this._axisKey()],
+        touch['page' + this._orthogonalAxisKey()]
+      ];
+    },
+
+    _getMouseEventMap: function () {
+      return {
+        'mousemove': this._onMouseMove,
+        'mouseup': this._onMouseUp
+      }
+    },
+
+    _getTouchEventMap: function () {
+      return {
+        'touchmove': this._onTouchMove,
+        'touchend': this._onTouchEnd
+      }
+    },
+
+    // create the `mousedown` handler for the i-th handle
+    _createOnMouseDown: function (i) {
+      return function (e) {
+        if (this.props.disabled) return;
+        var position = this._getMousePosition(e);
+        this._start(i, position[0]);
+        this._addHandlers(this._getMouseEventMap());
+        pauseEvent(e);
+      }.bind(this);
+    },
+
+    // create the `touchstart` handler for the i-th handle
+    _createOnTouchStart: function (i) {
+      return function (e) {
+        if (this.props.disabled || e.touches.length > 1) return;
+        var position = this._getTouchPosition(e);
+        this.startPosition = position;
+        this.isScrolling = undefined; // don't know yet if the user is trying to scroll
+        this._start(i, position[0]);
+        this._addHandlers(this._getTouchEventMap());
+        stopPropagation(e);
+      }.bind(this);
+    },
+
+    _addHandlers: function (eventMap) {
+      for (var key in eventMap) {
+        document.addEventListener(key, eventMap[key], false);
+      }
+    },
+
+    _removeHandlers: function (eventMap) {
+      for (var key in eventMap) {
+        document.removeEventListener(key, eventMap[key], false);
+      }
+    },
+
+    _start: function (i, position) {
+      // if activeElement is body window will lost focus in IE9
+      if (document.activeElement && document.activeElement != document.body) {
+        document.activeElement.blur();
+      }
+
+      this.hasMoved = false;
+
+      this._fireChangeEvent('onBeforeChange');
+
+      var zIndices = this.state.zIndices;
+      zIndices.splice(zIndices.indexOf(i), 1); // remove wherever the element is
+      zIndices.push(i); // add to end
+
+      this.setState({
+        startValue: this.state.value[i],
+        startPosition: position,
+        index: i,
+        zIndices: zIndices
+      });
+    },
+
+    _onMouseUp: function () {
+      this._onEnd(this._getMouseEventMap());
+    },
+
+    _onTouchEnd: function () {
+      this._onEnd(this._getTouchEventMap());
+    },
+
+    _onEnd: function (eventMap) {
+      this._removeHandlers(eventMap);
+      this.setState({index: -1}, this._fireChangeEvent.bind(this, 'onAfterChange'));
+    },
+
+    _onMouseMove: function (e) {
+      var position = this._getMousePosition(e);
+      this._move(position[0]);
+    },
+
+    _onTouchMove: function (e) {
+      if (e.touches.length > 1) return;
+
+      var position = this._getTouchPosition(e);
+
+      if (typeof this.isScrolling === 'undefined') {
+        var diffMainDir = position[0] - this.startPosition[0];
+        var diffScrollDir = position[1] - this.startPosition[1];
+        this.isScrolling = Math.abs(diffScrollDir) > Math.abs(diffMainDir);
+      }
+
+      if (this.isScrolling) {
+        this.setState({index: -1});
+        return;
+      }
+
+      pauseEvent(e);
+
+      this._move(position[0]);
+    },
+
+    _move: function (position) {
+      this.hasMoved = true;
+
+      var props = this.props;
+      var state = this.state;
+      var index = state.index;
+
+      var value = state.value;
+      var length = value.length;
+      var oldValue = value[index];
+
+      var diffPosition = position - state.startPosition;
+      if (props.invert) diffPosition *= -1;
+
+      var diffValue = diffPosition / (state.sliderLength - state.handleSize) * (props.max - props.min);
+      var newValue = this._trimAlignValue(state.startValue + diffValue);
+
+      var minDistance = props.minDistance;
+
+      // if "pearling" (= handles pushing each other) is disabled,
+      // prevent the handle from getting closer than `minDistance` to the previous or next handle.
+      if (!props.pearling) {
+        if (index > 0) {
+          var valueBefore = value[index - 1];
+          if (newValue < valueBefore + minDistance) {
+            newValue = valueBefore + minDistance;
+          }
+        }
+
+        if (index < length - 1) {
+          var valueAfter = value[index + 1];
+          if (newValue > valueAfter - minDistance) {
+            newValue = valueAfter - minDistance;
+          }
+        }
+      }
+
+      value[index] = newValue;
+
+      // if "pearling" is enabled, let the current handle push the pre- and succeeding handles.
+      if (props.pearling && length > 1) {
+        if (newValue > oldValue) {
+          this._pushSucceeding(value, minDistance, index);
+          this._trimSucceeding(length, value, minDistance, props.max);
+        }
+        else if (newValue < oldValue) {
+          this._pushPreceding(value, minDistance, index);
+          this._trimPreceding(length, value, minDistance, props.min);
+        }
+      }
+
+      // Normally you would use `shouldComponentUpdate`, but since the slider is a low-level component,
+      // the extra complexity might be worth the extra performance.
+      if (newValue !== oldValue) {
+        this.setState({value: value}, this._fireChangeEvent.bind(this, 'onChange'));
+      }
+    },
+
+    _pushSucceeding: function (value, minDistance, index) {
+      var i, padding;
+      for (i = index, padding = value[i] + minDistance;
+           value[i + 1] != null && padding > value[i + 1];
+           i++, padding = value[i] + minDistance) {
+        value[i + 1] = this._alignValue(padding);
+      }
+    },
+
+    _trimSucceeding: function (length, nextValue, minDistance, max) {
+      for (var i = 0; i < length; i++) {
+        var padding = max - i * minDistance;
+        if (nextValue[length - 1 - i] > padding) {
+          nextValue[length - 1 - i] = padding;
+        }
+      }
+    },
+
+    _pushPreceding: function (value, minDistance, index) {
+      var i, padding;
+      for (i = index, padding = value[i] - minDistance;
+           value[i - 1] != null && padding < value[i - 1];
+           i--, padding = value[i] - minDistance) {
+        value[i - 1] = this._alignValue(padding);
+      }
+    },
+
+    _trimPreceding: function (length, nextValue, minDistance, min) {
+      for (var i = 0; i < length; i++) {
+        var padding = min + i * minDistance;
+        if (nextValue[i] < padding) {
+          nextValue[i] = padding;
+        }
+      }
+    },
+
+    _axisKey: function () {
+      var orientation = this.props.orientation;
+      if (orientation === 'horizontal') return 'X';
+      if (orientation === 'vertical') return 'Y';
+    },
+
+    _orthogonalAxisKey: function () {
+      var orientation = this.props.orientation;
+      if (orientation === 'horizontal') return 'Y';
+      if (orientation === 'vertical') return 'X';
+    },
+
+    _posMinKey: function () {
+      var orientation = this.props.orientation;
+      if (orientation === 'horizontal') return this.props.invert ? 'right' : 'left';
+      if (orientation === 'vertical') return this.props.invert ? 'bottom' : 'top';
+    },
+
+    _posMaxKey: function () {
+      var orientation = this.props.orientation;
+      if (orientation === 'horizontal') return this.props.invert ? 'left' : 'right';
+      if (orientation === 'vertical') return this.props.invert ? 'top' : 'bottom';
+    },
+
+    _sizeKey: function () {
+      var orientation = this.props.orientation;
+      if (orientation === 'horizontal') return 'clientWidth';
+      if (orientation === 'vertical') return 'clientHeight';
+    },
+
+    _trimAlignValue: function (val, props) {
+      return this._alignValue(this._trimValue(val, props), props);
+    },
+
+    _trimValue: function (val, props) {
+      props = props || this.props;
+
+      if (val <= props.min) val = props.min;
+      if (val >= props.max) val = props.max;
+
+      return val;
+    },
+
+    _alignValue: function (val, props) {
+      props = props || this.props;
+
+      var valModStep = (val - props.min) % props.step;
+      var alignValue = val - valModStep;
+
+      if (Math.abs(valModStep) * 2 >= props.step) {
+        alignValue += (valModStep > 0) ? props.step : (-props.step);
+      }
+
+      return parseFloat(alignValue.toFixed(5));
+    },
+
+    _renderHandle: function (style, child, i) {
+      var className = this.props.handleClassName + ' ' +
+        (this.props.handleClassName + '-' + i) + ' ' +
+        (this.state.index === i ? this.props.handleActiveClassName : '');
+
+      return (
+        React.createElement('div', {
+            ref: 'handle' + i,
+            key: 'handle' + i,
+            className: className,
+            style: style,
+            onMouseDown: this._createOnMouseDown(i),
+            onTouchStart: this._createOnTouchStart(i)
+          },
+          child
+        )
+      );
+    },
+
+    _renderHandles: function (offset) {
+      var length = offset.length;
+
+      var styles = this.tempArray;
+      for (var i = 0; i < length; i++) {
+        styles[i] = this._buildHandleStyle(offset[i], i);
+      }
+
+      var res = this.tempArray;
+      var renderHandle = this._renderHandle;
+      if (React.Children.count(this.props.children) > 0) {
+        React.Children.forEach(this.props.children, function (child, i) {
+          res[i] = renderHandle(styles[i], child, i);
+        });
+      } else {
+        for (i = 0; i < length; i++) {
+          res[i] = renderHandle(styles[i], null, i);
+        }
+      }
+      return res;
+    },
+
+    _renderBar: function (i, offsetFrom, offsetTo) {
+      return (
+        React.createElement('div', {
+          key: 'bar' + i,
+          ref: 'bar' + i,
+          className: this.props.barClassName + ' ' + this.props.barClassName + '-' + i,
+          style: this._buildBarStyle(offsetFrom, this.state.upperBound - offsetTo)
+        })
+      );
+    },
+
+    _renderBars: function (offset) {
+      var bars = [];
+      var lastIndex = offset.length - 1;
+
+      bars.push(this._renderBar(0, 0, offset[0]));
+
+      for (var i = 0; i < lastIndex; i++) {
+        bars.push(this._renderBar(i + 1, offset[i], offset[i + 1]));
+      }
+
+      bars.push(this._renderBar(lastIndex + 1, offset[lastIndex], this.state.upperBound));
+
+      return bars;
+    },
+
+    _onSliderMouseDown: function (e) {
+      if (this.props.disabled) return;
+      this.hasMoved = false;
+      if (!this.props.snapDragDisabled) {
+        var position = this._getMousePosition(e);
+        this._forceValueFromPosition(position[0], function (i) {
+          this._fireChangeEvent('onChange');
+          this._start(i, position[0]);
+          this._addHandlers(this._getMouseEventMap());
+        }.bind(this));
+      }
+
+      pauseEvent(e);
+    },
+
+    _onSliderClick: function (e) {
+      if (this.props.disabled) return;
+
+      if (this.props.onSliderClick && !this.hasMoved) {
+        var position = this._getMousePosition(e);
+        var valueAtPos = this._trimAlignValue(this._calcValue(this._calcOffsetFromPosition(position[0])));
+        this.props.onSliderClick(valueAtPos);
+      }
+    },
+
+    _fireChangeEvent: function (event) {
+      if (this.props[event]) {
+        this.props[event](undoEnsureArray(this.state.value));
+      }
+    },
+
+    render: function () {
+      var state = this.state;
+      var props = this.props;
+
+      var offset = this.tempArray;
+      var value = state.value;
+      var l = value.length;
+      for (var i = 0; i < l; i++) {
+        offset[i] = this._calcOffset(value[i], i);
+      }
+
+      var bars = props.withBars ? this._renderBars(offset) : null;
+      var handles = this._renderHandles(offset);
+
+      return (
+        React.createElement('div', {
+            ref: 'slider',
+            style: {position: 'relative'},
+            className: props.className + (props.disabled ? ' disabled' : ''),
+            onMouseDown: this._onSliderMouseDown,
+            onClick: this._onSliderClick
+          },
+          bars,
+          handles
+        )
+      );
+    }
+  });
+
+  return ReactSlider;
+}));
+
+},{"react":241}],69:[function(require,module,exports){
 module.exports = require('./lib/ReactWithAddons');
 
-},{"./lib/ReactWithAddons":153}],54:[function(require,module,exports){
+},{"./lib/ReactWithAddons":169}],70:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -21246,7 +25808,7 @@ var AutoFocusMixin = {
 
 module.exports = AutoFocusMixin;
 
-},{"./focusNode":187}],55:[function(require,module,exports){
+},{"./focusNode":203}],71:[function(require,module,exports){
 /**
  * Copyright 2013-2015 Facebook, Inc.
  * All rights reserved.
@@ -21741,7 +26303,7 @@ var BeforeInputEventPlugin = {
 
 module.exports = BeforeInputEventPlugin;
 
-},{"./EventConstants":68,"./EventPropagators":73,"./ExecutionEnvironment":74,"./FallbackCompositionState":75,"./SyntheticCompositionEvent":159,"./SyntheticInputEvent":163,"./keyOf":210}],56:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPropagators":89,"./ExecutionEnvironment":90,"./FallbackCompositionState":91,"./SyntheticCompositionEvent":175,"./SyntheticInputEvent":179,"./keyOf":226}],72:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21853,7 +26415,7 @@ var CSSCore = {
 module.exports = CSSCore;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],57:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],73:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -21978,7 +26540,7 @@ var CSSProperty = {
 
 module.exports = CSSProperty;
 
-},{}],58:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -22160,7 +26722,7 @@ var CSSPropertyOperations = {
 module.exports = CSSPropertyOperations;
 
 }).call(this,require('_process'))
-},{"./CSSProperty":57,"./ExecutionEnvironment":74,"./camelizeStyleName":174,"./dangerousStyleValue":181,"./hyphenateStyleName":201,"./memoizeStringOnly":212,"./warning":224,"_process":37}],59:[function(require,module,exports){
+},{"./CSSProperty":73,"./ExecutionEnvironment":90,"./camelizeStyleName":190,"./dangerousStyleValue":197,"./hyphenateStyleName":217,"./memoizeStringOnly":228,"./warning":240,"_process":52}],75:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -22260,7 +26822,7 @@ PooledClass.addPoolingTo(CallbackQueue);
 module.exports = CallbackQueue;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./PooledClass":82,"./invariant":203,"_process":37}],60:[function(require,module,exports){
+},{"./Object.assign":97,"./PooledClass":98,"./invariant":219,"_process":52}],76:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -22642,7 +27204,7 @@ var ChangeEventPlugin = {
 
 module.exports = ChangeEventPlugin;
 
-},{"./EventConstants":68,"./EventPluginHub":70,"./EventPropagators":73,"./ExecutionEnvironment":74,"./ReactUpdates":152,"./SyntheticEvent":161,"./isEventSupported":204,"./isTextInputElement":206,"./keyOf":210}],61:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPluginHub":86,"./EventPropagators":89,"./ExecutionEnvironment":90,"./ReactUpdates":168,"./SyntheticEvent":177,"./isEventSupported":220,"./isTextInputElement":222,"./keyOf":226}],77:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -22667,7 +27229,7 @@ var ClientReactRootIndex = {
 
 module.exports = ClientReactRootIndex;
 
-},{}],62:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -22805,7 +27367,7 @@ var DOMChildrenOperations = {
 module.exports = DOMChildrenOperations;
 
 }).call(this,require('_process'))
-},{"./Danger":65,"./ReactMultiChildUpdateTypes":131,"./invariant":203,"./setTextContent":218,"_process":37}],63:[function(require,module,exports){
+},{"./Danger":81,"./ReactMultiChildUpdateTypes":147,"./invariant":219,"./setTextContent":234,"_process":52}],79:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -23104,7 +27666,7 @@ var DOMProperty = {
 module.exports = DOMProperty;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],64:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],80:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -23296,7 +27858,7 @@ var DOMPropertyOperations = {
 module.exports = DOMPropertyOperations;
 
 }).call(this,require('_process'))
-},{"./DOMProperty":63,"./quoteAttributeValueForBrowser":216,"./warning":224,"_process":37}],65:[function(require,module,exports){
+},{"./DOMProperty":79,"./quoteAttributeValueForBrowser":232,"./warning":240,"_process":52}],81:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -23483,7 +28045,7 @@ var Danger = {
 module.exports = Danger;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":74,"./createNodesFromMarkup":179,"./emptyFunction":182,"./getMarkupWrap":195,"./invariant":203,"_process":37}],66:[function(require,module,exports){
+},{"./ExecutionEnvironment":90,"./createNodesFromMarkup":195,"./emptyFunction":198,"./getMarkupWrap":211,"./invariant":219,"_process":52}],82:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -23522,7 +28084,7 @@ var DefaultEventPluginOrder = [
 
 module.exports = DefaultEventPluginOrder;
 
-},{"./keyOf":210}],67:[function(require,module,exports){
+},{"./keyOf":226}],83:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -23662,7 +28224,7 @@ var EnterLeaveEventPlugin = {
 
 module.exports = EnterLeaveEventPlugin;
 
-},{"./EventConstants":68,"./EventPropagators":73,"./ReactMount":129,"./SyntheticMouseEvent":165,"./keyOf":210}],68:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPropagators":89,"./ReactMount":145,"./SyntheticMouseEvent":181,"./keyOf":226}],84:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -23734,7 +28296,7 @@ var EventConstants = {
 
 module.exports = EventConstants;
 
-},{"./keyMirror":209}],69:[function(require,module,exports){
+},{"./keyMirror":225}],85:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -23824,7 +28386,7 @@ var EventListener = {
 module.exports = EventListener;
 
 }).call(this,require('_process'))
-},{"./emptyFunction":182,"_process":37}],70:[function(require,module,exports){
+},{"./emptyFunction":198,"_process":52}],86:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -24102,7 +28664,7 @@ var EventPluginHub = {
 module.exports = EventPluginHub;
 
 }).call(this,require('_process'))
-},{"./EventPluginRegistry":71,"./EventPluginUtils":72,"./accumulateInto":171,"./forEachAccumulated":188,"./invariant":203,"_process":37}],71:[function(require,module,exports){
+},{"./EventPluginRegistry":87,"./EventPluginUtils":88,"./accumulateInto":187,"./forEachAccumulated":204,"./invariant":219,"_process":52}],87:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -24382,7 +28944,7 @@ var EventPluginRegistry = {
 module.exports = EventPluginRegistry;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],72:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],88:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -24603,7 +29165,7 @@ var EventPluginUtils = {
 module.exports = EventPluginUtils;
 
 }).call(this,require('_process'))
-},{"./EventConstants":68,"./invariant":203,"_process":37}],73:[function(require,module,exports){
+},{"./EventConstants":84,"./invariant":219,"_process":52}],89:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -24745,7 +29307,7 @@ var EventPropagators = {
 module.exports = EventPropagators;
 
 }).call(this,require('_process'))
-},{"./EventConstants":68,"./EventPluginHub":70,"./accumulateInto":171,"./forEachAccumulated":188,"_process":37}],74:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPluginHub":86,"./accumulateInto":187,"./forEachAccumulated":204,"_process":52}],90:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -24789,7 +29351,7 @@ var ExecutionEnvironment = {
 
 module.exports = ExecutionEnvironment;
 
-},{}],75:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -24880,7 +29442,7 @@ PooledClass.addPoolingTo(FallbackCompositionState);
 
 module.exports = FallbackCompositionState;
 
-},{"./Object.assign":81,"./PooledClass":82,"./getTextContentAccessor":198}],76:[function(require,module,exports){
+},{"./Object.assign":97,"./PooledClass":98,"./getTextContentAccessor":214}],92:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -25091,7 +29653,7 @@ var HTMLDOMPropertyConfig = {
 
 module.exports = HTMLDOMPropertyConfig;
 
-},{"./DOMProperty":63,"./ExecutionEnvironment":74}],77:[function(require,module,exports){
+},{"./DOMProperty":79,"./ExecutionEnvironment":90}],93:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -25132,7 +29694,7 @@ var LinkedStateMixin = {
 
 module.exports = LinkedStateMixin;
 
-},{"./ReactLink":127,"./ReactStateSetters":146}],78:[function(require,module,exports){
+},{"./ReactLink":143,"./ReactStateSetters":162}],94:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25288,7 +29850,7 @@ var LinkedValueUtils = {
 module.exports = LinkedValueUtils;
 
 }).call(this,require('_process'))
-},{"./ReactPropTypes":138,"./invariant":203,"_process":37}],79:[function(require,module,exports){
+},{"./ReactPropTypes":154,"./invariant":219,"_process":52}],95:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -25345,7 +29907,7 @@ var LocalEventTrapMixin = {
 module.exports = LocalEventTrapMixin;
 
 }).call(this,require('_process'))
-},{"./ReactBrowserEventEmitter":85,"./accumulateInto":171,"./forEachAccumulated":188,"./invariant":203,"_process":37}],80:[function(require,module,exports){
+},{"./ReactBrowserEventEmitter":101,"./accumulateInto":187,"./forEachAccumulated":204,"./invariant":219,"_process":52}],96:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -25403,7 +29965,7 @@ var MobileSafariClickEventPlugin = {
 
 module.exports = MobileSafariClickEventPlugin;
 
-},{"./EventConstants":68,"./emptyFunction":182}],81:[function(require,module,exports){
+},{"./EventConstants":84,"./emptyFunction":198}],97:[function(require,module,exports){
 /**
  * Copyright 2014-2015, Facebook, Inc.
  * All rights reserved.
@@ -25452,7 +30014,7 @@ function assign(target, sources) {
 
 module.exports = assign;
 
-},{}],82:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25568,7 +30130,7 @@ var PooledClass = {
 module.exports = PooledClass;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],83:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],99:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25720,7 +30282,7 @@ React.version = '0.13.3';
 module.exports = React;
 
 }).call(this,require('_process'))
-},{"./EventPluginUtils":72,"./ExecutionEnvironment":74,"./Object.assign":81,"./ReactChildren":89,"./ReactClass":90,"./ReactComponent":91,"./ReactContext":96,"./ReactCurrentOwner":97,"./ReactDOM":98,"./ReactDOMTextComponent":109,"./ReactDefaultInjection":112,"./ReactElement":115,"./ReactElementValidator":116,"./ReactInstanceHandles":124,"./ReactMount":129,"./ReactPerf":134,"./ReactPropTypes":138,"./ReactReconciler":141,"./ReactServerRendering":144,"./findDOMNode":185,"./onlyChild":213,"_process":37}],84:[function(require,module,exports){
+},{"./EventPluginUtils":88,"./ExecutionEnvironment":90,"./Object.assign":97,"./ReactChildren":105,"./ReactClass":106,"./ReactComponent":107,"./ReactContext":112,"./ReactCurrentOwner":113,"./ReactDOM":114,"./ReactDOMTextComponent":125,"./ReactDefaultInjection":128,"./ReactElement":131,"./ReactElementValidator":132,"./ReactInstanceHandles":140,"./ReactMount":145,"./ReactPerf":150,"./ReactPropTypes":154,"./ReactReconciler":157,"./ReactServerRendering":160,"./findDOMNode":201,"./onlyChild":229,"_process":52}],100:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -25751,7 +30313,7 @@ var ReactBrowserComponentMixin = {
 
 module.exports = ReactBrowserComponentMixin;
 
-},{"./findDOMNode":185}],85:[function(require,module,exports){
+},{"./findDOMNode":201}],101:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -26104,7 +30666,7 @@ var ReactBrowserEventEmitter = assign({}, ReactEventEmitterMixin, {
 
 module.exports = ReactBrowserEventEmitter;
 
-},{"./EventConstants":68,"./EventPluginHub":70,"./EventPluginRegistry":71,"./Object.assign":81,"./ReactEventEmitterMixin":119,"./ViewportMetrics":170,"./isEventSupported":204}],86:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPluginHub":86,"./EventPluginRegistry":87,"./Object.assign":97,"./ReactEventEmitterMixin":135,"./ViewportMetrics":186,"./isEventSupported":220}],102:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -26174,7 +30736,7 @@ var ReactCSSTransitionGroup = React.createClass({
 
 module.exports = ReactCSSTransitionGroup;
 
-},{"./Object.assign":81,"./React":83,"./ReactCSSTransitionGroupChild":87,"./ReactTransitionGroup":150}],87:[function(require,module,exports){
+},{"./Object.assign":97,"./React":99,"./ReactCSSTransitionGroupChild":103,"./ReactTransitionGroup":166}],103:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26322,7 +30884,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
 module.exports = ReactCSSTransitionGroupChild;
 
 }).call(this,require('_process'))
-},{"./CSSCore":56,"./React":83,"./ReactTransitionEvents":149,"./onlyChild":213,"./warning":224,"_process":37}],88:[function(require,module,exports){
+},{"./CSSCore":72,"./React":99,"./ReactTransitionEvents":165,"./onlyChild":229,"./warning":240,"_process":52}],104:[function(require,module,exports){
 /**
  * Copyright 2014-2015, Facebook, Inc.
  * All rights reserved.
@@ -26449,7 +31011,7 @@ var ReactChildReconciler = {
 
 module.exports = ReactChildReconciler;
 
-},{"./ReactReconciler":141,"./flattenChildren":186,"./instantiateReactComponent":202,"./shouldUpdateReactComponent":220}],89:[function(require,module,exports){
+},{"./ReactReconciler":157,"./flattenChildren":202,"./instantiateReactComponent":218,"./shouldUpdateReactComponent":236}],105:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26602,7 +31164,7 @@ var ReactChildren = {
 module.exports = ReactChildren;
 
 }).call(this,require('_process'))
-},{"./PooledClass":82,"./ReactFragment":121,"./traverseAllChildren":222,"./warning":224,"_process":37}],90:[function(require,module,exports){
+},{"./PooledClass":98,"./ReactFragment":137,"./traverseAllChildren":238,"./warning":240,"_process":52}],106:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27548,7 +32110,7 @@ var ReactClass = {
 module.exports = ReactClass;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./ReactComponent":91,"./ReactCurrentOwner":97,"./ReactElement":115,"./ReactErrorUtils":118,"./ReactInstanceMap":125,"./ReactLifeCycle":126,"./ReactPropTypeLocationNames":136,"./ReactPropTypeLocations":137,"./ReactUpdateQueue":151,"./invariant":203,"./keyMirror":209,"./keyOf":210,"./warning":224,"_process":37}],91:[function(require,module,exports){
+},{"./Object.assign":97,"./ReactComponent":107,"./ReactCurrentOwner":113,"./ReactElement":131,"./ReactErrorUtils":134,"./ReactInstanceMap":141,"./ReactLifeCycle":142,"./ReactPropTypeLocationNames":152,"./ReactPropTypeLocations":153,"./ReactUpdateQueue":167,"./invariant":219,"./keyMirror":225,"./keyOf":226,"./warning":240,"_process":52}],107:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27702,7 +32264,7 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = ReactComponent;
 
 }).call(this,require('_process'))
-},{"./ReactUpdateQueue":151,"./invariant":203,"./warning":224,"_process":37}],92:[function(require,module,exports){
+},{"./ReactUpdateQueue":167,"./invariant":219,"./warning":240,"_process":52}],108:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -27749,7 +32311,7 @@ var ReactComponentBrowserEnvironment = {
 
 module.exports = ReactComponentBrowserEnvironment;
 
-},{"./ReactDOMIDOperations":102,"./ReactMount":129}],93:[function(require,module,exports){
+},{"./ReactDOMIDOperations":118,"./ReactMount":145}],109:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -27810,7 +32372,7 @@ var ReactComponentEnvironment = {
 module.exports = ReactComponentEnvironment;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],94:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],110:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -27859,7 +32421,7 @@ var ReactComponentWithPureRenderMixin = {
 
 module.exports = ReactComponentWithPureRenderMixin;
 
-},{"./shallowEqual":219}],95:[function(require,module,exports){
+},{"./shallowEqual":235}],111:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28772,7 +33334,7 @@ var ReactCompositeComponent = {
 module.exports = ReactCompositeComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./ReactComponentEnvironment":93,"./ReactContext":96,"./ReactCurrentOwner":97,"./ReactElement":115,"./ReactElementValidator":116,"./ReactInstanceMap":125,"./ReactLifeCycle":126,"./ReactNativeComponent":132,"./ReactPerf":134,"./ReactPropTypeLocationNames":136,"./ReactPropTypeLocations":137,"./ReactReconciler":141,"./ReactUpdates":152,"./emptyObject":183,"./invariant":203,"./shouldUpdateReactComponent":220,"./warning":224,"_process":37}],96:[function(require,module,exports){
+},{"./Object.assign":97,"./ReactComponentEnvironment":109,"./ReactContext":112,"./ReactCurrentOwner":113,"./ReactElement":131,"./ReactElementValidator":132,"./ReactInstanceMap":141,"./ReactLifeCycle":142,"./ReactNativeComponent":148,"./ReactPerf":150,"./ReactPropTypeLocationNames":152,"./ReactPropTypeLocations":153,"./ReactReconciler":157,"./ReactUpdates":168,"./emptyObject":199,"./invariant":219,"./shouldUpdateReactComponent":236,"./warning":240,"_process":52}],112:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28850,7 +33412,7 @@ var ReactContext = {
 module.exports = ReactContext;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./emptyObject":183,"./warning":224,"_process":37}],97:[function(require,module,exports){
+},{"./Object.assign":97,"./emptyObject":199,"./warning":240,"_process":52}],113:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -28884,7 +33446,7 @@ var ReactCurrentOwner = {
 
 module.exports = ReactCurrentOwner;
 
-},{}],98:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29063,7 +33625,7 @@ var ReactDOM = mapObject({
 module.exports = ReactDOM;
 
 }).call(this,require('_process'))
-},{"./ReactElement":115,"./ReactElementValidator":116,"./mapObject":211,"_process":37}],99:[function(require,module,exports){
+},{"./ReactElement":131,"./ReactElementValidator":132,"./mapObject":227,"_process":52}],115:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -29127,7 +33689,7 @@ var ReactDOMButton = ReactClass.createClass({
 
 module.exports = ReactDOMButton;
 
-},{"./AutoFocusMixin":54,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115,"./keyMirror":209}],100:[function(require,module,exports){
+},{"./AutoFocusMixin":70,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131,"./keyMirror":225}],116:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29637,7 +34199,7 @@ ReactDOMComponent.injection = {
 module.exports = ReactDOMComponent;
 
 }).call(this,require('_process'))
-},{"./CSSPropertyOperations":58,"./DOMProperty":63,"./DOMPropertyOperations":64,"./Object.assign":81,"./ReactBrowserEventEmitter":85,"./ReactComponentBrowserEnvironment":92,"./ReactMount":129,"./ReactMultiChild":130,"./ReactPerf":134,"./escapeTextContentForBrowser":184,"./invariant":203,"./isEventSupported":204,"./keyOf":210,"./warning":224,"_process":37}],101:[function(require,module,exports){
+},{"./CSSPropertyOperations":74,"./DOMProperty":79,"./DOMPropertyOperations":80,"./Object.assign":97,"./ReactBrowserEventEmitter":101,"./ReactComponentBrowserEnvironment":108,"./ReactMount":145,"./ReactMultiChild":146,"./ReactPerf":150,"./escapeTextContentForBrowser":200,"./invariant":219,"./isEventSupported":220,"./keyOf":226,"./warning":240,"_process":52}],117:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -29686,7 +34248,7 @@ var ReactDOMForm = ReactClass.createClass({
 
 module.exports = ReactDOMForm;
 
-},{"./EventConstants":68,"./LocalEventTrapMixin":79,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115}],102:[function(require,module,exports){
+},{"./EventConstants":84,"./LocalEventTrapMixin":95,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131}],118:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29854,7 +34416,7 @@ ReactPerf.measureMethods(ReactDOMIDOperations, 'ReactDOMIDOperations', {
 module.exports = ReactDOMIDOperations;
 
 }).call(this,require('_process'))
-},{"./CSSPropertyOperations":58,"./DOMChildrenOperations":62,"./DOMPropertyOperations":64,"./ReactMount":129,"./ReactPerf":134,"./invariant":203,"./setInnerHTML":217,"_process":37}],103:[function(require,module,exports){
+},{"./CSSPropertyOperations":74,"./DOMChildrenOperations":78,"./DOMPropertyOperations":80,"./ReactMount":145,"./ReactPerf":150,"./invariant":219,"./setInnerHTML":233,"_process":52}],119:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -29899,7 +34461,7 @@ var ReactDOMIframe = ReactClass.createClass({
 
 module.exports = ReactDOMIframe;
 
-},{"./EventConstants":68,"./LocalEventTrapMixin":79,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115}],104:[function(require,module,exports){
+},{"./EventConstants":84,"./LocalEventTrapMixin":95,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131}],120:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -29945,7 +34507,7 @@ var ReactDOMImg = ReactClass.createClass({
 
 module.exports = ReactDOMImg;
 
-},{"./EventConstants":68,"./LocalEventTrapMixin":79,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115}],105:[function(require,module,exports){
+},{"./EventConstants":84,"./LocalEventTrapMixin":95,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131}],121:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30122,7 +34684,7 @@ var ReactDOMInput = ReactClass.createClass({
 module.exports = ReactDOMInput;
 
 }).call(this,require('_process'))
-},{"./AutoFocusMixin":54,"./DOMPropertyOperations":64,"./LinkedValueUtils":78,"./Object.assign":81,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115,"./ReactMount":129,"./ReactUpdates":152,"./invariant":203,"_process":37}],106:[function(require,module,exports){
+},{"./AutoFocusMixin":70,"./DOMPropertyOperations":80,"./LinkedValueUtils":94,"./Object.assign":97,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131,"./ReactMount":145,"./ReactUpdates":168,"./invariant":219,"_process":52}],122:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30174,7 +34736,7 @@ var ReactDOMOption = ReactClass.createClass({
 module.exports = ReactDOMOption;
 
 }).call(this,require('_process'))
-},{"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115,"./warning":224,"_process":37}],107:[function(require,module,exports){
+},{"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131,"./warning":240,"_process":52}],123:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -30352,7 +34914,7 @@ var ReactDOMSelect = ReactClass.createClass({
 
 module.exports = ReactDOMSelect;
 
-},{"./AutoFocusMixin":54,"./LinkedValueUtils":78,"./Object.assign":81,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115,"./ReactUpdates":152}],108:[function(require,module,exports){
+},{"./AutoFocusMixin":70,"./LinkedValueUtils":94,"./Object.assign":97,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131,"./ReactUpdates":168}],124:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -30565,7 +35127,7 @@ var ReactDOMSelection = {
 
 module.exports = ReactDOMSelection;
 
-},{"./ExecutionEnvironment":74,"./getNodeForCharacterOffset":196,"./getTextContentAccessor":198}],109:[function(require,module,exports){
+},{"./ExecutionEnvironment":90,"./getNodeForCharacterOffset":212,"./getTextContentAccessor":214}],125:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -30682,7 +35244,7 @@ assign(ReactDOMTextComponent.prototype, {
 
 module.exports = ReactDOMTextComponent;
 
-},{"./DOMPropertyOperations":64,"./Object.assign":81,"./ReactComponentBrowserEnvironment":92,"./ReactDOMComponent":100,"./escapeTextContentForBrowser":184}],110:[function(require,module,exports){
+},{"./DOMPropertyOperations":80,"./Object.assign":97,"./ReactComponentBrowserEnvironment":108,"./ReactDOMComponent":116,"./escapeTextContentForBrowser":200}],126:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30822,7 +35384,7 @@ var ReactDOMTextarea = ReactClass.createClass({
 module.exports = ReactDOMTextarea;
 
 }).call(this,require('_process'))
-},{"./AutoFocusMixin":54,"./DOMPropertyOperations":64,"./LinkedValueUtils":78,"./Object.assign":81,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactElement":115,"./ReactUpdates":152,"./invariant":203,"./warning":224,"_process":37}],111:[function(require,module,exports){
+},{"./AutoFocusMixin":70,"./DOMPropertyOperations":80,"./LinkedValueUtils":94,"./Object.assign":97,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactElement":131,"./ReactUpdates":168,"./invariant":219,"./warning":240,"_process":52}],127:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -30895,7 +35457,7 @@ var ReactDefaultBatchingStrategy = {
 
 module.exports = ReactDefaultBatchingStrategy;
 
-},{"./Object.assign":81,"./ReactUpdates":152,"./Transaction":169,"./emptyFunction":182}],112:[function(require,module,exports){
+},{"./Object.assign":97,"./ReactUpdates":168,"./Transaction":185,"./emptyFunction":198}],128:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31054,7 +35616,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'))
-},{"./BeforeInputEventPlugin":55,"./ChangeEventPlugin":60,"./ClientReactRootIndex":61,"./DefaultEventPluginOrder":66,"./EnterLeaveEventPlugin":67,"./ExecutionEnvironment":74,"./HTMLDOMPropertyConfig":76,"./MobileSafariClickEventPlugin":80,"./ReactBrowserComponentMixin":84,"./ReactClass":90,"./ReactComponentBrowserEnvironment":92,"./ReactDOMButton":99,"./ReactDOMComponent":100,"./ReactDOMForm":101,"./ReactDOMIDOperations":102,"./ReactDOMIframe":103,"./ReactDOMImg":104,"./ReactDOMInput":105,"./ReactDOMOption":106,"./ReactDOMSelect":107,"./ReactDOMTextComponent":109,"./ReactDOMTextarea":110,"./ReactDefaultBatchingStrategy":111,"./ReactDefaultPerf":113,"./ReactElement":115,"./ReactEventListener":120,"./ReactInjection":122,"./ReactInstanceHandles":124,"./ReactMount":129,"./ReactReconcileTransaction":140,"./SVGDOMPropertyConfig":154,"./SelectEventPlugin":155,"./ServerReactRootIndex":156,"./SimpleEventPlugin":157,"./createFullPageComponent":178,"_process":37}],113:[function(require,module,exports){
+},{"./BeforeInputEventPlugin":71,"./ChangeEventPlugin":76,"./ClientReactRootIndex":77,"./DefaultEventPluginOrder":82,"./EnterLeaveEventPlugin":83,"./ExecutionEnvironment":90,"./HTMLDOMPropertyConfig":92,"./MobileSafariClickEventPlugin":96,"./ReactBrowserComponentMixin":100,"./ReactClass":106,"./ReactComponentBrowserEnvironment":108,"./ReactDOMButton":115,"./ReactDOMComponent":116,"./ReactDOMForm":117,"./ReactDOMIDOperations":118,"./ReactDOMIframe":119,"./ReactDOMImg":120,"./ReactDOMInput":121,"./ReactDOMOption":122,"./ReactDOMSelect":123,"./ReactDOMTextComponent":125,"./ReactDOMTextarea":126,"./ReactDefaultBatchingStrategy":127,"./ReactDefaultPerf":129,"./ReactElement":131,"./ReactEventListener":136,"./ReactInjection":138,"./ReactInstanceHandles":140,"./ReactMount":145,"./ReactReconcileTransaction":156,"./SVGDOMPropertyConfig":170,"./SelectEventPlugin":171,"./ServerReactRootIndex":172,"./SimpleEventPlugin":173,"./createFullPageComponent":194,"_process":52}],129:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -31320,7 +35882,7 @@ var ReactDefaultPerf = {
 
 module.exports = ReactDefaultPerf;
 
-},{"./DOMProperty":63,"./ReactDefaultPerfAnalysis":114,"./ReactMount":129,"./ReactPerf":134,"./performanceNow":215}],114:[function(require,module,exports){
+},{"./DOMProperty":79,"./ReactDefaultPerfAnalysis":130,"./ReactMount":145,"./ReactPerf":150,"./performanceNow":231}],130:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -31526,7 +36088,7 @@ var ReactDefaultPerfAnalysis = {
 
 module.exports = ReactDefaultPerfAnalysis;
 
-},{"./Object.assign":81}],115:[function(require,module,exports){
+},{"./Object.assign":97}],131:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -31834,7 +36396,7 @@ ReactElement.isValidElement = function(object) {
 module.exports = ReactElement;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./ReactContext":96,"./ReactCurrentOwner":97,"./warning":224,"_process":37}],116:[function(require,module,exports){
+},{"./Object.assign":97,"./ReactContext":112,"./ReactCurrentOwner":113,"./warning":240,"_process":52}],132:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -32299,7 +36861,7 @@ var ReactElementValidator = {
 module.exports = ReactElementValidator;
 
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":97,"./ReactElement":115,"./ReactFragment":121,"./ReactNativeComponent":132,"./ReactPropTypeLocationNames":136,"./ReactPropTypeLocations":137,"./getIteratorFn":194,"./invariant":203,"./warning":224,"_process":37}],117:[function(require,module,exports){
+},{"./ReactCurrentOwner":113,"./ReactElement":131,"./ReactFragment":137,"./ReactNativeComponent":148,"./ReactPropTypeLocationNames":152,"./ReactPropTypeLocations":153,"./getIteratorFn":210,"./invariant":219,"./warning":240,"_process":52}],133:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -32394,7 +36956,7 @@ var ReactEmptyComponent = {
 module.exports = ReactEmptyComponent;
 
 }).call(this,require('_process'))
-},{"./ReactElement":115,"./ReactInstanceMap":125,"./invariant":203,"_process":37}],118:[function(require,module,exports){
+},{"./ReactElement":131,"./ReactInstanceMap":141,"./invariant":219,"_process":52}],134:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -32426,7 +36988,7 @@ var ReactErrorUtils = {
 
 module.exports = ReactErrorUtils;
 
-},{}],119:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -32476,7 +37038,7 @@ var ReactEventEmitterMixin = {
 
 module.exports = ReactEventEmitterMixin;
 
-},{"./EventPluginHub":70}],120:[function(require,module,exports){
+},{"./EventPluginHub":86}],136:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -32659,7 +37221,7 @@ var ReactEventListener = {
 
 module.exports = ReactEventListener;
 
-},{"./EventListener":69,"./ExecutionEnvironment":74,"./Object.assign":81,"./PooledClass":82,"./ReactInstanceHandles":124,"./ReactMount":129,"./ReactUpdates":152,"./getEventTarget":193,"./getUnboundedScrollPosition":199}],121:[function(require,module,exports){
+},{"./EventListener":85,"./ExecutionEnvironment":90,"./Object.assign":97,"./PooledClass":98,"./ReactInstanceHandles":140,"./ReactMount":145,"./ReactUpdates":168,"./getEventTarget":209,"./getUnboundedScrollPosition":215}],137:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -32844,7 +37406,7 @@ var ReactFragment = {
 module.exports = ReactFragment;
 
 }).call(this,require('_process'))
-},{"./ReactElement":115,"./warning":224,"_process":37}],122:[function(require,module,exports){
+},{"./ReactElement":131,"./warning":240,"_process":52}],138:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -32886,7 +37448,7 @@ var ReactInjection = {
 
 module.exports = ReactInjection;
 
-},{"./DOMProperty":63,"./EventPluginHub":70,"./ReactBrowserEventEmitter":85,"./ReactClass":90,"./ReactComponentEnvironment":93,"./ReactDOMComponent":100,"./ReactEmptyComponent":117,"./ReactNativeComponent":132,"./ReactPerf":134,"./ReactRootIndex":143,"./ReactUpdates":152}],123:[function(require,module,exports){
+},{"./DOMProperty":79,"./EventPluginHub":86,"./ReactBrowserEventEmitter":101,"./ReactClass":106,"./ReactComponentEnvironment":109,"./ReactDOMComponent":116,"./ReactEmptyComponent":133,"./ReactNativeComponent":148,"./ReactPerf":150,"./ReactRootIndex":159,"./ReactUpdates":168}],139:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -33021,7 +37583,7 @@ var ReactInputSelection = {
 
 module.exports = ReactInputSelection;
 
-},{"./ReactDOMSelection":108,"./containsNode":176,"./focusNode":187,"./getActiveElement":189}],124:[function(require,module,exports){
+},{"./ReactDOMSelection":124,"./containsNode":192,"./focusNode":203,"./getActiveElement":205}],140:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -33357,7 +37919,7 @@ var ReactInstanceHandles = {
 module.exports = ReactInstanceHandles;
 
 }).call(this,require('_process'))
-},{"./ReactRootIndex":143,"./invariant":203,"_process":37}],125:[function(require,module,exports){
+},{"./ReactRootIndex":159,"./invariant":219,"_process":52}],141:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -33406,7 +37968,7 @@ var ReactInstanceMap = {
 
 module.exports = ReactInstanceMap;
 
-},{}],126:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 /**
  * Copyright 2015, Facebook, Inc.
  * All rights reserved.
@@ -33443,7 +38005,7 @@ var ReactLifeCycle = {
 
 module.exports = ReactLifeCycle;
 
-},{}],127:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -33516,7 +38078,7 @@ ReactLink.PropTypes = {
 
 module.exports = ReactLink;
 
-},{"./React":83}],128:[function(require,module,exports){
+},{"./React":99}],144:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -33564,7 +38126,7 @@ var ReactMarkupChecksum = {
 
 module.exports = ReactMarkupChecksum;
 
-},{"./adler32":172}],129:[function(require,module,exports){
+},{"./adler32":188}],145:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34455,7 +39017,7 @@ ReactPerf.measureMethods(ReactMount, 'ReactMount', {
 module.exports = ReactMount;
 
 }).call(this,require('_process'))
-},{"./DOMProperty":63,"./ReactBrowserEventEmitter":85,"./ReactCurrentOwner":97,"./ReactElement":115,"./ReactElementValidator":116,"./ReactEmptyComponent":117,"./ReactInstanceHandles":124,"./ReactInstanceMap":125,"./ReactMarkupChecksum":128,"./ReactPerf":134,"./ReactReconciler":141,"./ReactUpdateQueue":151,"./ReactUpdates":152,"./containsNode":176,"./emptyObject":183,"./getReactRootElementInContainer":197,"./instantiateReactComponent":202,"./invariant":203,"./setInnerHTML":217,"./shouldUpdateReactComponent":220,"./warning":224,"_process":37}],130:[function(require,module,exports){
+},{"./DOMProperty":79,"./ReactBrowserEventEmitter":101,"./ReactCurrentOwner":113,"./ReactElement":131,"./ReactElementValidator":132,"./ReactEmptyComponent":133,"./ReactInstanceHandles":140,"./ReactInstanceMap":141,"./ReactMarkupChecksum":144,"./ReactPerf":150,"./ReactReconciler":157,"./ReactUpdateQueue":167,"./ReactUpdates":168,"./containsNode":192,"./emptyObject":199,"./getReactRootElementInContainer":213,"./instantiateReactComponent":218,"./invariant":219,"./setInnerHTML":233,"./shouldUpdateReactComponent":236,"./warning":240,"_process":52}],146:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -34885,7 +39447,7 @@ var ReactMultiChild = {
 
 module.exports = ReactMultiChild;
 
-},{"./ReactChildReconciler":88,"./ReactComponentEnvironment":93,"./ReactMultiChildUpdateTypes":131,"./ReactReconciler":141}],131:[function(require,module,exports){
+},{"./ReactChildReconciler":104,"./ReactComponentEnvironment":109,"./ReactMultiChildUpdateTypes":147,"./ReactReconciler":157}],147:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -34918,7 +39480,7 @@ var ReactMultiChildUpdateTypes = keyMirror({
 
 module.exports = ReactMultiChildUpdateTypes;
 
-},{"./keyMirror":209}],132:[function(require,module,exports){
+},{"./keyMirror":225}],148:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -35025,7 +39587,7 @@ var ReactNativeComponent = {
 module.exports = ReactNativeComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./invariant":203,"_process":37}],133:[function(require,module,exports){
+},{"./Object.assign":97,"./invariant":219,"_process":52}],149:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35137,7 +39699,7 @@ var ReactOwner = {
 module.exports = ReactOwner;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],134:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],150:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35241,7 +39803,7 @@ function _noMeasure(objName, fnName, func) {
 module.exports = ReactPerf;
 
 }).call(this,require('_process'))
-},{"_process":37}],135:[function(require,module,exports){
+},{"_process":52}],151:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -35351,7 +39913,7 @@ var ReactPropTransferer = {
 
 module.exports = ReactPropTransferer;
 
-},{"./Object.assign":81,"./emptyFunction":182,"./joinClasses":208}],136:[function(require,module,exports){
+},{"./Object.assign":97,"./emptyFunction":198,"./joinClasses":224}],152:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35379,7 +39941,7 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = ReactPropTypeLocationNames;
 
 }).call(this,require('_process'))
-},{"_process":37}],137:[function(require,module,exports){
+},{"_process":52}],153:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -35403,7 +39965,7 @@ var ReactPropTypeLocations = keyMirror({
 
 module.exports = ReactPropTypeLocations;
 
-},{"./keyMirror":209}],138:[function(require,module,exports){
+},{"./keyMirror":225}],154:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -35752,7 +40314,7 @@ function getPreciseType(propValue) {
 
 module.exports = ReactPropTypes;
 
-},{"./ReactElement":115,"./ReactFragment":121,"./ReactPropTypeLocationNames":136,"./emptyFunction":182}],139:[function(require,module,exports){
+},{"./ReactElement":131,"./ReactFragment":137,"./ReactPropTypeLocationNames":152,"./emptyFunction":198}],155:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -35808,7 +40370,7 @@ PooledClass.addPoolingTo(ReactPutListenerQueue);
 
 module.exports = ReactPutListenerQueue;
 
-},{"./Object.assign":81,"./PooledClass":82,"./ReactBrowserEventEmitter":85}],140:[function(require,module,exports){
+},{"./Object.assign":97,"./PooledClass":98,"./ReactBrowserEventEmitter":101}],156:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -35984,7 +40546,7 @@ PooledClass.addPoolingTo(ReactReconcileTransaction);
 
 module.exports = ReactReconcileTransaction;
 
-},{"./CallbackQueue":59,"./Object.assign":81,"./PooledClass":82,"./ReactBrowserEventEmitter":85,"./ReactInputSelection":123,"./ReactPutListenerQueue":139,"./Transaction":169}],141:[function(require,module,exports){
+},{"./CallbackQueue":75,"./Object.assign":97,"./PooledClass":98,"./ReactBrowserEventEmitter":101,"./ReactInputSelection":139,"./ReactPutListenerQueue":155,"./Transaction":185}],157:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36108,7 +40670,7 @@ var ReactReconciler = {
 module.exports = ReactReconciler;
 
 }).call(this,require('_process'))
-},{"./ReactElementValidator":116,"./ReactRef":142,"_process":37}],142:[function(require,module,exports){
+},{"./ReactElementValidator":132,"./ReactRef":158,"_process":52}],158:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -36179,7 +40741,7 @@ ReactRef.detachRefs = function(instance, element) {
 
 module.exports = ReactRef;
 
-},{"./ReactOwner":133}],143:[function(require,module,exports){
+},{"./ReactOwner":149}],159:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -36210,7 +40772,7 @@ var ReactRootIndex = {
 
 module.exports = ReactRootIndex;
 
-},{}],144:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36292,7 +40854,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'))
-},{"./ReactElement":115,"./ReactInstanceHandles":124,"./ReactMarkupChecksum":128,"./ReactServerRenderingTransaction":145,"./emptyObject":183,"./instantiateReactComponent":202,"./invariant":203,"_process":37}],145:[function(require,module,exports){
+},{"./ReactElement":131,"./ReactInstanceHandles":140,"./ReactMarkupChecksum":144,"./ReactServerRenderingTransaction":161,"./emptyObject":199,"./instantiateReactComponent":218,"./invariant":219,"_process":52}],161:[function(require,module,exports){
 /**
  * Copyright 2014-2015, Facebook, Inc.
  * All rights reserved.
@@ -36405,7 +40967,7 @@ PooledClass.addPoolingTo(ReactServerRenderingTransaction);
 
 module.exports = ReactServerRenderingTransaction;
 
-},{"./CallbackQueue":59,"./Object.assign":81,"./PooledClass":82,"./ReactPutListenerQueue":139,"./Transaction":169,"./emptyFunction":182}],146:[function(require,module,exports){
+},{"./CallbackQueue":75,"./Object.assign":97,"./PooledClass":98,"./ReactPutListenerQueue":155,"./Transaction":185,"./emptyFunction":198}],162:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -36511,7 +41073,7 @@ ReactStateSetters.Mixin = {
 
 module.exports = ReactStateSetters;
 
-},{}],147:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -37025,7 +41587,7 @@ for (eventType in topLevelTypes) {
 
 module.exports = ReactTestUtils;
 
-},{"./EventConstants":68,"./EventPluginHub":70,"./EventPropagators":73,"./Object.assign":81,"./React":83,"./ReactBrowserEventEmitter":85,"./ReactCompositeComponent":95,"./ReactElement":115,"./ReactEmptyComponent":117,"./ReactInstanceHandles":124,"./ReactInstanceMap":125,"./ReactMount":129,"./ReactUpdates":152,"./SyntheticEvent":161,"./emptyObject":183}],148:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPluginHub":86,"./EventPropagators":89,"./Object.assign":97,"./React":99,"./ReactBrowserEventEmitter":101,"./ReactCompositeComponent":111,"./ReactElement":131,"./ReactEmptyComponent":133,"./ReactInstanceHandles":140,"./ReactInstanceMap":141,"./ReactMount":145,"./ReactUpdates":168,"./SyntheticEvent":177,"./emptyObject":199}],164:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -37130,7 +41692,7 @@ var ReactTransitionChildMapping = {
 
 module.exports = ReactTransitionChildMapping;
 
-},{"./ReactChildren":89,"./ReactFragment":121}],149:[function(require,module,exports){
+},{"./ReactChildren":105,"./ReactFragment":137}],165:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -37241,7 +41803,7 @@ var ReactTransitionEvents = {
 
 module.exports = ReactTransitionEvents;
 
-},{"./ExecutionEnvironment":74}],150:[function(require,module,exports){
+},{"./ExecutionEnvironment":90}],166:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -37471,7 +42033,7 @@ var ReactTransitionGroup = React.createClass({
 
 module.exports = ReactTransitionGroup;
 
-},{"./Object.assign":81,"./React":83,"./ReactTransitionChildMapping":148,"./cloneWithProps":175,"./emptyFunction":182}],151:[function(require,module,exports){
+},{"./Object.assign":97,"./React":99,"./ReactTransitionChildMapping":164,"./cloneWithProps":191,"./emptyFunction":198}],167:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -37770,7 +42332,7 @@ var ReactUpdateQueue = {
 module.exports = ReactUpdateQueue;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./ReactCurrentOwner":97,"./ReactElement":115,"./ReactInstanceMap":125,"./ReactLifeCycle":126,"./ReactUpdates":152,"./invariant":203,"./warning":224,"_process":37}],152:[function(require,module,exports){
+},{"./Object.assign":97,"./ReactCurrentOwner":113,"./ReactElement":131,"./ReactInstanceMap":141,"./ReactLifeCycle":142,"./ReactUpdates":168,"./invariant":219,"./warning":240,"_process":52}],168:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38052,7 +42614,7 @@ var ReactUpdates = {
 module.exports = ReactUpdates;
 
 }).call(this,require('_process'))
-},{"./CallbackQueue":59,"./Object.assign":81,"./PooledClass":82,"./ReactCurrentOwner":97,"./ReactPerf":134,"./ReactReconciler":141,"./Transaction":169,"./invariant":203,"./warning":224,"_process":37}],153:[function(require,module,exports){
+},{"./CallbackQueue":75,"./Object.assign":97,"./PooledClass":98,"./ReactCurrentOwner":113,"./ReactPerf":150,"./ReactReconciler":157,"./Transaction":185,"./invariant":219,"./warning":240,"_process":52}],169:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38108,7 +42670,7 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = React;
 
 }).call(this,require('_process'))
-},{"./LinkedStateMixin":77,"./React":83,"./ReactCSSTransitionGroup":86,"./ReactComponentWithPureRenderMixin":94,"./ReactDefaultPerf":113,"./ReactFragment":121,"./ReactTestUtils":147,"./ReactTransitionGroup":150,"./ReactUpdates":152,"./cloneWithProps":175,"./cx":180,"./update":223,"_process":37}],154:[function(require,module,exports){
+},{"./LinkedStateMixin":93,"./React":99,"./ReactCSSTransitionGroup":102,"./ReactComponentWithPureRenderMixin":110,"./ReactDefaultPerf":129,"./ReactFragment":137,"./ReactTestUtils":163,"./ReactTransitionGroup":166,"./ReactUpdates":168,"./cloneWithProps":191,"./cx":196,"./update":239,"_process":52}],170:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -38202,7 +42764,7 @@ var SVGDOMPropertyConfig = {
 
 module.exports = SVGDOMPropertyConfig;
 
-},{"./DOMProperty":63}],155:[function(require,module,exports){
+},{"./DOMProperty":79}],171:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -38397,7 +42959,7 @@ var SelectEventPlugin = {
 
 module.exports = SelectEventPlugin;
 
-},{"./EventConstants":68,"./EventPropagators":73,"./ReactInputSelection":123,"./SyntheticEvent":161,"./getActiveElement":189,"./isTextInputElement":206,"./keyOf":210,"./shallowEqual":219}],156:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPropagators":89,"./ReactInputSelection":139,"./SyntheticEvent":177,"./getActiveElement":205,"./isTextInputElement":222,"./keyOf":226,"./shallowEqual":235}],172:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -38428,7 +42990,7 @@ var ServerReactRootIndex = {
 
 module.exports = ServerReactRootIndex;
 
-},{}],157:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38856,7 +43418,7 @@ var SimpleEventPlugin = {
 module.exports = SimpleEventPlugin;
 
 }).call(this,require('_process'))
-},{"./EventConstants":68,"./EventPluginUtils":72,"./EventPropagators":73,"./SyntheticClipboardEvent":158,"./SyntheticDragEvent":160,"./SyntheticEvent":161,"./SyntheticFocusEvent":162,"./SyntheticKeyboardEvent":164,"./SyntheticMouseEvent":165,"./SyntheticTouchEvent":166,"./SyntheticUIEvent":167,"./SyntheticWheelEvent":168,"./getEventCharCode":190,"./invariant":203,"./keyOf":210,"./warning":224,"_process":37}],158:[function(require,module,exports){
+},{"./EventConstants":84,"./EventPluginUtils":88,"./EventPropagators":89,"./SyntheticClipboardEvent":174,"./SyntheticDragEvent":176,"./SyntheticEvent":177,"./SyntheticFocusEvent":178,"./SyntheticKeyboardEvent":180,"./SyntheticMouseEvent":181,"./SyntheticTouchEvent":182,"./SyntheticUIEvent":183,"./SyntheticWheelEvent":184,"./getEventCharCode":206,"./invariant":219,"./keyOf":226,"./warning":240,"_process":52}],174:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -38901,7 +43463,7 @@ SyntheticEvent.augmentClass(SyntheticClipboardEvent, ClipboardEventInterface);
 
 module.exports = SyntheticClipboardEvent;
 
-},{"./SyntheticEvent":161}],159:[function(require,module,exports){
+},{"./SyntheticEvent":177}],175:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -38946,7 +43508,7 @@ SyntheticEvent.augmentClass(
 
 module.exports = SyntheticCompositionEvent;
 
-},{"./SyntheticEvent":161}],160:[function(require,module,exports){
+},{"./SyntheticEvent":177}],176:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -38985,7 +43547,7 @@ SyntheticMouseEvent.augmentClass(SyntheticDragEvent, DragEventInterface);
 
 module.exports = SyntheticDragEvent;
 
-},{"./SyntheticMouseEvent":165}],161:[function(require,module,exports){
+},{"./SyntheticMouseEvent":181}],177:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39151,7 +43713,7 @@ PooledClass.addPoolingTo(SyntheticEvent, PooledClass.threeArgumentPooler);
 
 module.exports = SyntheticEvent;
 
-},{"./Object.assign":81,"./PooledClass":82,"./emptyFunction":182,"./getEventTarget":193}],162:[function(require,module,exports){
+},{"./Object.assign":97,"./PooledClass":98,"./emptyFunction":198,"./getEventTarget":209}],178:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39190,7 +43752,7 @@ SyntheticUIEvent.augmentClass(SyntheticFocusEvent, FocusEventInterface);
 
 module.exports = SyntheticFocusEvent;
 
-},{"./SyntheticUIEvent":167}],163:[function(require,module,exports){
+},{"./SyntheticUIEvent":183}],179:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39236,7 +43798,7 @@ SyntheticEvent.augmentClass(
 
 module.exports = SyntheticInputEvent;
 
-},{"./SyntheticEvent":161}],164:[function(require,module,exports){
+},{"./SyntheticEvent":177}],180:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39323,7 +43885,7 @@ SyntheticUIEvent.augmentClass(SyntheticKeyboardEvent, KeyboardEventInterface);
 
 module.exports = SyntheticKeyboardEvent;
 
-},{"./SyntheticUIEvent":167,"./getEventCharCode":190,"./getEventKey":191,"./getEventModifierState":192}],165:[function(require,module,exports){
+},{"./SyntheticUIEvent":183,"./getEventCharCode":206,"./getEventKey":207,"./getEventModifierState":208}],181:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39404,7 +43966,7 @@ SyntheticUIEvent.augmentClass(SyntheticMouseEvent, MouseEventInterface);
 
 module.exports = SyntheticMouseEvent;
 
-},{"./SyntheticUIEvent":167,"./ViewportMetrics":170,"./getEventModifierState":192}],166:[function(require,module,exports){
+},{"./SyntheticUIEvent":183,"./ViewportMetrics":186,"./getEventModifierState":208}],182:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39452,7 +44014,7 @@ SyntheticUIEvent.augmentClass(SyntheticTouchEvent, TouchEventInterface);
 
 module.exports = SyntheticTouchEvent;
 
-},{"./SyntheticUIEvent":167,"./getEventModifierState":192}],167:[function(require,module,exports){
+},{"./SyntheticUIEvent":183,"./getEventModifierState":208}],183:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39514,7 +44076,7 @@ SyntheticEvent.augmentClass(SyntheticUIEvent, UIEventInterface);
 
 module.exports = SyntheticUIEvent;
 
-},{"./SyntheticEvent":161,"./getEventTarget":193}],168:[function(require,module,exports){
+},{"./SyntheticEvent":177,"./getEventTarget":209}],184:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39575,7 +44137,7 @@ SyntheticMouseEvent.augmentClass(SyntheticWheelEvent, WheelEventInterface);
 
 module.exports = SyntheticWheelEvent;
 
-},{"./SyntheticMouseEvent":165}],169:[function(require,module,exports){
+},{"./SyntheticMouseEvent":181}],185:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39816,7 +44378,7 @@ var Transaction = {
 module.exports = Transaction;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],170:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],186:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39845,7 +44407,7 @@ var ViewportMetrics = {
 
 module.exports = ViewportMetrics;
 
-},{}],171:[function(require,module,exports){
+},{}],187:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -39911,7 +44473,7 @@ function accumulateInto(current, next) {
 module.exports = accumulateInto;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],172:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],188:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39945,7 +44507,7 @@ function adler32(data) {
 
 module.exports = adler32;
 
-},{}],173:[function(require,module,exports){
+},{}],189:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -39977,7 +44539,7 @@ function camelize(string) {
 
 module.exports = camelize;
 
-},{}],174:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 /**
  * Copyright 2014-2015, Facebook, Inc.
  * All rights reserved.
@@ -40019,7 +44581,7 @@ function camelizeStyleName(string) {
 
 module.exports = camelizeStyleName;
 
-},{"./camelize":173}],175:[function(require,module,exports){
+},{"./camelize":189}],191:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40078,7 +44640,7 @@ function cloneWithProps(child, props) {
 module.exports = cloneWithProps;
 
 }).call(this,require('_process'))
-},{"./ReactElement":115,"./ReactPropTransferer":135,"./keyOf":210,"./warning":224,"_process":37}],176:[function(require,module,exports){
+},{"./ReactElement":131,"./ReactPropTransferer":151,"./keyOf":226,"./warning":240,"_process":52}],192:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40122,7 +44684,7 @@ function containsNode(outerNode, innerNode) {
 
 module.exports = containsNode;
 
-},{"./isTextNode":207}],177:[function(require,module,exports){
+},{"./isTextNode":223}],193:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40208,7 +44770,7 @@ function createArrayFromMixed(obj) {
 
 module.exports = createArrayFromMixed;
 
-},{"./toArray":221}],178:[function(require,module,exports){
+},{"./toArray":237}],194:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40270,7 +44832,7 @@ function createFullPageComponent(tag) {
 module.exports = createFullPageComponent;
 
 }).call(this,require('_process'))
-},{"./ReactClass":90,"./ReactElement":115,"./invariant":203,"_process":37}],179:[function(require,module,exports){
+},{"./ReactClass":106,"./ReactElement":131,"./invariant":219,"_process":52}],195:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40360,7 +44922,7 @@ function createNodesFromMarkup(markup, handleScript) {
 module.exports = createNodesFromMarkup;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":74,"./createArrayFromMixed":177,"./getMarkupWrap":195,"./invariant":203,"_process":37}],180:[function(require,module,exports){
+},{"./ExecutionEnvironment":90,"./createArrayFromMixed":193,"./getMarkupWrap":211,"./invariant":219,"_process":52}],196:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40416,7 +44978,7 @@ function cx(classNames) {
 module.exports = cx;
 
 }).call(this,require('_process'))
-},{"./warning":224,"_process":37}],181:[function(require,module,exports){
+},{"./warning":240,"_process":52}],197:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40474,7 +45036,7 @@ function dangerousStyleValue(name, value) {
 
 module.exports = dangerousStyleValue;
 
-},{"./CSSProperty":57}],182:[function(require,module,exports){
+},{"./CSSProperty":73}],198:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40508,7 +45070,7 @@ emptyFunction.thatReturnsArgument = function(arg) { return arg; };
 
 module.exports = emptyFunction;
 
-},{}],183:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40532,7 +45094,7 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = emptyObject;
 
 }).call(this,require('_process'))
-},{"_process":37}],184:[function(require,module,exports){
+},{"_process":52}],200:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40572,7 +45134,7 @@ function escapeTextContentForBrowser(text) {
 
 module.exports = escapeTextContentForBrowser;
 
-},{}],185:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40645,7 +45207,7 @@ function findDOMNode(componentOrElement) {
 module.exports = findDOMNode;
 
 }).call(this,require('_process'))
-},{"./ReactCurrentOwner":97,"./ReactInstanceMap":125,"./ReactMount":129,"./invariant":203,"./isNode":205,"./warning":224,"_process":37}],186:[function(require,module,exports){
+},{"./ReactCurrentOwner":113,"./ReactInstanceMap":141,"./ReactMount":145,"./invariant":219,"./isNode":221,"./warning":240,"_process":52}],202:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40703,7 +45265,7 @@ function flattenChildren(children) {
 module.exports = flattenChildren;
 
 }).call(this,require('_process'))
-},{"./traverseAllChildren":222,"./warning":224,"_process":37}],187:[function(require,module,exports){
+},{"./traverseAllChildren":238,"./warning":240,"_process":52}],203:[function(require,module,exports){
 /**
  * Copyright 2014-2015, Facebook, Inc.
  * All rights reserved.
@@ -40732,7 +45294,7 @@ function focusNode(node) {
 
 module.exports = focusNode;
 
-},{}],188:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40763,7 +45325,7 @@ var forEachAccumulated = function(arr, cb, scope) {
 
 module.exports = forEachAccumulated;
 
-},{}],189:[function(require,module,exports){
+},{}],205:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40792,7 +45354,7 @@ function getActiveElement() /*?DOMElement*/ {
 
 module.exports = getActiveElement;
 
-},{}],190:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40844,7 +45406,7 @@ function getEventCharCode(nativeEvent) {
 
 module.exports = getEventCharCode;
 
-},{}],191:[function(require,module,exports){
+},{}],207:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40949,7 +45511,7 @@ function getEventKey(nativeEvent) {
 
 module.exports = getEventKey;
 
-},{"./getEventCharCode":190}],192:[function(require,module,exports){
+},{"./getEventCharCode":206}],208:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -40996,7 +45558,7 @@ function getEventModifierState(nativeEvent) {
 
 module.exports = getEventModifierState;
 
-},{}],193:[function(require,module,exports){
+},{}],209:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41027,7 +45589,7 @@ function getEventTarget(nativeEvent) {
 
 module.exports = getEventTarget;
 
-},{}],194:[function(require,module,exports){
+},{}],210:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41071,7 +45633,7 @@ function getIteratorFn(maybeIterable) {
 
 module.exports = getIteratorFn;
 
-},{}],195:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41190,7 +45752,7 @@ function getMarkupWrap(nodeName) {
 module.exports = getMarkupWrap;
 
 }).call(this,require('_process'))
-},{"./ExecutionEnvironment":74,"./invariant":203,"_process":37}],196:[function(require,module,exports){
+},{"./ExecutionEnvironment":90,"./invariant":219,"_process":52}],212:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41265,7 +45827,7 @@ function getNodeForCharacterOffset(root, offset) {
 
 module.exports = getNodeForCharacterOffset;
 
-},{}],197:[function(require,module,exports){
+},{}],213:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41300,7 +45862,7 @@ function getReactRootElementInContainer(container) {
 
 module.exports = getReactRootElementInContainer;
 
-},{}],198:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41337,7 +45899,7 @@ function getTextContentAccessor() {
 
 module.exports = getTextContentAccessor;
 
-},{"./ExecutionEnvironment":74}],199:[function(require,module,exports){
+},{"./ExecutionEnvironment":90}],215:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41377,7 +45939,7 @@ function getUnboundedScrollPosition(scrollable) {
 
 module.exports = getUnboundedScrollPosition;
 
-},{}],200:[function(require,module,exports){
+},{}],216:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41410,7 +45972,7 @@ function hyphenate(string) {
 
 module.exports = hyphenate;
 
-},{}],201:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41451,7 +46013,7 @@ function hyphenateStyleName(string) {
 
 module.exports = hyphenateStyleName;
 
-},{"./hyphenate":200}],202:[function(require,module,exports){
+},{"./hyphenate":216}],218:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41589,7 +46151,7 @@ function instantiateReactComponent(node, parentCompositeType) {
 module.exports = instantiateReactComponent;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./ReactCompositeComponent":95,"./ReactEmptyComponent":117,"./ReactNativeComponent":132,"./invariant":203,"./warning":224,"_process":37}],203:[function(require,module,exports){
+},{"./Object.assign":97,"./ReactCompositeComponent":111,"./ReactEmptyComponent":133,"./ReactNativeComponent":148,"./invariant":219,"./warning":240,"_process":52}],219:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41646,7 +46208,7 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 module.exports = invariant;
 
 }).call(this,require('_process'))
-},{"_process":37}],204:[function(require,module,exports){
+},{"_process":52}],220:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41711,7 +46273,7 @@ function isEventSupported(eventNameSuffix, capture) {
 
 module.exports = isEventSupported;
 
-},{"./ExecutionEnvironment":74}],205:[function(require,module,exports){
+},{"./ExecutionEnvironment":90}],221:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41738,7 +46300,7 @@ function isNode(object) {
 
 module.exports = isNode;
 
-},{}],206:[function(require,module,exports){
+},{}],222:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41781,7 +46343,7 @@ function isTextInputElement(elem) {
 
 module.exports = isTextInputElement;
 
-},{}],207:[function(require,module,exports){
+},{}],223:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41806,7 +46368,7 @@ function isTextNode(object) {
 
 module.exports = isTextNode;
 
-},{"./isNode":205}],208:[function(require,module,exports){
+},{"./isNode":221}],224:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41847,7 +46409,7 @@ function joinClasses(className/*, ... */) {
 
 module.exports = joinClasses;
 
-},{}],209:[function(require,module,exports){
+},{}],225:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41902,7 +46464,7 @@ var keyMirror = function(obj) {
 module.exports = keyMirror;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],210:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],226:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41938,7 +46500,7 @@ var keyOf = function(oneKeyObj) {
 
 module.exports = keyOf;
 
-},{}],211:[function(require,module,exports){
+},{}],227:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -41991,7 +46553,7 @@ function mapObject(object, callback, context) {
 
 module.exports = mapObject;
 
-},{}],212:[function(require,module,exports){
+},{}],228:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -42024,7 +46586,7 @@ function memoizeStringOnly(callback) {
 
 module.exports = memoizeStringOnly;
 
-},{}],213:[function(require,module,exports){
+},{}],229:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42064,7 +46626,7 @@ function onlyChild(children) {
 module.exports = onlyChild;
 
 }).call(this,require('_process'))
-},{"./ReactElement":115,"./invariant":203,"_process":37}],214:[function(require,module,exports){
+},{"./ReactElement":131,"./invariant":219,"_process":52}],230:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -42092,7 +46654,7 @@ if (ExecutionEnvironment.canUseDOM) {
 
 module.exports = performance || {};
 
-},{"./ExecutionEnvironment":74}],215:[function(require,module,exports){
+},{"./ExecutionEnvironment":90}],231:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -42120,7 +46682,7 @@ var performanceNow = performance.now.bind(performance);
 
 module.exports = performanceNow;
 
-},{"./performance":214}],216:[function(require,module,exports){
+},{"./performance":230}],232:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -42148,7 +46710,7 @@ function quoteAttributeValueForBrowser(value) {
 
 module.exports = quoteAttributeValueForBrowser;
 
-},{"./escapeTextContentForBrowser":184}],217:[function(require,module,exports){
+},{"./escapeTextContentForBrowser":200}],233:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -42237,7 +46799,7 @@ if (ExecutionEnvironment.canUseDOM) {
 
 module.exports = setInnerHTML;
 
-},{"./ExecutionEnvironment":74}],218:[function(require,module,exports){
+},{"./ExecutionEnvironment":90}],234:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -42279,7 +46841,7 @@ if (ExecutionEnvironment.canUseDOM) {
 
 module.exports = setTextContent;
 
-},{"./ExecutionEnvironment":74,"./escapeTextContentForBrowser":184,"./setInnerHTML":217}],219:[function(require,module,exports){
+},{"./ExecutionEnvironment":90,"./escapeTextContentForBrowser":200,"./setInnerHTML":233}],235:[function(require,module,exports){
 /**
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -42323,7 +46885,7 @@ function shallowEqual(objA, objB) {
 
 module.exports = shallowEqual;
 
-},{}],220:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42427,7 +46989,7 @@ function shouldUpdateReactComponent(prevElement, nextElement) {
 module.exports = shouldUpdateReactComponent;
 
 }).call(this,require('_process'))
-},{"./warning":224,"_process":37}],221:[function(require,module,exports){
+},{"./warning":240,"_process":52}],237:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -42499,7 +47061,7 @@ function toArray(obj) {
 module.exports = toArray;
 
 }).call(this,require('_process'))
-},{"./invariant":203,"_process":37}],222:[function(require,module,exports){
+},{"./invariant":219,"_process":52}],238:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42752,7 +47314,7 @@ function traverseAllChildren(children, callback, traverseContext) {
 module.exports = traverseAllChildren;
 
 }).call(this,require('_process'))
-},{"./ReactElement":115,"./ReactFragment":121,"./ReactInstanceHandles":124,"./getIteratorFn":194,"./invariant":203,"./warning":224,"_process":37}],223:[function(require,module,exports){
+},{"./ReactElement":131,"./ReactFragment":137,"./ReactInstanceHandles":140,"./getIteratorFn":210,"./invariant":219,"./warning":240,"_process":52}],239:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42923,7 +47485,7 @@ function update(value, spec) {
 module.exports = update;
 
 }).call(this,require('_process'))
-},{"./Object.assign":81,"./invariant":203,"./keyOf":210,"_process":37}],224:[function(require,module,exports){
+},{"./Object.assign":97,"./invariant":219,"./keyOf":226,"_process":52}],240:[function(require,module,exports){
 (function (process){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -42986,10 +47548,235 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = warning;
 
 }).call(this,require('_process'))
-},{"./emptyFunction":182,"_process":37}],225:[function(require,module,exports){
+},{"./emptyFunction":198,"_process":52}],241:[function(require,module,exports){
 module.exports = require('./lib/React');
 
-},{"./lib/React":83}],226:[function(require,module,exports){
+},{"./lib/React":99}],242:[function(require,module,exports){
+/**
+ * Timeago is a jQuery plugin that makes it easy to support automatically
+ * updating fuzzy timestamps (e.g. "4 minutes ago" or "about 1 day ago").
+ *
+ * @name timeago
+ * @version 1.4.2
+ * @requires jQuery v1.2.3+
+ * @author Ryan McGeary
+ * @license MIT License - http://www.opensource.org/licenses/mit-license.php
+ *
+ * For usage and examples, visit:
+ * http://timeago.yarp.com/
+ *
+ * Copyright (c) 2008-2015, Ryan McGeary (ryan -[at]- mcgeary [*dot*] org)
+ */
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery'], factory);
+  } if (typeof module === 'object' && typeof module.exports === 'object') {
+    factory(require('jquery'));
+  } else {
+    // Browser globals
+    factory(jQuery);
+  }
+}(function ($) {
+  $.timeago = function(timestamp) {
+    if (timestamp instanceof Date) {
+      return inWords(timestamp);
+    } else if (typeof timestamp === "string") {
+      return inWords($.timeago.parse(timestamp));
+    } else if (typeof timestamp === "number") {
+      return inWords(new Date(timestamp));
+    } else {
+      return inWords($.timeago.datetime(timestamp));
+    }
+  };
+  var $t = $.timeago;
+
+  $.extend($.timeago, {
+    settings: {
+      refreshMillis: 60000,
+      allowPast: true,
+      allowFuture: false,
+      localeTitle: false,
+      cutoff: 0,
+      strings: {
+        prefixAgo: null,
+        prefixFromNow: null,
+        suffixAgo: "ago",
+        suffixFromNow: "from now",
+        inPast: 'any moment now',
+        seconds: "less than a minute",
+        minute: "about a minute",
+        minutes: "%d minutes",
+        hour: "about an hour",
+        hours: "about %d hours",
+        day: "a day",
+        days: "%d days",
+        month: "about a month",
+        months: "%d months",
+        year: "about a year",
+        years: "%d years",
+        wordSeparator: " ",
+        numbers: []
+      }
+    },
+
+    inWords: function(distanceMillis) {
+      if(!this.settings.allowPast && ! this.settings.allowFuture) {
+          throw 'timeago allowPast and allowFuture settings can not both be set to false.';
+      }
+
+      var $l = this.settings.strings;
+      var prefix = $l.prefixAgo;
+      var suffix = $l.suffixAgo;
+      if (this.settings.allowFuture) {
+        if (distanceMillis < 0) {
+          prefix = $l.prefixFromNow;
+          suffix = $l.suffixFromNow;
+        }
+      }
+
+      if(!this.settings.allowPast && distanceMillis >= 0) {
+        return this.settings.strings.inPast;
+      }
+
+      var seconds = Math.abs(distanceMillis) / 1000;
+      var minutes = seconds / 60;
+      var hours = minutes / 60;
+      var days = hours / 24;
+      var years = days / 365;
+
+      function substitute(stringOrFunction, number) {
+        var string = $.isFunction(stringOrFunction) ? stringOrFunction(number, distanceMillis) : stringOrFunction;
+        var value = ($l.numbers && $l.numbers[number]) || number;
+        return string.replace(/%d/i, value);
+      }
+
+      var words = seconds < 45 && substitute($l.seconds, Math.round(seconds)) ||
+        seconds < 90 && substitute($l.minute, 1) ||
+        minutes < 45 && substitute($l.minutes, Math.round(minutes)) ||
+        minutes < 90 && substitute($l.hour, 1) ||
+        hours < 24 && substitute($l.hours, Math.round(hours)) ||
+        hours < 42 && substitute($l.day, 1) ||
+        days < 30 && substitute($l.days, Math.round(days)) ||
+        days < 45 && substitute($l.month, 1) ||
+        days < 365 && substitute($l.months, Math.round(days / 30)) ||
+        years < 1.5 && substitute($l.year, 1) ||
+        substitute($l.years, Math.round(years));
+
+      var separator = $l.wordSeparator || "";
+      if ($l.wordSeparator === undefined) { separator = " "; }
+      return $.trim([prefix, words, suffix].join(separator));
+    },
+
+    parse: function(iso8601) {
+      var s = $.trim(iso8601);
+      s = s.replace(/\.\d+/,""); // remove milliseconds
+      s = s.replace(/-/,"/").replace(/-/,"/");
+      s = s.replace(/T/," ").replace(/Z/," UTC");
+      s = s.replace(/([\+\-]\d\d)\:?(\d\d)/," $1$2"); // -04:00 -> -0400
+      s = s.replace(/([\+\-]\d\d)$/," $100"); // +09 -> +0900
+      return new Date(s);
+    },
+    datetime: function(elem) {
+      var iso8601 = $t.isTime(elem) ? $(elem).attr("datetime") : $(elem).attr("title");
+      return $t.parse(iso8601);
+    },
+    isTime: function(elem) {
+      // jQuery's `is()` doesn't play well with HTML5 in IE
+      return $(elem).get(0).tagName.toLowerCase() === "time"; // $(elem).is("time");
+    }
+  });
+
+  // functions that can be called via $(el).timeago('action')
+  // init is default when no action is given
+  // functions are called with context of a single element
+  var functions = {
+    init: function(){
+      var refresh_el = $.proxy(refresh, this);
+      refresh_el();
+      var $s = $t.settings;
+      if ($s.refreshMillis > 0) {
+        this._timeagoInterval = setInterval(refresh_el, $s.refreshMillis);
+      }
+    },
+    update: function(time){
+      var parsedTime = $t.parse(time);
+      $(this).data('timeago', { datetime: parsedTime });
+      if($t.settings.localeTitle) $(this).attr("title", parsedTime.toLocaleString());
+      refresh.apply(this);
+    },
+    updateFromDOM: function(){
+      $(this).data('timeago', { datetime: $t.parse( $t.isTime(this) ? $(this).attr("datetime") : $(this).attr("title") ) });
+      refresh.apply(this);
+    },
+    dispose: function () {
+      if (this._timeagoInterval) {
+        window.clearInterval(this._timeagoInterval);
+        this._timeagoInterval = null;
+      }
+    }
+  };
+
+  $.fn.timeago = function(action, options) {
+    var fn = action ? functions[action] : functions.init;
+    if(!fn){
+      throw new Error("Unknown function name '"+ action +"' for timeago");
+    }
+    // each over objects here and call the requested function
+    this.each(function(){
+      fn.call(this, options);
+    });
+    return this;
+  };
+
+  function refresh() {
+    //check if it's still visible
+    if(!$.contains(document.documentElement,this)){
+      //stop if it has been removed
+      $(this).timeago("dispose");
+      return this;
+    }
+
+    var data = prepareData(this);
+    var $s = $t.settings;
+
+    if (!isNaN(data.datetime)) {
+      if ( $s.cutoff == 0 || Math.abs(distance(data.datetime)) < $s.cutoff) {
+        $(this).text(inWords(data.datetime));
+      }
+    }
+    return this;
+  }
+
+  function prepareData(element) {
+    element = $(element);
+    if (!element.data("timeago")) {
+      element.data("timeago", { datetime: $t.datetime(element) });
+      var text = $.trim(element.text());
+      if ($t.settings.localeTitle) {
+        element.attr("title", element.data('timeago').datetime.toLocaleString());
+      } else if (text.length > 0 && !($t.isTime(element) && element.attr("title"))) {
+        element.attr("title", text);
+      }
+    }
+    return element.data("timeago");
+  }
+
+  function inWords(date) {
+    return $t.inWords(distance(date));
+  }
+
+  function distance(date) {
+    return (new Date().getTime() - date.getTime());
+  }
+
+  // fix for IE6 suckage
+  document.createElement("abbr");
+  document.createElement("time");
+}));
+
+},{"jquery":60}],243:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -44539,7 +49326,7 @@ module.exports = require('./lib/React');
   }
 }.call(this));
 
-},{}],227:[function(require,module,exports){
+},{}],244:[function(require,module,exports){
 /*! VelocityJS.org (1.2.2). (C) 2014 Julian Shapiro. MIT @license: en.wikipedia.org/wiki/MIT_License */
 
 /*************************
@@ -48408,4 +53195,4 @@ return function (global, window, document, undefined) {
 /* The CSS spec mandates that the translateX/Y/Z transforms are %-relative to the element itself -- not its parent.
 Velocity, however, doesn't make this distinction. Thus, converting to or from the % unit with these subproperties
 will produce an inaccurate conversion value. The same issue exists with the cx/cy attributes of SVG circles and ellipses. */
-},{}]},{},[29]);
+},{}]},{},[43]);

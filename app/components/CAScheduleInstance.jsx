@@ -21,6 +21,7 @@ var CAScheduleInstance = React.createClass({
     propTypes: function() {
         return {
             course: React.PropTypes.object.isRequired,
+            large: React.PropTypes.bool.isRequired,
             section: React.PropTypes.object.isRequired,
             meeting: React.PropTypes.object.isRequired,
             conflicts: React.PropTypes.bool.isRequired,
@@ -42,7 +43,8 @@ var CAScheduleInstance = React.createClass({
                 // If instance is less than 1 hour long.
                 compact: ScheduleStore.timeDifference(meeting.timeEnd,
                     meeting.timeStart) < 1,
-                'conflict-of-2': this.props.conflicts
+                'conflict-of-2': this.props.conflicts,
+                large: this.props.large
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',

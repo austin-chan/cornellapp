@@ -20,6 +20,7 @@ var React = require('react/addons'),
 var CAScheduleEvent = React.createClass({
     propTypes: {
         event: React.PropTypes.object.isRequired,
+        large: React.PropTypes.bool.isRequired,
         conflictMap: React.PropTypes.array.isRequired,
         renderMap: React.PropTypes.array.isRequired,
         pixelsBetweenTimes: React.PropTypes.func.isRequired,
@@ -48,7 +49,8 @@ var CAScheduleEvent = React.createClass({
                 ScheduleStore.startTime),
             instanceClass = classNames('ca-schedule-instance',
                 ScheduleStore.dayMap[day], {
-                'conflict-of-2': conflicts
+                'conflict-of-2': conflicts,
+                large: this.props.large
             }),
             instanceWrapstyle = {
                 height: heightAmount + 'px',
@@ -85,7 +87,9 @@ var CAScheduleEvent = React.createClass({
         var event = this.props.event,
             selectedDays = ScheduleStore.daysFromPattern(event.pattern),
             eventInstances = [],
-            rootClass = 'ca-schedule-event ' + event.color;
+            rootClass = classNames('ca-schedule-event', event.color, {
+                large: this.props.large
+            });
 
         // Iterate through each selected day.
         _.each(selectedDays, function(day) {

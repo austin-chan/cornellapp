@@ -19,6 +19,7 @@ var React = require('react/addons'),
     CACatalogAdd = require('./CACatalogAdd'),
     CACatalogGroup = require('./CACatalogGroup'),
     CACatalogComments = require('./CACatalogComments'),
+    CACatalogDifficulty = require('./CACatalogDifficulty'),
     classNames = require('classnames'),
     _ = require('underscore');
 
@@ -178,6 +179,16 @@ var CACatalogCourse = React.createClass({
     },
 
     /**
+     * Render the difficulty ratings for a course.
+     * @return {object} Renderable object for the difficulty ratings.
+     */
+    renderDifficulty: function() {
+        return (
+            <CACatalogDifficulty course={this.state.course} />
+        );
+    },
+
+    /**
      * Render the comments for a course.
      * @return {object} Renderable object for the comments section.
      */
@@ -198,7 +209,8 @@ var CACatalogCourse = React.createClass({
             likeButton = this.renderLikeButton(),
             addButton = this.renderAddButton(),
             enrollment = this.renderEnrollment(),
-            comments = this.renderComments();
+            comments = this.renderComments(),
+            difficulty = this.renderDifficulty();
 
         return (
             <div className="ca-catalog-course ca-catalog-item">
@@ -228,6 +240,7 @@ var CACatalogCourse = React.createClass({
                     </div>
                 </div>
                 {enrollment}
+                {difficulty}
                 {comments}
             </div>
         );
