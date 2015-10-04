@@ -23,6 +23,7 @@ Search algorithm
 Handling changed course data
 No Enrollment Class Numbers to Show
 Conflict Hide - Not Re-expanding
+Log In - Merge events
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups

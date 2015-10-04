@@ -212,7 +212,9 @@ module.exports = function(models) {
 			request = require('request');
 
 		var pageres = new Pageres()
-		    .src('localhost:3000/schedule/' + scheduleId, ['1501x2350']);
+		    .src('localhost:' +
+		    	(process.env.NODE_ENV === 'production' ? 8081 : 3000) +
+		    	'/schedule/' + scheduleId, ['1501x2350']);
 
 		pageres.run(function (err, items) {
 			var buffer = new Buffer('');
