@@ -4576,7 +4576,7 @@ var CAModalSendSchedule = React.createClass({displayName: "CAModalSendSchedule",
         else if (this.state.texting)
             message = (
                 React.createElement("p", {className: "notice-message"}, 
-                    "You should receive a text in about 20-25 seconds."
+                    "You should receive a text in about 10-15 seconds."
                 )
             );
 

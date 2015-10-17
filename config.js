@@ -45,11 +45,15 @@ var config = {
     "site": {
         domain: process.env.SITE_DOMAIN
     },
-    "semester": "FA15",
+    "semester": "SP16",
     "semesters": {
         "FA15": {
             "slug": "FA15",
             "strm": 2608,
+        },
+        "SP16": {
+            "slug": "SP16",
+            "strm": 2622
         }
     },
     "admins": [
