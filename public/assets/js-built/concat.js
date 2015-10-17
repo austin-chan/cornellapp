@@ -4586,32 +4586,32 @@ var CAModalSendSchedule = React.createClass({displayName: "CAModalSendSchedule",
             React.createElement("div", {className: "ca-modal-send-schedule"}, 
                 React.createElement("h3", null, "Send Schedule"), 
                 React.createElement("p", {className: "input-label"}, "Schedule Link"), 
-                React.createElement("p", {className: "share-link"}, scheduleUrl), 
-                React.createElement("p", {className: "input-label"}, "Text Screenshot to Mobile"), 
-                React.createElement("input", {className: "ca-clear-input phone", 
-                    type: "tel", name: "phone", ref: "number", 
-                    placeholder: "Phone Number", 
-                    onKeyDown: this._onKeyDown, required: true}), 
-                React.createElement("div", {className: "button-group"}, 
-                    React.createElement("button", {className: textButtonClass, 
-                        onClick: this._onText, 
-                        ref: "text"}, 
-                        React.createElement("span", {className: "label"}, "Text Screenshot"), 
-                        React.createElement("div", {className: "spin-loader"}, 
-                            React.createElement("div", null), 
-                            React.createElement("div", null), 
-                            React.createElement("div", null), 
-                            React.createElement("div", null), 
-                            React.createElement("div", null), 
-                            React.createElement("div", null), 
-                            React.createElement("div", null), 
-                            React.createElement("div", null)
-                        )
-                    ), 
-                    message
-                )
+                React.createElement("p", {className: "share-link"}, scheduleUrl)
             )
         );
+                /* <p className="input-label">Text Screenshot to Mobile</p>
+                <input className="ca-clear-input phone"
+                    type="tel" name="phone" ref="number"
+                    placeholder="Phone Number"
+                    onKeyDown={this._onKeyDown} required/>
+                <div className="button-group">
+                    <button className={textButtonClass}
+                        onClick={this._onText}
+                        ref="text">
+                        <span className="label">Text Screenshot</span>
+                        <div className="spin-loader">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </button>
+                    {message}
+                </div> */
     },
 
     /**
