@@ -139,7 +139,8 @@ var CABasketEvent = React.createClass({
             <div className="location">
                 <input className="ca-clear-input" type="text"
                     defaultValue={event.location} ref="locationInput"
-                    placeholder="Location" onKeyDown={this._onLocationDown}
+                    placeholder="Enter Location"
+                    onKeyDown={this._onLocationDown}
                     onBlur={this._onLocationBlur} />
             </div>
         );

@@ -52,7 +52,9 @@ var authentication = function(passport, models) {
             // NetID.
             new models.user({ netid: netid }).fetch({
                 withRelated: [
-                    'selections.course.groups.sections.meetings.professors'
+                    'selections.course.groups.sections.meetings.professors',
+                    'events',
+                    'schedules'
                 ]
             }).then(function(user) {
                 if (!user)

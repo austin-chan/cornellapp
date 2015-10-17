@@ -274,6 +274,7 @@ var apirouter = function(app, blockValidationErrors) {
 			});
 	});
 
+	// Route to send a text picture screenshot of the schedule.
 	app.post('/api/text-screenshot/:scheduleId', authorize, function(req, res) {
 		var scheduleId = req.params.scheduleId,
 			number = req.body.number;
