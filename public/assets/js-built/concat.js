@@ -1184,7 +1184,8 @@ var CABasketEvent = React.createClass({displayName: "CABasketEvent",
             React.createElement("div", {className: "location"}, 
                 React.createElement("input", {className: "ca-clear-input", type: "text", 
                     defaultValue: event.location, ref: "locationInput", 
-                    placeholder: "Location", onKeyDown: this._onLocationDown, 
+                    placeholder: "Enter Location", 
+                    onKeyDown: this._onLocationDown, 
                     onBlur: this._onLocationBlur})
             )
         );
@@ -7012,12 +7013,20 @@ function getSelectedSections(key) {
 
 /**
  * Get all selected sections contained in the schedule.
+ * @param {boolean} onlyActive Optional parameter to only retrieve active
+ *      sections.
  * @return {array} List of all selected section objects.
  */
-function getAllSelectedSections() {
+function getAllSelectedSections(onlyActive) {
+    onlyActive = typeof onlyActive !== 'undefined' ? onlyActive : false;
+
     // Map each course with each of its selected section objects.
     var sectionsMap = _.mapObject(_courses, function(course, key) {
-        return getSelectedSections(key);
+        // Only include active selections if the optional parameter is supplied.
+        if (!onlyActive || course.selection.active)
+            return getSelectedSections(key);
+
+        return [];
     });
 
     return _.flatten(_.values(sectionsMap));
@@ -7119,7 +7128,8 @@ function timeDifference(bTime, aTime, unit) {
 
 /**
  * Generate a map representation of the interlapping of all the meetings
- * contained in the sections in sectionList.
+ * contained in the sections in sectionList. Only includes sections for active
+ * courses and active events.
  * @param {array} sectionList Array of sections to generate the conflict map
  *      for.
  * @param {array} eventList Optional array of events to include in the
@@ -7166,6 +7176,10 @@ function generateConflictMap(sectionList, eventList) {
     // Include events if eventList was provided.
     if (eventList) {
         _.each(eventList, function(event) {
+            // Skip the event if it is not active.
+            if (!event.active)
+                return;
+
             var days = daysFromPattern(event.pattern);
 
             // Iterate through each day of the event.
@@ -7525,7 +7539,8 @@ var ScheduleStore = assign({}, EventEmitter.prototype, {
      *      schedule.
      */
     getScheduleConflictMap: function() {
-        return generateConflictMap(getAllSelectedSections(), _.values(_events));
+        return generateConflictMap(getAllSelectedSections(true),
+            _.values(_events));
     },
 
     /**
@@ -8108,11 +8123,15 @@ var config = {
     "site": {
         domain: process.env.SITE_DOMAIN
     },
-    "semester": "FA15",
+    "semester": "SP16",
     "semesters": {
         "FA15": {
             "slug": "FA15",
             "strm": 2608,
+        },
+        "SP16": {
+            "slug": "SP16",
+            "strm": 2622
         }
     },
     "admins": [
