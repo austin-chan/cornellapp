@@ -20,10 +20,7 @@ Sync calendars
 Compare Friend
 Search algorithm
 Handling changed course data
-Conflict Hide - Not Re-expanding
-Log In - Merge events
 Changing event times, change other time
-Screenshot accuracy
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups

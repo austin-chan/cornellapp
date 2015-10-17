@@ -136,7 +136,9 @@ var CAModalSendSchedule = React.createClass({
                 <h3>Send Schedule</h3>
                 <p className="input-label">Schedule Link</p>
                 <p className="share-link">{scheduleUrl}</p>
-                <p className="input-label">Text Screenshot to Mobile</p>
+            </div>
+        );
+                /* <p className="input-label">Text Screenshot to Mobile</p>
                 <input className="ca-clear-input phone"
                     type="tel" name="phone" ref="number"
                     placeholder="Phone Number"
@@ -158,9 +160,7 @@ var CAModalSendSchedule = React.createClass({
                         </div>
                     </button>
                     {message}
-                </div>
-            </div>
-        );
+                </div> */
     },
 
     /**
