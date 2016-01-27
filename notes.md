@@ -21,6 +21,7 @@ Compare Friend
 Search algorithm
 Handling changed course data
 Changing event times, change other time
+Search again bug
 
 cs1132 - exclusive discussions for diff lectures
 bee4550 - different requirements in groups

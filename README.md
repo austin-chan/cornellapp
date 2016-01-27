@@ -156,7 +156,7 @@ The downside with using React is that it makes building frontend functionality s
 ![Design Guide](./designguide.png?raw=true)
 
 ## Contribute
-Cornellapp from its inception has ideologically been a collaborative application. All CL's are encouraged, no matter the size. Even if a single word is changed, the change will be appreciated.
+Cornellapp from its inception has ideologically been a collaborative application. All CL's are encouraged, no matter the size. Even if a single word is changed, the change is welcome.
 
 To submit a code change, fork the repo and create your branch from `master`. Make changes and submit a pull request in Github.
 
