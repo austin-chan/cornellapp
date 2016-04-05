@@ -1,4 +1,4 @@
-# [Cornellapp](http://cornellapp.com)
+# Cornellapp
 Cornellapp is the best and the most popular way to schedule your courses at Cornell.
 
 ## Installation
